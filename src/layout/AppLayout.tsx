@@ -18,7 +18,7 @@ const AppLayout = () => {
     <div className="grid min-h-screen md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="border-r">
         <div className="flex h-14 items-center px-4 lg:h-[60px] lg:px-6 font-bold">
-          <span>Exercice-app</span>
+          <span>Mind-Expanse</span>
         </div>
         <div className="flex flex-col h-[calc(100vh-70px)] lg:span-1 text-sm font-medium">
           <nav className="flex flex-1 flex-col gap-2 px-4 py-4 lg:px-3">
@@ -48,6 +48,8 @@ const AppLayout = () => {
             <LogOut className="w-4 h-4" />
             <span>Logout</span>
           </div>
+          
+          
         </div>
       </div>
       <div className="mx-auto">
