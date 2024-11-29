@@ -1,3 +1,4 @@
+import MathGrid from "@/components/MathGrid/MathGrid";
 import {
   Card,
   CardContent,
@@ -77,7 +78,7 @@ const DashboardPage = () => {
             <Progress value={25} aria-label="25% increase" />
           </CardFooter>
         </Card>
-        
+        <MathGrid />
       </div>
     </div>
   );

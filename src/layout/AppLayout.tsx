@@ -4,12 +4,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Divide, Home, LogOut, Minus, Plus, X } from "lucide-react";
+import { Divide, LogOut, Minus, Plus, X } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 const AppLayout = () => {
   const getLinkClassName = ({ isActive }: { isActive: boolean }) =>
-    `px-3 py-2 rounded flex items-center gap-2 ${
-      isActive ? "text-primary font-semibold hover:text-primary" : ""
+    `px-3 py-2 hover:bg-muted rounded flex cursor-pointer items-center gap-2 ${
+      isActive
+        ? "text-primary cursor-pointer font-semibold hover:text-primary"
+        : ""
     }`;
 
   return (
@@ -20,12 +22,14 @@ const AppLayout = () => {
         </div>
         <div className="flex flex-col h-[calc(100vh-70px)] lg:span-1 text-sm font-medium">
           <nav className="flex flex-1 flex-col gap-2 px-4 py-4 lg:px-3">
-            <NavLink to={"/dashboard"} className={getLinkClassName}>
+            <div className="px-3 py-2">
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1">
                   <AccordionTrigger>Dashboard</AccordionTrigger>
-                  <AccordionContent className="flex gap-2 items-center hover:bg-muted px-3 py-2 rounded">
-                    <Plus className="w-4 h-4" /> <span>Addition</span>
+                  <AccordionContent className='py-0'>
+                    <NavLink to="/addition" className={getLinkClassName}>
+                      <Plus className="w-4 h-4" /> <span>Addition</span>
+                    </NavLink>
                   </AccordionContent>
                   <AccordionContent className="flex gap-2 items-center hover:bg-muted px-3 py-2 rounded">
                     <Minus className="w-4 h-4" /> <span>Substraction</span>
@@ -38,7 +42,7 @@ const AppLayout = () => {
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-            </NavLink>
+            </div>
           </nav>
           <div className="mx-4 py-2 lg:mx-3 lg:px-3 flex items-center gap-2 hover:bg-muted rounded cursor-pointer">
             <LogOut className="w-4 h-4" />
