@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/form";
 import { signInSchema } from "@/lib/schemaValidation";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -18,7 +17,6 @@ import { EyeIcon, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const LoginPage = () => {
-  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showError, setShowError] = useState(false);

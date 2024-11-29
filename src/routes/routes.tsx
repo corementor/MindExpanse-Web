@@ -1,3 +1,4 @@
+import MathGrid from "@/components/MathGrid/MathGrid";
 import AppLayout from "@/layout/AppLayout";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
 import LoginPage from "@/pages/login/LoginPage";
@@ -9,8 +10,12 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       {
-        path: "/dashboard",
+        path: "",
         element: <DashboardPage />,
+      },
+      {
+        path: "addition",
+        element: <MathGrid />,
       },
     ],
   },
