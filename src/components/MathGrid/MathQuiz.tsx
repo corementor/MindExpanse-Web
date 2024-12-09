@@ -1,9 +1,9 @@
 import React, { useState, useEffect, FormEvent } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { RefreshCcw, CheckCircle, XCircle } from "lucide-react"; // Icons
+import { RefreshCcw } from "lucide-react"; // Icons
 
-const api = "http://localhost:8080/api/math";
+const api = "https://mind-expanse.onrender.com/api/math";
 
 interface Question {
   number1: number;
@@ -80,9 +80,12 @@ const MathQuiz: React.FC = () => {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-6 mb-6">
+        <div className="grid grid-cols-2 gap-5">
           {questions.map((q, index) => (
-            <div key={index} className="flex items-center justify-between">
+            <div
+              key={index}
+              className="flex items-center justify-between gap-2"
+            >
               <span className="text-xl font-semibold">
                 Q{index + 1}: {q.number1} + {q.number2}
               </span>
@@ -98,7 +101,7 @@ const MathQuiz: React.FC = () => {
           ))}
         </div>
 
-        <div className="flex justify-center gap-4 mb-4">
+        <div className="flex justify-center gap-4 mb-4 mt-4">
           <Button type="submit">Submit All</Button>
         </div>
       </form>
