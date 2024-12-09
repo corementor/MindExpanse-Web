@@ -3,6 +3,7 @@ import axios from "axios";
 import { Check } from "lucide-react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { api } from "../../utils/api";
 
 interface MathProblem {
   id: number;
@@ -24,25 +25,27 @@ const MathGrid: React.FC = () => {
     "addition" | "subtraction"
   >("addition");
 
-  const BACKEND_URL = "http://localhost:8080/api/problems";
-
   const fetchProblems = async () => {
     try {
-      const response = await axios.get<MathProblem[]>(
-        `${BACKEND_URL}/generate`,
-        {
-          params: {
-            count: 10,
-            operationType,
-          },
-        }
-      );
+      const response = await axios.get<MathProblem[]>(`${api}/generate`, {
+        params: {
+          count: 10,
+          operationType,
+        },
+      });
 
-      setProblems(response.data);
+      if (!Array.isArray(response.data)) {
+        console.error("Invalid response format:", response.data);
+        setProblems([]);
+      } else {
+        setProblems(response.data);
+      }
+
       setUserAnswers({});
       setResults(null);
     } catch (error) {
       console.error("Problem generation failed:", error);
+      setProblems([]); // Reset to empty array on failure
     }
   };
 
@@ -60,7 +63,7 @@ const MathGrid: React.FC = () => {
   const submitWorksheet = async () => {
     try {
       const response = await axios.post<{ [key: number]: boolean }>(
-        `${BACKEND_URL}/check`,
+        `${api}/check`,
         Object.values(problems).map((p) => ({
           ...p,
           userAnswer: userAnswers[p.id],
@@ -116,16 +119,10 @@ const MathGrid: React.FC = () => {
         >
           Addition
         </Button>
-        {/* <Button
-          variant={operationType === "subtraction" ? "default" : "outline"}
-          onClick={() => setOperationType("subtraction")}
-        >
-          Subtraction
-        </Button> */}
       </div>
 
       <div className="grid grid-cols-4 gap-4">
-        {problems.map(renderProblem)}
+        {Array.isArray(problems) && problems.map(renderProblem)}
       </div>
 
       {!results && (
