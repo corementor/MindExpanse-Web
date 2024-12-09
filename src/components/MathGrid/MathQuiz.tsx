@@ -254,7 +254,7 @@ const MathQuiz: React.FC = () => {
                 <div className="w-full border-b-2 border-gray-300"></div>
                 <input
                   type="number"
-                  className="w-16 text-2xl font-bold text-center border-2 border-gray-300 rounded-md  px-7"
+                  className="w-16 text-2xl font-bold text-center border-2 border-gray-300 rounded-md  px-1"
                   value={q.userAnswer}
                   onChange={(e) => handleAnswerChange(index, e.target.value)}
                   required
