@@ -78,7 +78,7 @@ const DashboardPage = () => {
             <Progress value={25} aria-label="25% increase" />
           </CardFooter>
         </Card>
-        <MathGrid />
+        {/* <MathGrid /> */}
       </div>
     </div>
   );
