@@ -3,6 +3,7 @@ import MathQuiz from "@/components/MathGrid/MathQuiz";
 import AppLayout from "@/layout/AppLayout";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
 import LoginPage from "@/pages/login/LoginPage";
+import NotFound from "@/pages/NotFound";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const router = createBrowserRouter([
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    path: "*",
+    element: <NotFound />,
   },
 ]);
 
