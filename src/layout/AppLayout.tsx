@@ -25,13 +25,13 @@ const AppLayout = () => {
             <div className="px-3 py-2">
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1">
-                  <AccordionTrigger >
+                  <AccordionTrigger>
                     <NavLink to={"/dashboard"} className={getLinkClassName}>
                       Dashboard
                     </NavLink>
-                    </AccordionTrigger>
-                  <AccordionContent className='py-0'>
-                    <NavLink to="/addition" className={getLinkClassName}>
+                  </AccordionTrigger>
+                  <AccordionContent className="py-0">
+                    <NavLink to="/mathgrid" className={getLinkClassName}>
                       <Plus className="w-4 h-4" /> <span>Addition</span>
                     </NavLink>
                   </AccordionContent>
@@ -51,12 +51,9 @@ const AppLayout = () => {
           <div className="mx-4 py-2 lg:mx-3 lg:px-3 flex items-center gap-2 hover:bg-muted rounded cursor-pointer">
             <LogOut className="w-4 h-4" />
             <NavLink to={"/login"} className={getLinkClassName}>
-               <span>Logout</span>
+              <span>Logout</span>
             </NavLink>
-         
           </div>
-          
-          
         </div>
       </div>
       <div className="mx-auto">
