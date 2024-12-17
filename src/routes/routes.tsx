@@ -15,10 +15,14 @@ const router = createBrowserRouter([
         element: <DashboardPage />,
       },
       {
-        path: "addition",
-        element: <MathQuiz />,
-        // <MathGrid />
+        path: "/mathgrid",
+        element: <MathGrid />,
       },
+      {
+        path: "/mathquiz",
+        element: <MathQuiz />,
+      },
+      // Add more routes here...
     ],
   },
   {
