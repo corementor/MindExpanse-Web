@@ -64,7 +64,7 @@ const MathGrid: React.FC = () => {
         <CardHeader className="pb-2">
           <CardDescription>Addition by single Digits</CardDescription>
           <CardTitle className="text-2xl">
-            Learn Basic 1 Single Digit Addition Operations
+            Learn Basic 1-Digit Addition Operations
           </CardTitle>
         </CardHeader>
         <CardContent
