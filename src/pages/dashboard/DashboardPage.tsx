@@ -1,4 +1,4 @@
-import MathGrid from "@/components/MathGrid/MathGrid";
+import MathGrid from "@/components/MathGrid/AdditionGrid";
 import {
   Card,
   CardContent,

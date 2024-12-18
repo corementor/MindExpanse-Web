@@ -31,12 +31,14 @@ const AppLayout = () => {
                     </NavLink>
                   </AccordionTrigger>
                   <AccordionContent className="py-0">
-                    <NavLink to="/mathgrid" className={getLinkClassName}>
+                    <NavLink to="/additiongrid" className={getLinkClassName}>
                       <Plus className="w-4 h-4" /> <span>Addition</span>
                     </NavLink>
                   </AccordionContent>
-                  <AccordionContent className="flex gap-2 items-center hover:bg-muted px-3 py-2 rounded">
-                    <Minus className="w-4 h-4" /> <span>Substraction</span>
+                  <AccordionContent className="py-0">
+                    <NavLink to="/subtractiongrid" className={getLinkClassName}>
+                      <Minus className="w-4 h-4" /> <span>Substraction</span>
+                    </NavLink>
                   </AccordionContent>
                   <AccordionContent className="flex gap-2 items-center hover:bg-muted px-3 py-2 rounded">
                     <X className="w-4 h-4" /> <span>Multiplication</span>
@@ -48,7 +50,7 @@ const AppLayout = () => {
               </Accordion>
             </div>
           </nav>
-          <div className="mx-4 py-2 lg:mx-3 lg:px-3 flex items-center gap-2 hover:bg-muted rounded cursor-pointer">
+          <div className="mx-4 py-2 lg:mx-3 lg:px-3 flex items-center gap-2 hover:bg-muted rounded cursor-pointer relative">
             <LogOut className="w-4 h-4" />
             <NavLink to={"/login"} className={getLinkClassName}>
               <span>Logout</span>

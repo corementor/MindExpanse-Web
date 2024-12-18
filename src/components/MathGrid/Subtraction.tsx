@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "../ui/button";
-import { RefreshCcw, Plus } from "lucide-react";
+import { RefreshCcw, Minus } from "lucide-react";
 
 interface Question {
   number1: number;
@@ -8,48 +8,70 @@ interface Question {
   userAnswer: string;
 }
 
-const MathQuiz: React.FC = () => {
+const Subtraction: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [results, setResults] = useState<string[]>([]);
   const [score, setScore] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const num_questions: number = 12;
+  // Improve error handling in fetch calls
   const fetchQuestions = () => {
     setLoading(true);
+    setError(null); // Add an error state
     Promise.all(
       Array.from({ length: num_questions }, () =>
-        fetch(`https://mind-expanse.onrender.com/api/math/generate`)
-          .then((response) => response.json())
-          .catch((error) => {
-            console.error("Error fetching question:", error);
-            return { number1: 0, number2: 0 };
-          })
+        fetch(
+          `https://mind-expanse.onrender.com/api/math/subtract/generate`
+        ).then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to fetch questions");
+          }
+          return response.json();
+        })
       )
-    ).then((data: Question[]) => {
-      setQuestions(data.map((q) => ({ ...q, userAnswer: "" })));
-      setResults([]);
-      setScore(null);
-      setLoading(false);
-    });
+    )
+      .then((data: Question[]) => {
+        setQuestions(data.map((q) => ({ ...q, userAnswer: "" })));
+        setResults([]);
+        setScore(null);
+      })
+      .catch((error) => {
+        setError("Unable to generate questions. Please try again.");
+        console.error("Error fetching questions:", error);
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
     fetchQuestions();
   }, []);
 
+  // Add input validation to prevent non-numeric or negative inputs
   const handleAnswerChange = (index: number, value: string) => {
+    // Ensure only numeric input and prevent negative numbers
+    const sanitizedValue = value.replace(/[^0-9]/g, "");
     const updatedQuestions = [...questions];
-    updatedQuestions[index].userAnswer = value;
+    updatedQuestions[index].userAnswer = sanitizedValue;
     setQuestions(updatedQuestions);
   };
 
   const handleSubmit = () => {
     setLoading(true);
-    fetch(`https://mind-expanse.onrender.com/api/math/verify-all`, {
+    const unansweredQuestions = questions.filter((q) => q.userAnswer === "");
+    if (unansweredQuestions.length > 0) {
+      setError("Please answer all questions before submitting.");
+      setLoading(false);
+      return;
+    }
+
+    fetch(`https://mind-expanse.onrender.com/api/math/subtract/verify-all`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(
         questions.map((q) => ({
+          number1: q.number1,
+          number2: q.number2,
           answer: parseInt(q.userAnswer, 10),
         }))
       ),
@@ -59,16 +81,20 @@ const MathQuiz: React.FC = () => {
         setResults(data.results);
         setScore(data.score);
       })
-      .catch((error) => console.error("Error verifying answers:", error))
+      .catch((error) => {
+        console.error("Error verifying answers:", error);
+        setError("Failed to submit answers. Please try again.");
+      })
       .finally(() => setLoading(false));
   };
 
   return (
     <div className="min-w-[700px] border-[1px] border-gray-200 rounded-md p-6 shadow-md">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-center">
-          Solve these Addition Questions
+        <h2 className=" text-2xl font-bold text-center">
+          Solve these Subtraction Questions
         </h2>
+
         <Button
           variant="ghost"
           onClick={fetchQuestions}
@@ -77,7 +103,14 @@ const MathQuiz: React.FC = () => {
           <RefreshCcw className="w-5 h-5 text-gray-600 hover:text-gray-800" />
         </Button>
       </div>
-
+      {error && (
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+          role="alert"
+        >
+          {error}
+        </div>
+      )}
       {loading ? (
         <div
           className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-whiteTheme-primaryColor border-r-transparent align-[center]"
@@ -94,14 +127,14 @@ const MathQuiz: React.FC = () => {
             >
               {/* Added question number */}
               <span className="absolute top-2 left-2 text-sm text-gray-500 font-semibold">
-                Q{index + 1}
+                Q.{index + 1}
               </span>
 
               <div className="flex flex-col items-end gap-1">
                 <span className="text-2xl font-bold">{q.number1}</span>
                 <div className="flex items-end gap-1">
                   <Button variant="ghost" className="text-2xl font-bold">
-                    <Plus />
+                    <Minus />
                   </Button>
                   <span className="text-2xl font-bold">{q.number2}</span>
                 </div>
@@ -109,10 +142,15 @@ const MathQuiz: React.FC = () => {
                 <div className="w-full border-b-2 border-gray-300"></div>
                 <input
                   type="number"
+                  aria-label={`Answer for subtraction problem ${index + 1}: ${
+                    q.number1
+                  } - ${q.number2}`}
+                  min="0"
                   className="w-16 text-2xl font-bold text-center border-2 border-gray-300 rounded-md  px-1"
                   value={q.userAnswer}
                   onChange={(e) => handleAnswerChange(index, e.target.value)}
                   required
+                  disabled={loading || score !== null}
                 />
               </div>
             </div>
@@ -155,4 +193,4 @@ const MathQuiz: React.FC = () => {
   );
 };
 
-export default MathQuiz;
+export default Subtraction;
