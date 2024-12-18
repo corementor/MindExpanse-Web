@@ -1,10 +1,14 @@
-import MathGrid from "@/components/MathGrid/MathGrid";
-import MathQuiz from "@/components/MathGrid/MathQuiz";
+import MathGrid from "@/components/MathGrid/AdditionGrid";
+import MathQuiz from "@/components/MathGrid/Addition";
+import Subtraction from "@/components/MathGrid/Subtraction";
+import SubtractionGrid from "@/components/MathGrid/SubtractionGrid";
 import AppLayout from "@/layout/AppLayout";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
 import LoginPage from "@/pages/login/LoginPage";
 import NotFound from "@/pages/NotFound";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Addition from "@/components/MathGrid/Addition";
+import AdditionGrid from "@/components/MathGrid/AdditionGrid";
 
 const router = createBrowserRouter([
   {
@@ -16,20 +20,28 @@ const router = createBrowserRouter([
         element: <DashboardPage />,
       },
       {
-        path: "/mathgrid",
-        element: <MathGrid />,
+        path: "/additiongrid",
+        element: <AdditionGrid />,
       },
       {
-        path: "/mathquiz",
-        element: <MathQuiz />,
+        path: "/addition",
+        element: <Addition />,
       },
-      // Add more routes here...
+      {
+        path: "/subtractiongrid",
+        element: <SubtractionGrid />,
+      },
+      {
+        path: "/subtraction",
+        element: <Subtraction />,
+      },
     ],
   },
   {
     path: "/login",
     element: <LoginPage />,
   },
+
   {
     path: "*",
     element: <NotFound />,

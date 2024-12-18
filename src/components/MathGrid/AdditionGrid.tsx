@@ -10,7 +10,7 @@ import {
 import { Progress } from "../ui/progress";
 import { useNavigate } from "react-router-dom";
 import { images } from "@/constants/images";
-const MathGrid: React.FC = () => {
+const AdditionGrid: React.FC = () => {
   const navigate = useNavigate();
 
   const handleCardClick = (type: string) => {
@@ -38,7 +38,7 @@ const MathGrid: React.FC = () => {
         </CardHeader>
         <CardContent
           className="cursor-pointer hover:bg-primary-100 transition-colors"
-          onClick={() => navigate("/mathquiz")}
+          onClick={() => navigate("/addition")}
         >
           <div className="text-xs text-muted-foreground">
             Your progress is 45%, keep going!
@@ -69,7 +69,7 @@ const MathGrid: React.FC = () => {
         </CardHeader>
         <CardContent
           className="cursor-pointer hover:bg-primary-100 transition-colors"
-          onClick={() => handleCardClick("/mathquiz")}
+          onClick={() => handleCardClick("/addition")}
         >
           <div className="text-xs text-muted-foreground">
             Your progress is 65%, keep going!
@@ -86,4 +86,4 @@ const MathGrid: React.FC = () => {
   );
 };
 
-export default MathGrid;
+export default AdditionGrid;
