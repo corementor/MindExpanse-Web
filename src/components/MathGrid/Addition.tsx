@@ -179,7 +179,7 @@ const Addition: React.FC = () => {
                   </Button>
                   <span className="text-2xl font-bold">{q.number2}</span>
                 </div>
-
+                {/* to add another input for helping the operation for users */}
                 <div className="w-full border-b-2 border-gray-300"></div>
                 <input
                   type="number"
