@@ -14,20 +14,18 @@ const AdditionGrid: React.FC = () => {
   const navigate = useNavigate();
 
   const handleCardClick = (type: string) => {
-    navigate(`
-        ${type}
-      `);
+    navigate(`/addition?type=${type}`);
   };
 
   return (
     <div className="grid lg:grid-cols-2 gap-4 my-4">
-      {/* Card for Single-Digit Addition */}
       <Card className="overflow-hidden shadow-md">
         <div className="relative h-40">
           <img
-            src={images.doublenum} // Replace with a relevant image URL
+            src=// "https://images.pexels.com/photos/16613920/pexels-photo-16613920/free-photo-of-first-grade-student.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+            {images.doublenum}
             alt="Single Digit Addition"
-            className="object-cover w-full h-full"
+            className="object-cover w-full h-full scale-x-125"
           />
         </div>
         <CardHeader className="pb-2">
@@ -38,7 +36,7 @@ const AdditionGrid: React.FC = () => {
         </CardHeader>
         <CardContent
           className="cursor-pointer hover:bg-primary-100 transition-colors"
-          onClick={() => navigate("/addition")}
+          onClick={() => handleCardClick("twoDigit")}
         >
           <div className="text-xs text-muted-foreground">
             Your progress is 45%, keep going!
@@ -52,12 +50,14 @@ const AdditionGrid: React.FC = () => {
         </CardFooter>
       </Card>
 
-      {/* Card for Two-Digit Addition */}
       <Card className="overflow-hidden shadow-md">
         <div className="relative h-40">
           <img
-            src={images.single} // Replace with a relevant image URL
-            alt="Two Digit Addition"
+            src={
+              // "https://media.istockphoto.com/id/1297051350/photo/little-boy-learning-numbers-and-mathematics-basics-homeschooling.jpg?s=1024x1024&w=is&k=20&c=_x5mu62ol7D_jKou-BrANueA1ESCFw1NWWXtttGA0HE="
+              images.single
+            }
+            alt="Single Digit Addition"
             className="object-cover w-full h-full"
           />
         </div>
@@ -69,7 +69,7 @@ const AdditionGrid: React.FC = () => {
         </CardHeader>
         <CardContent
           className="cursor-pointer hover:bg-primary-100 transition-colors"
-          onClick={() => handleCardClick("/addition")}
+          onClick={() => handleCardClick("singleDigit")}
         >
           <div className="text-xs text-muted-foreground">
             Your progress is 65%, keep going!

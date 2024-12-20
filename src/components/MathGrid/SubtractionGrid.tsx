@@ -14,20 +14,17 @@ const SubtractionGrid: React.FC = () => {
   const navigate = useNavigate();
 
   const handleCardClick = (type: string) => {
-    navigate(`
-        ${type}
-      `);
+    navigate(`/subtraction?type=${type}`);
   };
 
   return (
     <div className="grid lg:grid-cols-2 gap-4 my-4">
-      {/* Card for Single-Digit Addition */}
       <Card className="overflow-hidden shadow-md">
         <div className="relative h-40">
           <img
-            src={images.doublenum} // Replace with a relevant image URL
-            alt="Double Digits Subtraction"
-            className="object-cover w-full h-full"
+            src="https://media.istockphoto.com/id/1226584282/photo/hand-flipping-black-of-plus-to-minus-sign-which-print-screen-on-wooden-cube.jpg?s=1024x1024&w=is&k=20&c=VyDrKV1s3Ll4YhpNdTPbI8l7wg3RTZwwgUJGErF0Zx8="
+            alt="Single Digit Subtraction"
+            className="object-cover w-full h-full  "
           />
         </div>
         <CardHeader className="pb-2">
@@ -38,7 +35,7 @@ const SubtractionGrid: React.FC = () => {
         </CardHeader>
         <CardContent
           className="cursor-pointer hover:bg-primary-100 transition-colors"
-          onClick={() => navigate("/subtraction")}
+          onClick={() => handleCardClick("twoDigit")}
         >
           <div className="text-xs text-muted-foreground">
             Your progress is 45%, keep going!
@@ -52,24 +49,23 @@ const SubtractionGrid: React.FC = () => {
         </CardFooter>
       </Card>
 
-      {/* Card for Two-Digit Addition */}
       <Card className="overflow-hidden shadow-md">
         <div className="relative h-40">
           <img
-            src={images.single} // Replace with a relevant image URL
-            alt="Two Digit Addition"
-            className="object-cover w-full h-full"
+            src={images.sub}
+            alt="Double Digits Subtraction"
+            className="object-fill w-full h-full scale-y-125"
           />
         </div>
         <CardHeader className="pb-2">
-          <CardDescription>Subtraction by Multiple digits</CardDescription>
+          <CardDescription>Subtraction by Single digits</CardDescription>
           <CardTitle className="text-2xl">
-            Learn Basic subtraction by Multiple Digits Operations
+            Learn Basic subtraction 1 Digit Operations
           </CardTitle>
         </CardHeader>
         <CardContent
           className="cursor-pointer hover:bg-primary-100 transition-colors"
-          onClick={() => handleCardClick("/subtraction")}
+          onClick={() => handleCardClick("singleDigit")}
         >
           <div className="text-xs text-muted-foreground">
             Your progress is 65%, keep going!

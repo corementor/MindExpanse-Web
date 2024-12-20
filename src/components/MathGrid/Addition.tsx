@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { RefreshCcw, Plus } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 interface Question {
   number1: number;
   number2: number;
   userAnswer: string;
+  isCorrect?: boolean;
 }
 
 const Addition: React.FC = () => {
@@ -14,24 +16,33 @@ const Addition: React.FC = () => {
   const [score, setScore] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const num_questions: number = 12;
+
+  const [searchParams] = useSearchParams();
+  const type = searchParams.get("type") || "singleDigit";
+
   const fetchQuestions = () => {
     setLoading(true);
-    setError(null); // Add an error state
+    setError(null);
+    setIsSubmitted(false);
     Promise.all(
       Array.from({ length: num_questions }, () =>
-        fetch(`https://mind-expanse.onrender.com/api/math/generate`).then(
-          (response) => {
-            if (!response.ok) {
-              throw new Error("Network response was not ok");
-            }
-            return response.json();
+        fetch(
+          `https://mind-expanse.onrender.com/api/math/addition/generate?type=${type}`
+        ).then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
           }
-        )
+          return response.json();
+        })
       )
     )
+
       .then((data: Question[]) => {
-        setQuestions(data.map((q) => ({ ...q, userAnswer: "" })));
+        setQuestions(
+          data.map((q) => ({ ...q, userAnswer: "", isCorrect: undefined }))
+        );
         setResults([]);
         setScore(null);
       })
@@ -46,11 +57,9 @@ const Addition: React.FC = () => {
 
   useEffect(() => {
     fetchQuestions();
-  }, []);
-  // Add input validation to prevent non-numeric or negative inputs
+  }, [type]);
 
   const handleAnswerChange = (index: number, value: string) => {
-    // Ensure only numeric input and prevent negative numbers
     const sanitizedValue = value.replace(/[^0-9]/g, "");
     const updatedQuestions = [...questions];
     updatedQuestions[index].userAnswer = sanitizedValue;
@@ -65,22 +74,28 @@ const Addition: React.FC = () => {
       setLoading(false);
       return;
     }
-    fetch(`https://mind-expanse.onrender.com/api/math/verify-all`, {
+
+    fetch(`https://mind-expanse.onrender.com/api/math/addition/verify-all`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(
         questions.map((q) => ({
           number1: q.number1,
           number2: q.number2,
-
           answer: parseInt(q.userAnswer, 10),
         }))
       ),
     })
       .then((response) => response.json())
       .then((data) => {
+        const updatedQuestions = questions.map((q, index) => ({
+          ...q,
+          isCorrect: data.results[index] === "Correct",
+        }));
+        setQuestions(updatedQuestions);
         setResults(data.results);
         setScore(data.score);
+        setIsSubmitted(true);
       })
       .catch((error) => {
         console.error("Error verifying answers:", error);
@@ -88,16 +103,37 @@ const Addition: React.FC = () => {
           "An error occurred while verifying answers. Please try again."
         );
       })
-
       .finally(() => setLoading(false));
+  };
+
+  const getInputClassName = (question: Question) => {
+    const baseClasses =
+      "w-16 text-2xl font-bold text-center border-2 rounded-md px-1 ";
+
+    if (!isSubmitted || question.userAnswer === "") {
+      return baseClasses + "border-gray-300";
+    }
+
+    return (
+      baseClasses +
+      (question.isCorrect
+        ? "border-green-500 bg-green-50 text-green-700"
+        : "border-red-500 bg-red-50 text-red-700")
+    );
   };
 
   return (
     <div className="min-w-[700px] border-[1px] border-gray-200 rounded-md p-6 shadow-md">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-center">
-          Solve these Addition Questions
-        </h2>
+        {type === "singleDigit" ? (
+          <h1 className="text-2xl font-bold text-center">
+            Solve Single-Digit Addition Questions
+          </h1>
+        ) : (
+          <h1 className="text-2xl font-bold text-center">
+            Solve Two-Digit Addition Questions
+          </h1>
+        )}
 
         <Button
           variant="ghost"
@@ -131,7 +167,6 @@ const Addition: React.FC = () => {
               key={index}
               className="flex flex-col items-center justify-center gap-2 bg-gray-100 p-4 rounded-md relative"
             >
-              {/* Added question number */}
               <span className="absolute top-2 left-2 text-sm text-gray-500 font-semibold">
                 Q.{index + 1}
               </span>
@@ -148,7 +183,8 @@ const Addition: React.FC = () => {
                 <div className="w-full border-b-2 border-gray-300"></div>
                 <input
                   type="number"
-                  className="w-16 text-2xl font-bold text-center border-2 border-gray-300 rounded-md  px-1"
+                  className={getInputClassName(q)}
+                  min="0"
                   value={q.userAnswer}
                   onChange={(e) => handleAnswerChange(index, e.target.value)}
                   required
