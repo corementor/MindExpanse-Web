@@ -30,7 +30,7 @@ const Subtraction: React.FC = () => {
     Promise.all(
       Array.from({ length: num_questions }, () =>
         fetch(
-          `http://localhost:8080/api/math/subtract/generate?type=${type}`
+          `https://mind-expanse.onrender.com/api/math/subtract/generate?type=${type}`
         ).then((response) => {
           if (!response.ok) {
             throw new Error("Failed to fetch questions");
@@ -71,7 +71,7 @@ const Subtraction: React.FC = () => {
       return;
     }
 
-    fetch(`http://localhost:8080/api/math/subtract/verify-all`, {
+    fetch(`https://mind-expanse.onrender.com/api/math/subtract/verify-all`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(
