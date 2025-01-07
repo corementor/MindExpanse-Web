@@ -1,14 +1,16 @@
-import MathGrid from "@/components/MathGrid/AdditionGrid";
-import MathQuiz from "@/components/MathGrid/Addition";
-import Subtraction from "@/components/MathGrid/Subtraction";
-import SubtractionGrid from "@/components/MathGrid/SubtractionGrid";
+import Subtraction from "@/components/MathGrid/subtraction/Subtraction";
+import SubtractionGrid from "@/components/MathGrid/subtraction/SubtractionGrid";
 import AppLayout from "@/layout/AppLayout";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
 import LoginPage from "@/pages/login/LoginPage";
 import NotFound from "@/pages/NotFound";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Addition from "@/components/MathGrid/Addition";
-import AdditionGrid from "@/components/MathGrid/AdditionGrid";
+import Addition from "@/components/MathGrid/addition/Addition";
+import AdditionGrid from "@/components/MathGrid/addition/AdditionGrid";
+import MultiplicationGrid from "@/components/MathGrid/multiplication/MultiplicationGrid";
+import Multiplication from "@/components/MathGrid/multiplication/Multiplication";
+import Division from "@/components/MathGrid/division/Division";
+import DivisionGrid from "@/components/MathGrid/division/DivisionGrid";
 
 const router = createBrowserRouter([
   {
@@ -34,6 +36,22 @@ const router = createBrowserRouter([
       {
         path: "/subtraction",
         element: <Subtraction />,
+      },
+      {
+        path: "/multiplicationgrid",
+        element: <MultiplicationGrid />,
+      },
+      {
+        path: "/multiply",
+        element: <Multiplication />,
+      },
+      {
+        path: "/divisiongrid",
+        element: <DivisionGrid />,
+      },
+      {
+        path: "/divide",
+        element: <Division />,
       },
     ],
   },

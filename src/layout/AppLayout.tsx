@@ -40,11 +40,19 @@ const AppLayout = () => {
                       <Minus className="w-4 h-4" /> <span>Substraction</span>
                     </NavLink>
                   </AccordionContent>
-                  <AccordionContent className="flex gap-2 items-center hover:bg-muted px-3 py-2 rounded">
-                    <X className="w-4 h-4" /> <span>Multiplication</span>
+                  <AccordionContent className="py-0">
+                    <NavLink
+                      to="/multiplicationgrid"
+                      className={getLinkClassName}
+                    >
+                      <X className="w-4 h-4" /> <span>Multiplication</span>
+                    </NavLink>
                   </AccordionContent>
-                  <AccordionContent className="flex gap-2 items-center hover:bg-muted px-3 py-2 rounded">
-                    <Divide className="w-4 h-4" /> <span>Division</span>
+
+                  <AccordionContent className="py-0">
+                    <NavLink to="/divisiongrid" className={getLinkClassName}>
+                      <Divide className="w-4 h-4" /> <span>Division</span>
+                    </NavLink>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
