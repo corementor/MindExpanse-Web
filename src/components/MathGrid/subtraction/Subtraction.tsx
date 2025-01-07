@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "../ui/button";
-import { RefreshCcw, Plus } from "lucide-react";
+import { Button } from "../../ui/button";
+import { RefreshCcw, Minus } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 interface Question {
@@ -10,13 +10,14 @@ interface Question {
   isCorrect?: boolean;
 }
 
-const Addition: React.FC = () => {
+const Subtraction: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [results, setResults] = useState<string[]>([]);
   const [score, setScore] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+
   const num_questions: number = 12;
 
   const [searchParams] = useSearchParams();
@@ -29,30 +30,25 @@ const Addition: React.FC = () => {
     Promise.all(
       Array.from({ length: num_questions }, () =>
         fetch(
-          `https://mind-expanse.onrender.com/api/math/addition/generate?type=${type}`
+          `https://mind-expanse.onrender.com/api/math/subtract/generate?type=${type}`
         ).then((response) => {
           if (!response.ok) {
-            throw new Error("Network response was not ok");
+            throw new Error("Failed to fetch questions");
           }
           return response.json();
         })
       )
     )
-
       .then((data: Question[]) => {
-        setQuestions(
-          data.map((q) => ({ ...q, userAnswer: "", isCorrect: undefined }))
-        );
+        setQuestions(data.map((q) => ({ ...q, userAnswer: "" })));
         setResults([]);
         setScore(null);
       })
       .catch((error) => {
         setError("Unable to generate questions. Please try again.");
-        console.log("Error fetching questions:", error);
+        console.error("Error fetching questions:", error);
       })
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -75,7 +71,7 @@ const Addition: React.FC = () => {
       return;
     }
 
-    fetch(`https://mind-expanse.onrender.com/api/math/addition/verify-all`, {
+    fetch(`https://mind-expanse.onrender.com/api/math/subtract/verify-all`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(
@@ -99,9 +95,7 @@ const Addition: React.FC = () => {
       })
       .catch((error) => {
         console.error("Error verifying answers:", error);
-        setError(
-          "An error occurred while verifying answers. Please try again."
-        );
+        setError("Failed to submit answers. Please try again.");
       })
       .finally(() => setLoading(false));
   };
@@ -126,13 +120,13 @@ const Addition: React.FC = () => {
     <div className="min-w-[700px] border-[1px] border-gray-200 rounded-md p-6 shadow-md">
       <div className="flex justify-between items-center mb-6">
         {type === "singleDigit" ? (
-          <h1 className="text-2xl font-bold text-center">
-            Solve Single-Digit Addition Questions
-          </h1>
+          <h2 className=" text-2xl font-bold text-center">
+            Solve Single Digit Subtraction Questions
+          </h2>
         ) : (
-          <h1 className="text-2xl font-bold text-center">
-            Solve Two-Digit Addition Questions
-          </h1>
+          <h2 className=" text-2xl font-bold text-center">
+            Solve Double Digit Subtraction Questions
+          </h2>
         )}
 
         <Button
@@ -143,7 +137,6 @@ const Addition: React.FC = () => {
           <RefreshCcw className="w-5 h-5 text-gray-600 hover:text-gray-800" />
         </Button>
       </div>
-
       {error && (
         <div
           className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
@@ -152,7 +145,6 @@ const Addition: React.FC = () => {
           {error}
         </div>
       )}
-
       {loading ? (
         <div
           className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-whiteTheme-primaryColor border-r-transparent align-[center]"
@@ -175,19 +167,23 @@ const Addition: React.FC = () => {
                 <span className="text-2xl font-bold">{q.number1}</span>
                 <div className="flex items-end gap-1">
                   <Button variant="ghost" className="text-2xl font-bold">
-                    <Plus />
+                    <Minus />
                   </Button>
                   <span className="text-2xl font-bold">{q.number2}</span>
                 </div>
-                {/* to add another input for helping the operation for users */}
+
                 <div className="w-full border-b-2 border-gray-300"></div>
                 <input
                   type="number"
-                  className={getInputClassName(q)}
+                  aria-label={`Answer for subtraction problem ${index + 1}: ${
+                    q.number1
+                  } - ${q.number2}`}
                   min="0"
+                  className={getInputClassName(q)}
                   value={q.userAnswer}
                   onChange={(e) => handleAnswerChange(index, e.target.value)}
                   required
+                  disabled={loading || score !== null}
                 />
               </div>
             </div>
@@ -230,4 +226,4 @@ const Addition: React.FC = () => {
   );
 };
 
-export default Addition;
+export default Subtraction;
