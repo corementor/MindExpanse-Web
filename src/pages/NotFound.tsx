@@ -12,7 +12,7 @@ const NotFound = () => {
       <img src={NotFoundImage} className=" w-[30rem]" alt="Not found Image" />
       <Button
         onClick={() => {
-          navigate("/dashboard");
+          navigate("/login");
         }}
       >
         Back to Home

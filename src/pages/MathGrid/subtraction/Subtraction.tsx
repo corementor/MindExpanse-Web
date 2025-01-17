@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "../../ui/button";
-import { RefreshCcw, Plus } from "lucide-react";
+import { Button } from "../../../components/ui/button";
+import { RefreshCcw, Minus } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 interface Question {
   number1: number;
   number2: number;
   userAnswer: string;
-  carryNumbers: string[];
-  partialProducts: string[];
   isCorrect?: boolean;
 }
 
-const Addition: React.FC = () => {
+const Subtraction: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [results, setResults] = useState<string[]>([]);
   const [score, setScore] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+
   const num_questions: number = 12;
 
   const [searchParams] = useSearchParams();
@@ -31,38 +30,25 @@ const Addition: React.FC = () => {
     Promise.all(
       Array.from({ length: num_questions }, () =>
         fetch(
-          `https://mind-expanse.onrender.com/api/math/addition/generate?type=${type}`
+          `https://mind-expanse.onrender.com/api/math/subtract/generate?type=${type}`
         ).then((response) => {
           if (!response.ok) {
-            throw new Error("Network response was not ok");
+            throw new Error("Failed to fetch questions");
           }
           return response.json();
         })
       )
     )
-
       .then((data: Question[]) => {
-        setQuestions(
-          data.map((q) => ({
-            ...q,
-            userAnswer: "",
-
-            carryNumbers: Array(5).fill(""), // Increased for larger numbers
-            partialProducts: Array(3).fill(""), // Store intermediate steps
-
-            isCorrect: undefined,
-          }))
-        );
+        setQuestions(data.map((q) => ({ ...q, userAnswer: "" })));
         setResults([]);
         setScore(null);
       })
       .catch((error) => {
         setError("Unable to generate questions. Please try again.");
-        console.log("Error fetching questions:", error);
+        console.error("Error fetching questions:", error);
       })
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -75,16 +61,6 @@ const Addition: React.FC = () => {
     updatedQuestions[index].userAnswer = sanitizedValue;
     setQuestions(updatedQuestions);
   };
-  const handleCarryChange = (
-    questionIndex: number,
-    carryIndex: number,
-    value: string
-  ) => {
-    const sanitizedValue = value.replace(/[^0-9]/g, "").slice(0, 1);
-    const updatedQuestions = [...questions];
-    updatedQuestions[questionIndex].carryNumbers[carryIndex] = sanitizedValue;
-    setQuestions(updatedQuestions);
-  };
 
   const handleSubmit = () => {
     setLoading(true);
@@ -95,7 +71,7 @@ const Addition: React.FC = () => {
       return;
     }
 
-    fetch(`https://mind-expanse.onrender.com/api/math/addition/verify-all`, {
+    fetch(`https://mind-expanse.onrender.com/api/math/subtract/verify-all`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(
@@ -119,90 +95,21 @@ const Addition: React.FC = () => {
       })
       .catch((error) => {
         console.error("Error verifying answers:", error);
-        setError(
-          "An error occurred while verifying answers. Please try again."
-        );
+        setError("Failed to submit answers. Please try again.");
       })
       .finally(() => setLoading(false));
   };
 
-  const renderAdditionProblem = (question: Question, index: number) => {
-    const num1Digits = String(question.number1).padStart(3, " ").split("");
-    const num2Digits = String(question.number2).padStart(3, " ").split("");
-
-    return (
-      <div className="flex flex-col items-end gap-1 min-w-[200px]">
-        {/* Carry numbers row - Modified to start from second digit */}
-        <div className="flex gap-1 h-6">
-          <div className="w-6" /> {/* Spacer for rightmost digit */}
-          {num1Digits.slice(0, -1).map((_, digitIndex) => (
-            <input
-              key={digitIndex}
-              type="text"
-              maxLength={1}
-              className={getInputClassName(question, "carry")}
-              value={question.carryNumbers[digitIndex]}
-              onChange={(e) =>
-                handleCarryChange(index, digitIndex, e.target.value)
-              }
-            />
-          ))}
-        </div>
-
-        {/* First number */}
-        <div className="flex gap-1">
-          {num1Digits.map((digit, i) => (
-            <span key={i} className="w-6 text-2xl font-bold text-center">
-              {digit !== " " ? digit : ""}
-            </span>
-          ))}
-        </div>
-
-        {/* Addition operator and second number */}
-        <div className="flex items-center gap-1 w-full justify-end">
-          <Plus className="w-6 h-6" />
-          <div className="flex gap-1">
-            {num2Digits.map((digit, i) => (
-              <span key={i} className="w-6 text-2xl font-bold text-center">
-                {digit !== " " ? digit : ""}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="w-full border-b-2 border-gray-300 mt-1"></div>
-
-        {/* Answer input */}
-        <input
-          type="number"
-          className={getInputClassName(question, "final")}
-          min="0"
-          value={question.userAnswer}
-          onChange={(e) => handleAnswerChange(index, e.target.value)}
-          required
-        />
-      </div>
-    );
-  };
-
-  const getInputClassName = (
-    question: Question,
-    type: "carry" | "partial" | "final"
-  ) => {
-    const baseClasses = {
-      carry:
-        "w-6 h-6 text-sm text-center border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ",
-      partial:
-        "w-20 h-8 text-lg text-center border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ",
-      final: "w-24 text-2xl font-bold text-center border-2 rounded-md px-1 ",
-    };
+  const getInputClassName = (question: Question) => {
+    const baseClasses =
+      "w-16 text-2xl font-bold text-center border-2 rounded-md px-1 ";
 
     if (!isSubmitted || question.userAnswer === "") {
-      return baseClasses[type] + "border-gray-300";
+      return baseClasses + "border-gray-300";
     }
 
     return (
-      baseClasses[type] +
+      baseClasses +
       (question.isCorrect
         ? "border-green-500 bg-green-50 text-green-700"
         : "border-red-500 bg-red-50 text-red-700")
@@ -212,11 +119,15 @@ const Addition: React.FC = () => {
   return (
     <div className="min-w-[700px] border-[1px] border-gray-200 rounded-md p-6 shadow-md">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-center">
-          {type === "singleDigit"
-            ? "Solve Single-Digit Addition Questions"
-            : "Solve Two-Digit Addition Questions"}
-        </h1>
+        {type === "singleDigit" ? (
+          <h2 className=" text-2xl font-bold text-center">
+            Solve Single Digit Subtraction Questions
+          </h2>
+        ) : (
+          <h2 className=" text-2xl font-bold text-center">
+            Solve Double Digit Subtraction Questions
+          </h2>
+        )}
 
         <Button
           variant="ghost"
@@ -226,7 +137,6 @@ const Addition: React.FC = () => {
           <RefreshCcw className="w-5 h-5 text-gray-600 hover:text-gray-800" />
         </Button>
       </div>
-
       {error && (
         <div
           className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
@@ -235,7 +145,6 @@ const Addition: React.FC = () => {
           {error}
         </div>
       )}
-
       {loading ? (
         <div
           className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-whiteTheme-primaryColor border-r-transparent align-[center]"
@@ -244,7 +153,7 @@ const Addition: React.FC = () => {
           <span className="sr-only">Loading...</span>
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-4 gap-4">
           {questions.map((q, index) => (
             <div
               key={index}
@@ -253,13 +162,36 @@ const Addition: React.FC = () => {
               <span className="absolute top-2 left-2 text-sm text-gray-500 font-semibold">
                 Q.{index + 1}
               </span>
-              {renderAdditionProblem(q, index)}
+
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-2xl font-bold">{q.number1}</span>
+                <div className="flex items-end gap-1">
+                  <Button variant="ghost" className="text-2xl font-bold">
+                    <Minus />
+                  </Button>
+                  <span className="text-2xl font-bold">{q.number2}</span>
+                </div>
+
+                <div className="w-full border-b-2 border-gray-300"></div>
+                <input
+                  type="number"
+                  aria-label={`Answer for subtraction problem ${index + 1}: ${
+                    q.number1
+                  } - ${q.number2}`}
+                  min="0"
+                  className={getInputClassName(q)}
+                  value={q.userAnswer}
+                  onChange={(e) => handleAnswerChange(index, e.target.value)}
+                  required
+                  disabled={loading || score !== null}
+                />
+              </div>
             </div>
           ))}
         </div>
       )}
 
-      <div className="flex justify-center gap-4 mt-6">
+      <div className="flex justify-center gap-4 mb-4 mt-4">
         <Button onClick={handleSubmit}>Submit All</Button>
       </div>
 
@@ -294,4 +226,4 @@ const Addition: React.FC = () => {
   );
 };
 
-export default Addition;
+export default Subtraction;

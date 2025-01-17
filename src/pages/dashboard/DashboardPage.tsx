@@ -1,4 +1,5 @@
-import MathGrid from "@/components/MathGrid/addition/AdditionGrid";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Card,
   CardContent,
@@ -10,75 +11,86 @@ import {
 import { Progress } from "@/components/ui/progress";
 
 const DashboardPage = () => {
+  const [username, setUsername] = useState<string | null>(null);
+
+  const [user, setUser] = useState<any | null>(null);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:8080/api/auth/user-info", {
+        withCredentials: true,
+      })
+      .then((response) => {
+        setUser(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching user data:", error);
+      });
+
+    const storedUsername = localStorage.getItem("names");
+    setUsername(storedUsername);
+  }, []);
+
+  // Learning progress sections
+  const progressSections = [
+    {
+      title: "Basic operations exercises",
+      description: "Practice section one",
+      progress: 65,
+    },
+    {
+      title: "Advanced operations",
+      description: "Practice section two",
+      progress: 25,
+    },
+    {
+      title: "Problem solving",
+      description: "Practice section three",
+      progress: 40,
+    },
+    {
+      title: "Word problems",
+      description: "Practice section four",
+      progress: 15,
+    },
+  ];
+
   return (
-    <div className="w-full h-full">
-      <h1 className="text-xl font-bold">Dashboard</h1>
-      <div className="grid lg:grid-cols-[400px_400px] gap-4 my-4 ">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Practice section one</CardDescription>
-            <CardTitle className="text-2xl">
-              Basic operations exercises
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-muted-foreground">
-              your progress is 65%, keep going!
+    <div className="w-full h-full p-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-primary">Dashboard</h1>
+        <p className="text-gray-500 mt-2">
+          {username
+            ? `Welcome back, ${username || user.names}!`
+            : "Welcome to Mind Expanse!"}{" "}
+          Here's what you've been working on.
+        </p>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        {progressSections.map((section, index) => (
+          <Card key={index}>
+            <CardHeader className="pb-2">
+              <CardDescription>{section.description}</CardDescription>
+              <CardTitle className="text-2xl">{section.title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xs text-muted-foreground">
+                Your progress is {section.progress}%, keep going!
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Progress value={section.progress} className="h-2" />
+            </CardFooter>
+          </Card>
+        ))}
+        {/* {loading && (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="sr-only">Loading...</span>
             </div>
-          </CardContent>
-          <CardFooter>
-            <Progress value={65} aria-label="25% increase" />
-          </CardFooter>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Practice section one</CardDescription>
-            <CardTitle className="text-2xl">
-              Basic operations exercises
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-muted-foreground">
-              your progress is 25%, keep going!
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Progress value={25} aria-label="25% increase" />
-          </CardFooter>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Practice section one</CardDescription>
-            <CardTitle className="text-2xl">
-              Basic operations exercises
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-muted-foreground">
-              your progress is 25%, keep going!
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Progress value={25} aria-label="25% increase" />
-          </CardFooter>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Practice section one</CardDescription>
-            <CardTitle className="text-2xl">
-              Basic operations exercises
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-muted-foreground">
-              your progress is 25%, keep going!
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Progress value={25} aria-label="25% increase" />
-          </CardFooter>
-        </Card>
-        {/* <MathGrid /> */}
+          </div>
+        )} */}
       </div>
     </div>
   );

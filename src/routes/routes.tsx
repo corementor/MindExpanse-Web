@@ -1,71 +1,48 @@
-import Subtraction from "@/components/MathGrid/subtraction/Subtraction";
-import SubtractionGrid from "@/components/MathGrid/subtraction/SubtractionGrid";
-import AppLayout from "@/layout/AppLayout";
-import DashboardPage from "@/pages/dashboard/DashboardPage";
-import LoginPage from "@/pages/login/LoginPage";
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import { DashboardLayout } from "@/layout/DashboardLayout";
+import LoginPage from "@/pages/auth/LoginPage";
+import SignupPage from "@/pages/auth/SignUp";
 import NotFound from "@/pages/NotFound";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Addition from "@/components/MathGrid/addition/Addition";
-import AdditionGrid from "@/components/MathGrid/addition/AdditionGrid";
-import MultiplicationGrid from "@/components/MathGrid/multiplication/MultiplicationGrid";
-import Multiplication from "@/components/MathGrid/multiplication/Multiplication";
-import Division from "@/components/MathGrid/division/Division";
-import DivisionGrid from "@/components/MathGrid/division/DivisionGrid";
+import ProtectedRoutes from "@/routes/outlets/ProtectedRoutes";
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <AppLayout />,
-    children: [
-      {
-        path: "/dashboard",
-        element: <DashboardPage />,
-      },
-      {
-        path: "/additiongrid",
-        element: <AdditionGrid />,
-      },
-      {
-        path: "/addition",
-        element: <Addition />,
-      },
-      {
-        path: "/subtractiongrid",
-        element: <SubtractionGrid />,
-      },
-      {
-        path: "/subtraction",
-        element: <Subtraction />,
-      },
-      {
-        path: "/multiplicationgrid",
-        element: <MultiplicationGrid />,
-      },
-      {
-        path: "/multiply",
-        element: <Multiplication />,
-      },
-      {
-        path: "/divisiongrid",
-        element: <DivisionGrid />,
-      },
-      {
-        path: "/divide",
-        element: <Division />,
-      },
-    ],
-  },
-  {
-    path: "/login",
-    element: <LoginPage />,
-  },
+import DashboardPage from "@/pages/dashboard/DashboardPage";
+import Subtraction from "@/pages/MathGrid/subtraction/Subtraction";
+import SubtractionGrid from "@/pages/MathGrid/subtraction/SubtractionGrid";
+import Addition from "@/pages/MathGrid/addition/Addition";
+import AdditionGrid from "@/pages/MathGrid/addition/AdditionGrid";
+import MultiplicationGrid from "@/pages/MathGrid/multiplication/MultiplicationGrid";
+import Multiplication from "@/pages/MathGrid/multiplication/Multiplication";
+import Division from "@/pages/MathGrid/division/Division";
+import DivisionGrid from "@/pages/MathGrid/division/DivisionGrid";
+import PlaceValueAddition from "@/pages/MathGrid/addition/Test";
+export const AppRoutes: React.FC = () => {
+  return (
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
 
-  {
-    path: "*",
-    element: <NotFound />,
-  },
-]);
+      {/* Protected Routes */}
+      <Route element={<ProtectedRoutes />}>
+        <Route element={<DashboardLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/additiongrid" element={<AdditionGrid />} />
+          <Route path="/addition" element={<Addition />} />
+          <Route path="/subtractiongrid" element={<SubtractionGrid />} />
+          <Route path="/subtraction" element={<Subtraction />} />
+          <Route path="/multiplicationgrid" element={<MultiplicationGrid />} />
+          <Route path="/multiply" element={<Multiplication />} />
+          <Route path="/divisiongrid" element={<DivisionGrid />} />
+          <Route path="/divide" element={<Division />} />
+          <Route path="/test" element={<PlaceValueAddition />} />
+          {/* ... other protected routes */}
+        </Route>
+      </Route>
 
-const Router = () => <RouterProvider router={router} />;
-
-export default Router;
+      {/* Catch-All for 404 */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};

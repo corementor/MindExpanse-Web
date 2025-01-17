@@ -60,15 +60,16 @@ const AppLayout = () => {
           </nav>
           <div className="mx-4 py-2 lg:mx-3 lg:px-3 flex items-center gap-2 hover:bg-muted rounded cursor-pointer relative">
             <LogOut className="w-4 h-4" />
-            <NavLink to={"/login"} className={getLinkClassName}>
+            <NavLink
+              to={"/login"}
+              className={getLinkClassName}
+              onClick={() => {
+                localStorage.clear();
+              }}
+            >
               <span>Logout</span>
             </NavLink>
           </div>
-        </div>
-      </div>
-      <div className="mx-auto">
-        <div className="h-[calc(100vh-70px)] px-8 py-4">
-          <Outlet />
         </div>
       </div>
     </div>
