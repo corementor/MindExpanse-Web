@@ -13,8 +13,11 @@ import { images } from "@/constants/images";
 const AdditionGrid: React.FC = () => {
   const navigate = useNavigate();
 
-  const handleCardClick = (type: string) => {
-    navigate(`/addition?type=${type}`);
+  const handleCardClick = () => {
+    navigate(`/doubledigitadd`);
+  };
+  const handleMultidigitAddition = () => {
+    navigate(`/multidigitadd`);
   };
 
   return (
@@ -38,7 +41,7 @@ const AdditionGrid: React.FC = () => {
         </CardHeader>
         <CardContent
           className="cursor-pointer hover:bg-primary-100 transition-colors"
-          onClick={() => handleCardClick("twoDigit")}
+          onClick={() => handleCardClick()}
         >
           <div className="text-xs text-muted-foreground">
             Your progress is 45%, keep going!
@@ -64,14 +67,14 @@ const AdditionGrid: React.FC = () => {
           />
         </div>
         <CardHeader className="pb-2">
-          <CardDescription>Addition by single Digits</CardDescription>
+          <CardDescription>Addition by Multi Digits</CardDescription>
           <CardTitle className="text-2xl">
-            Learn Basic 1-Digit Addition Operations
+            Learn Basic Multi Digit Addition Operations
           </CardTitle>
         </CardHeader>
         <CardContent
           className="cursor-pointer hover:bg-primary-100 transition-colors"
-          onClick={() => handleCardClick("singleDigit")}
+          onClick={() => handleMultidigitAddition()}
         >
           <div className="text-xs text-muted-foreground">
             Your progress is 65%, keep going!

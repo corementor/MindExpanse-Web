@@ -17,7 +17,7 @@ const DashboardPage = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/auth/user-info", {
+      .get("https://mind-expanse.onrender.com/api/auth/user-info", {
         withCredentials: true,
       })
       .then((response) => {
@@ -28,10 +28,17 @@ const DashboardPage = () => {
       });
 
     const storedUsername = localStorage.getItem("names");
-    setUsername(storedUsername);
+    setUsername(
+      storedUsername
+        ? storedUsername.charAt(0).toUpperCase() + storedUsername.slice(1)
+        : null
+    );
+
+    return () => {
+      setUser(null);
+    };
   }, []);
 
-  // Learning progress sections
   const progressSections = [
     {
       title: "Basic operations exercises",

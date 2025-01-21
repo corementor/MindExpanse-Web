@@ -21,17 +21,16 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-
-    const token = params.get("token");
-    if (token) {
-      localStorage.setItem("token", token);
-      // navigate("/dashboard");
-    } else {
-      console.error("Token is missing from the URL");
-    }
-  }, [navigate]);
+  // useEffect(() => {
+  //   const params = new URLSearchParams(window.location.search);
+  //   const token = params.get("token");
+  //   if (token) {
+  //     localStorage.setItem("token", token);
+  //     navigate("/dashboard");
+  //   } else {
+  //     console.error("Token is missing from the URL");
+  //   }
+  // }, [navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -59,7 +58,7 @@ const LoginPage = () => {
 
     setIsSubmitting(true);
     try {
-      fetch("http://localhost:8080/api/auth/login", {
+      fetch("https://mind-expanse.onrender.com/api/auth/login", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -92,27 +91,9 @@ const LoginPage = () => {
   };
 
   const handleGoogleLogin = () => {
-    // window.location.href = "http://localhost:8080/oauth2/authorization/google";
-    // window.location.href = "http://localhost:8080/oauth2/authorization/google";
-    const googleLogin = async () => {
-      try {
-        const response = await fetch(
-          "http://localhost:8080/oauth2/authorization/google",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        console.log(response);
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    };
-    googleLogin();
+    window.location.href =
+      "https://mind-expanse.onrender.com/oauth2/authorization/google";
   };
-
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center bg-gradient-to-b from-blue-50 to-purple-50">
       <div className="mb-8 flex flex-col items-center">
@@ -134,8 +115,8 @@ const LoginPage = () => {
           <Button
             variant="outline"
             className="w-full hover:bg-primary/5"
-            onClick={handleGoogleLogin}
             disabled={isSubmitting}
+            onClick={handleGoogleLogin}
           >
             <img
               src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4="

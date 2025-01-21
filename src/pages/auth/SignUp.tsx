@@ -87,7 +87,6 @@ const SignupPage = () => {
   async function onSubmit(values: z.infer<typeof signUpSchema>) {
     setIsSubmitting(true);
 
-    // Validate if passwords match before proceeding
     if (values.password !== values.confirmPassword) {
       form.setError("confirmPassword", {
         type: "manual",
@@ -107,13 +106,42 @@ const SignupPage = () => {
 
       const response = await RegService.RegisterUser(requestData);
 
-      if (response.status === 200) {
-        toast.success("Signed up successfully");
+      if (response) {
+        toast.success(
+          <div className="flex flex-col gap-1">
+            <span className="font-semibold text-green-800">
+              Account created successfully! 🎉
+            </span>
+            <span className="text-sm">Welcome, {response.names}!</span>
+            <span className="text-xs text-gray-600 mt-1">
+              Please check your email for your username.
+            </span>
+          </div>,
+          {
+            position: "top-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            className: "custom-toast",
+            style: {
+              background: "#f0fdf4",
+              border: "1px solid #86efac",
+              borderRadius: "8px",
+              padding: "16px",
+            },
+          }
+        );
+
+        // Add a slight delay before navigation
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
       }
-      navigate("/login");
     } catch (error: any) {
-      if (response.status === 409) {
-        // Inline error feedback for email
+      if (error.response?.status === 409) {
         form.setError("email", {
           type: "manual",
           message: "This email is already registered. Please use another.",
@@ -122,9 +150,14 @@ const SignupPage = () => {
         toast.error(
           error?.response?.data?.message || "An unexpected error occurred.",
           {
+            position: "top-center",
             autoClose: 3000,
             hideProgressBar: true,
-            position: "top-center",
+            style: {
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              borderRadius: "8px",
+            },
           }
         );
       }

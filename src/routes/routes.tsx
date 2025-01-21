@@ -15,7 +15,8 @@ import MultiplicationGrid from "@/pages/MathGrid/multiplication/MultiplicationGr
 import Multiplication from "@/pages/MathGrid/multiplication/Multiplication";
 import Division from "@/pages/MathGrid/division/Division";
 import DivisionGrid from "@/pages/MathGrid/division/DivisionGrid";
-import PlaceValueAddition from "@/pages/MathGrid/addition/Test";
+import FourDigitAddition from "@/pages/MathGrid/addition/FourDigit";
+import TwoDigit from "@/pages/MathGrid/addition/TwoDigit";
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
@@ -36,8 +37,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="/multiply" element={<Multiplication />} />
           <Route path="/divisiongrid" element={<DivisionGrid />} />
           <Route path="/divide" element={<Division />} />
-          <Route path="/test" element={<PlaceValueAddition />} />
-          {/* ... other protected routes */}
+          <Route path="/doubledigitadd" element={<TwoDigit />} />
+          <Route path="/multidigitadd" element={<FourDigitAddition />} />
         </Route>
       </Route>
 

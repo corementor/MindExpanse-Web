@@ -4,7 +4,7 @@ const ActionBar = () => {
   const [user, setUser] = useState(null);
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/auth/user-info", {
+      .get("https://mind-expanse.onrender.com/api/auth/user-info", {
         withCredentials: true,
       })
       .then((response) => {
@@ -16,6 +16,7 @@ const ActionBar = () => {
   });
 
   const username = localStorage.getItem("names");
+
   const email = localStorage.getItem("email");
   const defaultThumbnail = "https://www.gravatar.com/avatar/?d=mp";
 
