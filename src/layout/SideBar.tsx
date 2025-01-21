@@ -9,12 +9,6 @@ import { NavLink, Outlet } from "react-router-dom";
 const AppLayout = () => {
   const logoutHandler = () => {
     localStorage.clear();
-    fetch("https://mind-expanse.onrender.com/app/logout", {
-      method: "POST",
-      credentials: "include",
-    }).then(() => {
-      window.location.href = "/";
-    });
   };
   const getLinkClassName = ({ isActive }: { isActive: boolean }) =>
     `px-3 py-2 hover:bg-muted rounded flex cursor-pointer items-center gap-2 ${

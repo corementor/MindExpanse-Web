@@ -78,7 +78,7 @@ const LoginPage = () => {
           localStorage.setItem("names", data.names);
           localStorage.setItem("email", data.email);
           console.log("Token is: " + data.token);
-          console.log("Username is: " + data.names);
+          console.log("Names are: " + data.names);
           navigate("/dashboard");
           toast.success("Login successful!");
         });

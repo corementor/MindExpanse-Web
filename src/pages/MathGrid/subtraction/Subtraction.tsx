@@ -22,7 +22,7 @@ const Subtraction: React.FC = () => {
 
   const [searchParams] = useSearchParams();
   const type = searchParams.get("type") || "singleDigit";
-
+  const token = localStorage.getItem("token");
   const fetchQuestions = () => {
     setLoading(true);
     setError(null);
@@ -30,7 +30,12 @@ const Subtraction: React.FC = () => {
     Promise.all(
       Array.from({ length: num_questions }, () =>
         fetch(
-          `https://mind-expanse.onrender.com/api/math/subtract/generate?type=${type}`
+          `https://mind-expanse.onrender.com/api/math/subtract/generate?type=${type}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         ).then((response) => {
           if (!response.ok) {
             throw new Error("Failed to fetch questions");
@@ -73,7 +78,10 @@ const Subtraction: React.FC = () => {
 
     fetch(`https://mind-expanse.onrender.com/api/math/subtract/verify-all`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify(
         questions.map((q) => ({
           number1: q.number1,
