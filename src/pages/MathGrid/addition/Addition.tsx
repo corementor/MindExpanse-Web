@@ -23,7 +23,7 @@ const Addition: React.FC = () => {
 
   const [searchParams] = useSearchParams();
   const type = searchParams.get("type") || "singleDigit";
-
+  const token = localStorage.getItem("token");
   const fetchQuestions = () => {
     setLoading(true);
     setError(null);
@@ -31,7 +31,12 @@ const Addition: React.FC = () => {
     Promise.all(
       Array.from({ length: num_questions }, () =>
         fetch(
-          `https://mind-expanse.onrender.com/api/math/addition/generate?type=${type}`
+          `https://mind-expanse.onrender.com/api/math/addition/generate?type=${type}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         ).then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok");
@@ -97,7 +102,10 @@ const Addition: React.FC = () => {
 
     fetch(`https://mind-expanse.onrender.com/api/math/addition/verify-all`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify(
         questions.map((q) => ({
           number1: q.number1,

@@ -23,7 +23,7 @@ const Multiplication: React.FC = () => {
 
   const [searchParams] = useSearchParams();
   const type = searchParams.get("type") || "singleDigit";
-
+  const token = localStorage.getItem("token");
   const fetchQuestions = () => {
     setLoading(true);
     setError(null);
@@ -31,7 +31,12 @@ const Multiplication: React.FC = () => {
     Promise.all(
       Array.from({ length: num_questions }, () =>
         fetch(
-          `https://mind-expanse.onrender.com/api/math/multiply/generate?type=${type}`
+          `https://mind-expanse.onrender.com/api/math/multiply/generate?type=${type}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         ).then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok");
@@ -107,7 +112,10 @@ const Multiplication: React.FC = () => {
 
     fetch(`https://mind-expanse.onrender.com/api/math/multiply/verify-all`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify(
         questions.map((q) => ({
           number1: q.number1,
