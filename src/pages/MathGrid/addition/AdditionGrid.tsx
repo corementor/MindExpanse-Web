@@ -6,15 +6,18 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../ui/card";
-import { Progress } from "../../ui/progress";
+} from "../../../components/ui/card";
+import { Progress } from "../../../components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import { images } from "@/constants/images";
-const MultiplicationGrid: React.FC = () => {
+const AdditionGrid: React.FC = () => {
   const navigate = useNavigate();
 
-  const handleCardClick = (type: string) => {
-    navigate(`/multiply?type=${type}`);
+  const handleCardClick = () => {
+    navigate(`/doubledigitadd`);
+  };
+  const handleMultidigitAddition = () => {
+    navigate(`/multidigitadd`);
   };
 
   return (
@@ -26,19 +29,19 @@ const MultiplicationGrid: React.FC = () => {
               // "https://images.pexels.com/photos/16613920/pexels-photo-16613920/free-photo-of-first-grade-student.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
               images.doublenum
             }
-            alt="Single Digit Multiplication"
+            alt="Single Digit Addition"
             className="object-cover w-full h-full scale-x-125"
           />
         </div>
         <CardHeader className="pb-2">
-          <CardDescription>Multiplication by double Digits</CardDescription>
+          <CardDescription>Addition by double Digits</CardDescription>
           <CardTitle className="text-2xl">
-            Learn Basic 2-Digit Multiplication Operations
+            Learn Basic 2-Digit Addition Operations
           </CardTitle>
         </CardHeader>
         <CardContent
           className="cursor-pointer hover:bg-primary-100 transition-colors"
-          onClick={() => handleCardClick("twoDigit")}
+          onClick={() => handleCardClick()}
         >
           <div className="text-xs text-muted-foreground">
             Your progress is 45%, keep going!
@@ -56,26 +59,22 @@ const MultiplicationGrid: React.FC = () => {
         <div className="relative h-40">
           <img
             src={
-              //   "https://media.istockphoto.com/id/1297051350/photo/little-boy-learning-numbers-and-mathematics-basics-homeschooling.jpg?s=1024x1024&w=is&k=20&c=_x5mu62ol7D_jKou-BrANueA1ESCFw1NWWXtttGA0HE="
-
-              //   "https://images.pexels.com/photos/5412110/pexels-photo-5412110.jpeg"
-
-              //   images.single
-              images.multiply
+              // "https://media.istockphoto.com/id/1297051350/photo/little-boy-learning-numbers-and-mathematics-basics-homeschooling.jpg?s=1024x1024&w=is&k=20&c=_x5mu62ol7D_jKou-BrANueA1ESCFw1NWWXtttGA0HE="
+              images.single
             }
-            alt="Single Digit Multiplication"
-            className="object-cover w-full h-full mb-5"
+            alt="Single Digit Addition"
+            className="object-cover w-full h-full"
           />
         </div>
         <CardHeader className="pb-2">
-          <CardDescription>Multiplication by single Digits</CardDescription>
+          <CardDescription>Addition by Multi Digits</CardDescription>
           <CardTitle className="text-2xl">
-            Learn Basic 1-Digit Multiplication Operations
+            Learn Basic Multi Digit Addition Operations
           </CardTitle>
         </CardHeader>
         <CardContent
           className="cursor-pointer hover:bg-primary-100 transition-colors"
-          onClick={() => handleCardClick("singleDigit")}
+          onClick={() => handleMultidigitAddition()}
         >
           <div className="text-xs text-muted-foreground">
             Your progress is 65%, keep going!
@@ -92,4 +91,4 @@ const MultiplicationGrid: React.FC = () => {
   );
 };
 
-export default MultiplicationGrid;
+export default AdditionGrid;

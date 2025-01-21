@@ -6,8 +6,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../ui/card";
-import { Progress } from "../../ui/progress";
+} from "../../../components/ui/card";
+import { Progress } from "../../../components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import { images } from "@/constants/images";
 const SubtractionGrid: React.FC = () => {

@@ -7,6 +7,15 @@ import {
 import { Divide, LogOut, Minus, Plus, X } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 const AppLayout = () => {
+  const logoutHandler = () => {
+    localStorage.clear();
+    fetch("https://mind-expanse.onrender.com/app/logout", {
+      method: "POST",
+      credentials: "include",
+    }).then(() => {
+      window.location.href = "/";
+    });
+  };
   const getLinkClassName = ({ isActive }: { isActive: boolean }) =>
     `px-3 py-2 hover:bg-muted rounded flex cursor-pointer items-center gap-2 ${
       isActive
@@ -60,15 +69,16 @@ const AppLayout = () => {
           </nav>
           <div className="mx-4 py-2 lg:mx-3 lg:px-3 flex items-center gap-2 hover:bg-muted rounded cursor-pointer relative">
             <LogOut className="w-4 h-4" />
-            <NavLink to={"/login"} className={getLinkClassName}>
+            <NavLink
+              to={"/login"}
+              className={getLinkClassName}
+              onClick={() => {
+                logoutHandler();
+              }}
+            >
               <span>Logout</span>
             </NavLink>
           </div>
-        </div>
-      </div>
-      <div className="mx-auto">
-        <div className="h-[calc(100vh-70px)] px-8 py-4">
-          <Outlet />
         </div>
       </div>
     </div>

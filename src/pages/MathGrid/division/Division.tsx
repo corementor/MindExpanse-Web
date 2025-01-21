@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "../../ui/button";
+import { Button } from "../../../components/ui/button";
 import { RefreshCcw, Divide } from "lucide-react";
 
 import { useSearchParams } from "react-router-dom";
