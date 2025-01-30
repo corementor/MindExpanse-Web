@@ -58,7 +58,7 @@ const LoginPage = () => {
 
     setIsSubmitting(true);
     try {
-      fetch("https://mind-expanse.onrender.com/api/auth/login", {
+      fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -92,7 +92,7 @@ const LoginPage = () => {
 
   const handleGoogleLogin = () => {
     window.location.href =
-      "https://mind-expanse.onrender.com/oauth2/authorization/google";
+      "http://localhost:8080/oauth2/authorization/google";
   };
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center bg-gradient-to-b from-blue-50 to-purple-50">
