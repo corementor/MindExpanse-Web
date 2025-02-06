@@ -31,7 +31,7 @@ const Multiplication: React.FC = () => {
     Promise.all(
       Array.from({ length: num_questions }, () =>
         fetch(
-          `https://mind-expanse.onrender.com/api/math/multiply/generate?type=${type}`,
+          `http://localhost:8080/api/math/multiply/generate?type=${type}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -110,7 +110,7 @@ const Multiplication: React.FC = () => {
       return;
     }
 
-    fetch(`https://mind-expanse.onrender.com/api/math/multiply/verify-all`, {
+    fetch(`http://localhost:8080/api/math/multiply/verify-all`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

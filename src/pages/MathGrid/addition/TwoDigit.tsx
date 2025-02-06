@@ -39,7 +39,7 @@ const TwoDigit = () => {
         .fill(null)
         .map(() =>
           fetch(
-            `https://mind-expanse.onrender.com/api/math/addition/generate?type=${type}`,
+            `http://localhost:8080/api/math/addition/generate?type=${type}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -108,7 +108,7 @@ const TwoDigit = () => {
 
     try {
       const response = await fetch(
-        "https://mind-expanse.onrender.com/api/math/addition/verify-all",
+        "http://localhost:8080/api/math/addition/verify-all",
         {
           method: "POST",
           headers: {
