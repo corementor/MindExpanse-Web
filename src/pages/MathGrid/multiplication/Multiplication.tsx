@@ -31,11 +31,14 @@ const Multiplication: React.FC = () => {
     setIsSubmitted(false);
     Promise.all(
       Array.from({ length: num_questions }, () =>
-        fetch(`http://localhost:8080/api/math/multiply/generate?type=${type}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }).then((response) => {
+        fetch(
+          `https://mind-expanse.onrender.com/api/math/multiply/generate?type=${type}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ).then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok");
           }
@@ -117,7 +120,7 @@ const Multiplication: React.FC = () => {
       return;
     }
 
-    fetch(`http://localhost:8080/api/math/multiply/verify-all`, {
+    fetch(`https://mind-expanse.onrender.com/api/math/multiply/verify-all`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

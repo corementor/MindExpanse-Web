@@ -36,7 +36,7 @@
 
 //     Promise.all(
 //       Array.from({ length: num_questions }, () =>
-//         fetch(`http://localhost:8080/api/math/division/generate?type=${type}`, {
+//         fetch(`https://mind-expanse.onrender.com/api/math/division/generate?type=${type}`, {
 //           headers: {
 //             Authorization: `Bearer ${token}`,
 //           },
@@ -93,7 +93,7 @@
 //       return;
 //     }
 
-//     fetch(`http://localhost:8080/api/math/division/verify-all`, {
+//     fetch(`https://mind-expanse.onrender.com/api/math/division/verify-all`, {
 //       method: "POST",
 //       headers: {
 //         "Content-Type": "application/json",
@@ -322,8 +322,6 @@
 
 // export default Division;
 
-
-
 import React, { useState, useEffect } from "react";
 import { Button } from "../../../components/ui/button";
 import { RefreshCcw } from "lucide-react";
@@ -360,11 +358,14 @@ const Division: React.FC = () => {
 
     Promise.all(
       Array.from({ length: num_questions }, () =>
-        fetch(`http://localhost:8080/api/math/division/generate?type=${type}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }).then((response) => {
+        fetch(
+          `https://mind-expanse.onrender.com/api/math/division/generate?type=${type}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ).then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok");
           }
@@ -440,7 +441,7 @@ const Division: React.FC = () => {
       return;
     }
 
-    fetch(`http://localhost:8080/api/math/division/verify-all`, {
+    fetch(`https://mind-expanse.onrender.com/api/math/division/verify-all`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -484,7 +485,7 @@ const Division: React.FC = () => {
       working:
         "w-6 h-6 text-sm text-center border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ",
       remainder:
-        "w-12 h-8 text-sm text-center border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ",
+        "w-8 h-6 text-sm text-center border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ",
     };
 
     if (!isSubmitted) {
@@ -537,12 +538,12 @@ const Division: React.FC = () => {
                   key={index}
                   className="relative bg-gray-50 rounded-md p-4 shadow-sm"
                 >
-                  <span className="absolute top-2 left-2 text-sm text-gray-500 font-semibold">
+                  <span className="absolute top-2 left-2 text-sm text-gray-500 font-semibold ">
                     Q.{index + 1}
                   </span>
 
                   {/* Answer row with individual digit inputs */}
-                  <div className="flex justify-center items-center mb-2 gap-1">
+                  <div className="flex justify-start items-center   ml-7 gap-1">
                     {[...Array(4)].map((_, digitIndex) => (
                       <input
                         key={digitIndex}
@@ -567,7 +568,7 @@ const Division: React.FC = () => {
                     </div>
 
                     <div className="relative flex-1">
-                      <div className="border-b-2 border-black mb-1" />
+                      <div className="border-b-2 border-black mb-1 " />
                       <div className="flex justify-start space-x-2 mb-2">
                         {dividendDigits.map((digit, i) => (
                           <div
@@ -610,7 +611,9 @@ const Division: React.FC = () => {
                     ))}
 
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm font-semibold">Remainder:</span>
+                      <span className="text-xs font-semibold text-gray-600">
+                        R:
+                      </span>
                       <input
                         type="text"
                         className={getInputClassName(q, "remainder")}

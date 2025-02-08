@@ -47,7 +47,7 @@ const FourDigitAddition = () => {
         .fill(null)
         .map(() =>
           fetch(
-            `http://localhost:8080/api/math/addition/generate?type=fourDigit`,
+            `https://mind-expanse.onrender.com/api/math/addition/generate?type=fourDigit`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -140,7 +140,7 @@ const FourDigitAddition = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/api/math/addition/verify-all",
+        "https://mind-expanse.onrender.com/api/math/addition/verify-all",
         {
           method: "POST",
           headers: {
