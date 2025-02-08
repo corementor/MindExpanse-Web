@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 
-const API_URL = "https://mind-expanse.onrender.com  /api/auth";
+const API_URL = "https://mind-expanse.onrender.com/api/auth";
 
 // Define the request payload type
 interface RegisterUserRequest {
