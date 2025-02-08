@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://mind-expanse.onrender.com",
+  baseURL: "https://mind-expanse.onrender.com  ",
   headers: {
     "Content-Type": "application/json",
   },

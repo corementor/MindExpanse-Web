@@ -17,7 +17,7 @@ const DashboardPage = () => {
 
   useEffect(() => {
     axios
-      .get("https://mind-expanse.onrender.com/api/auth/user-info", {
+      .get("https://mind-expanse.onrender.com  /api/auth/user-info", {
         withCredentials: true,
       })
       .then((response) => {
