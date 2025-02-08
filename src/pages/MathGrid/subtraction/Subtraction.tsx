@@ -30,7 +30,7 @@ const Subtraction: React.FC = () => {
     Promise.all(
       Array.from({ length: num_questions }, () =>
         fetch(
-          `https://mind-expanse.onrender.com  /api/math/subtract/generate?type=${type}`,
+          `https://mind-expanse.onrender.com/api/math/subtract/generate?type=${type}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -76,7 +76,7 @@ const Subtraction: React.FC = () => {
       return;
     }
 
-    fetch(`https://mind-expanse.onrender.com  /api/math/subtract/verify-all`, {
+    fetch(`https://mind-expanse.onrender.com/api/math/subtract/verify-all`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
