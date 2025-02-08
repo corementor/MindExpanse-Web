@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "../../../components/ui/button";
-import { RefreshCcw, X } from "lucide-react";
+import { RefreshCcw, X, Plus } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 
 interface Question {
   number1: number;
   number2: number;
-  userAnswer: string;
+  userAnswer: string[];
   carryNumbers: string[];
-  partialProducts: string[]; // Array to store each step's result
+  partialProducts: string[][]; // 2D array for partial products
   isCorrect?: boolean;
 }
 
@@ -19,11 +19,12 @@ const Multiplication: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
-  const num_questions: number = 12;
+  const num_questions: number = 4;
 
   const [searchParams] = useSearchParams();
   const type = searchParams.get("type") || "singleDigit";
   const token = localStorage.getItem("token");
+
   const fetchQuestions = () => {
     setLoading(true);
     setError(null);
@@ -31,7 +32,7 @@ const Multiplication: React.FC = () => {
     Promise.all(
       Array.from({ length: num_questions }, () =>
         fetch(
-          `http://localhost:8080/api/math/multiply/generate?type=${type}`,
+          `https://mind-expanse.onrender.com/api/math/multiply/generate?type=${type}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -49,9 +50,11 @@ const Multiplication: React.FC = () => {
         setQuestions(
           data.map((q) => ({
             ...q,
-            userAnswer: "",
-            carryNumbers: Array(5).fill(""), // Increased for larger numbers
-            partialProducts: Array(3).fill(""), // Store intermediate steps
+            userAnswer: Array(6).fill(""), // Array for final answer digits
+            carryNumbers: Array(3).fill(""), // Reduced carry numbers
+            partialProducts: Array(2)
+              .fill(null)
+              .map(() => Array(3).fill("")), // Reduced partial products
             isCorrect: undefined,
           }))
         );
@@ -71,10 +74,14 @@ const Multiplication: React.FC = () => {
     fetchQuestions();
   }, [type]);
 
-  const handleAnswerChange = (index: number, value: string) => {
-    const sanitizedValue = value.replace(/[^0-9]/g, "");
+  const handleAnswerDigitChange = (
+    questionIndex: number,
+    digitIndex: number,
+    value: string
+  ) => {
+    const sanitizedValue = value.replace(/[^0-9]/g, "").slice(0, 1);
     const updatedQuestions = [...questions];
-    updatedQuestions[index].userAnswer = sanitizedValue;
+    updatedQuestions[questionIndex].userAnswer[digitIndex] = sanitizedValue;
     setQuestions(updatedQuestions);
   };
 
@@ -89,28 +96,31 @@ const Multiplication: React.FC = () => {
     setQuestions(updatedQuestions);
   };
 
-  const handlePartialProductChange = (
+  const handlePartialProductDigitChange = (
     questionIndex: number,
-    productIndex: number,
+    rowIndex: number,
+    digitIndex: number,
     value: string
   ) => {
-    const sanitizedValue = value.replace(/[^0-9]/g, "");
+    const sanitizedValue = value.replace(/[^0-9]/g, "").slice(0, 1);
     const updatedQuestions = [...questions];
-    updatedQuestions[questionIndex].partialProducts[productIndex] =
+    updatedQuestions[questionIndex].partialProducts[rowIndex][digitIndex] =
       sanitizedValue;
     setQuestions(updatedQuestions);
   };
 
   const handleSubmit = () => {
     setLoading(true);
-    const unansweredQuestions = questions.filter((q) => q.userAnswer === "");
+    const unansweredQuestions = questions.filter((q) =>
+      q.userAnswer.every((digit) => digit === "")
+    );
     if (unansweredQuestions.length > 0) {
       setError("Please provide final answers for all questions.");
       setLoading(false);
       return;
     }
 
-    fetch(`http://localhost:8080/api/math/multiply/verify-all`, {
+    fetch(`https://mind-expanse.onrender.com/api/math/multiply/verify-all`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -120,7 +130,7 @@ const Multiplication: React.FC = () => {
         questions.map((q) => ({
           number1: q.number1,
           number2: q.number2,
-          answer: parseInt(q.userAnswer, 10),
+          answer: parseInt(q.userAnswer.join("") || "0", 10),
         }))
       ),
     })
@@ -152,11 +162,12 @@ const Multiplication: React.FC = () => {
       carry:
         "w-6 h-6 text-sm text-center border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ",
       partial:
-        "w-20 h-8 text-lg text-center border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ",
-      final: "w-24 text-2xl font-bold text-center border-2 rounded-md px-1 ",
+        "w-6 h-6 text-sm text-center border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ",
+      final:
+        "w-6 h-6 text-lg font-bold text-center border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ",
     };
 
-    if (!isSubmitted || question.userAnswer === "") {
+    if (!isSubmitted) {
       return baseClasses[type] + "border-gray-300";
     }
 
@@ -171,6 +182,7 @@ const Multiplication: React.FC = () => {
   const renderMultiplicationProblem = (question: Question, index: number) => {
     const num1Digits = String(question.number1).padStart(3, " ").split("");
     const num2Digits = String(question.number2).padStart(3, " ").split("");
+    const num2Length = String(question.number2).length;
 
     return (
       <div className="flex flex-col items-end gap-1 min-w-[200px]">
@@ -213,34 +225,55 @@ const Multiplication: React.FC = () => {
 
         <div className="w-full border-b-2 border-gray-300 mt-1"></div>
 
-        {/* Partial products */}
+        {/* Partial products with indentation */}
         {question.number2 > 9 && (
           <div className="flex flex-col gap-1 w-full items-end">
-            {[...Array(String(question.number2).length)].map((_, i) => (
-              <input
-                key={i}
-                type="text"
-                className={getInputClassName(question, "partial")}
-                value={question.partialProducts[i]}
-                onChange={(e) =>
-                  handlePartialProductChange(index, i, e.target.value)
-                }
-                placeholder={`Step ${i + 1}`}
-              />
+            {[...Array(num2Length)].map((_, rowIndex) => (
+              <div key={rowIndex} className="flex gap-1">
+                {/* Add indentation for second row */}
+                {rowIndex === 1 && <div className="w-6" />}
+                {[...Array(4)].map((_, digitIndex) => (
+                  <input
+                    key={digitIndex}
+                    type="text"
+                    maxLength={1}
+                    className={getInputClassName(question, "partial")}
+                    value={question.partialProducts[rowIndex][digitIndex]}
+                    onChange={(e) =>
+                      handlePartialProductDigitChange(
+                        index,
+                        rowIndex,
+                        digitIndex,
+                        e.target.value
+                      )
+                    }
+                  />
+                ))}
+              </div>
             ))}
-            <div className="w-full border-b border-gray-300"></div>
+            {/* Plus sign and line before final answer */}
+            <div className="flex items-center w-full justify-end gap-1">
+              <Plus className="w-5 h-5 text-gray-600" />
+              <div className="flex-grow border-b border-gray-300"></div>
+            </div>
           </div>
         )}
 
-        {/* Final answer */}
-        <input
-          type="number"
-          className={getInputClassName(question, "final")}
-          min="0"
-          value={question.userAnswer}
-          onChange={(e) => handleAnswerChange(index, e.target.value)}
-          required
-        />
+        {/* Final answer as individual digit inputs */}
+        <div className="flex gap-1">
+          {[...Array(4)].map((_, digitIndex) => (
+            <input
+              key={digitIndex}
+              type="text"
+              maxLength={1}
+              className={getInputClassName(question, "final")}
+              value={question.userAnswer[digitIndex]}
+              onChange={(e) =>
+                handleAnswerDigitChange(index, digitIndex, e.target.value)
+              }
+            />
+          ))}
+        </div>
       </div>
     );
   };
