@@ -31,7 +31,7 @@ const Addition: React.FC = () => {
     Promise.all(
       Array.from({ length: num_questions }, () =>
         fetch(
-          `http://localhost:8080/api/math/addition/generate?type=${type}`,
+          `https://mind-expanse.onrender.com  /api/math/addition/generate?type=${type}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -100,7 +100,7 @@ const Addition: React.FC = () => {
       return;
     }
 
-    fetch(`http://localhost:8080/api/math/addition/verify-all`, {
+    fetch(`https://mind-expanse.onrender.com  /api/math/addition/verify-all`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
