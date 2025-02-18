@@ -205,7 +205,7 @@ const Division: React.FC = () => {
       )}
 
       {loading ? (
-        <div className="flex justify-center items-center h-16">
+        <div className="flex justify-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent" />
         </div>
       ) : (

@@ -32,7 +32,7 @@ const NUM_QUESTIONS = 4; // Reduced number due to larger size of each question
 
 const FourDigitAddition = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState<number | null>(null);
@@ -47,7 +47,7 @@ const FourDigitAddition = () => {
         .fill(null)
         .map(() =>
           fetch(
-            `https://mind-expanse.onrender.com  /api/math/addition/generate?type=fourDigit`,
+            `https://mind-expanse.onrender.com/api/math/addition/generate?type=fourDigit`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -140,7 +140,7 @@ const FourDigitAddition = () => {
 
     try {
       const response = await fetch(
-        "https://mind-expanse.onrender.com  /api/math/addition/verify-all",
+        "https://mind-expanse.onrender.com/api/math/addition/verify-all",
         {
           method: "POST",
           headers: {
@@ -318,8 +318,8 @@ const FourDigitAddition = () => {
 
   if (loading && questions.length === 0) {
     return (
-      <div className="flex justify-center items-center h-48">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      <div className="flex justify-center">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent" />
       </div>
     );
   }
@@ -342,16 +342,25 @@ const FourDigitAddition = () => {
           {error}
         </div>
       )}
+      {loading ? (
+        <div className="flex justify-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent" />
+        </div>
+      ) : (
+        <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {questions.map((question, index) =>
+              renderQuestion(question, index)
+            )}
+          </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {questions.map((question, index) => renderQuestion(question, index))}
-      </div>
-
-      <div className="flex justify-center mt-6 gap-4">
-        <Button onClick={checkAnswers} disabled={loading} className="px-8">
-          Check All Answers
-        </Button>
-      </div>
+          <div className="flex justify-center mt-6 gap-4">
+            <Button onClick={checkAnswers} disabled={loading} className="px-8">
+              Check All Answers
+            </Button>
+          </div>
+        </div>
+      )}
 
       {score !== null && (
         <motion.div
