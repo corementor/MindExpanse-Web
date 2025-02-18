@@ -18,7 +18,7 @@ const Subtraction: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
-  const num_questions: number = 12;
+  const num_questions: number = 4;
 
   const [searchParams] = useSearchParams();
   const type = searchParams.get("type") || "singleDigit";
@@ -154,11 +154,8 @@ const Subtraction: React.FC = () => {
         </div>
       )}
       {loading ? (
-        <div
-          className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-whiteTheme-primaryColor border-r-transparent align-[center]"
-          role="status"
-        >
-          <span className="sr-only">Loading...</span>
+        <div className="flex justify-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent" />
         </div>
       ) : (
         <div className="grid grid-cols-4 gap-4">
@@ -196,12 +193,11 @@ const Subtraction: React.FC = () => {
               </div>
             </div>
           ))}
+          <div className="flex justify-center gap-4 mb-4 mt-4">
+            <Button onClick={handleSubmit}>Submit All</Button>
+          </div>
         </div>
       )}
-
-      <div className="flex justify-center gap-4 mb-4 mt-4">
-        <Button onClick={handleSubmit}>Submit All</Button>
-      </div>
 
       {score !== null && (
         <div className="p-4 mt-4 rounded-md text-center text-white font-medium bg-blue-500">
