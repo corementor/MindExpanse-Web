@@ -21,7 +21,7 @@ const AppLayout = () => {
     <div className="grid min-h-screen md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="border-r">
         <div className="flex h-14 items-center px-4 lg:h-[60px] lg:px-6 font-bold">
-          <span>Mind-Expanse</span>
+          <span>Mind-Expense</span>
         </div>
         <div className="flex flex-col h-[calc(100vh-70px)] lg:span-1 text-sm font-medium">
           <nav className="flex flex-1 flex-col gap-2 px-4 py-4 lg:px-3">
@@ -33,13 +33,25 @@ const AppLayout = () => {
                       Dashboard
                     </NavLink>
                   </AccordionTrigger>
+                  {/* <AccordionTrigger>
+                    <NavLink to={"/dashboard"} className={getLinkClassName}>
+                      Quadrient option
+                    </NavLink>
+                  </AccordionTrigger> */}
                   <AccordionContent className="py-0">
-                    <NavLink to="/additiongrid" className={getLinkClassName}>
+                    <NavLink to="/Quadrant" className={getLinkClassName}>
                       <Plus className="w-4 h-4" /> <span>Addition</span>
                     </NavLink>
                   </AccordionContent>
                   <AccordionContent className="py-0">
-                    <NavLink to="/subtractiongrid" className={getLinkClassName}>
+                    {/* quadrant page navigation on the sidebar */}
+                    <NavLink to="/Quadrant" className={getLinkClassName}>
+                      <Plus className="w-4 h-4" /> <span>Quadrant</span>
+                    </NavLink>
+                  </AccordionContent>
+                  {/* substraction page navigation on the sidebar */}
+                  <AccordionContent className="py-0">
+                    <NavLink to="/QuadrantSub" className={getLinkClassName}>
                       <Minus className="w-4 h-4" /> <span>Substraction</span>
                     </NavLink>
                   </AccordionContent>
