@@ -32,7 +32,7 @@ const LoginPage = () => {
   //   }
   // }, [navigate]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -52,13 +52,13 @@ const LoginPage = () => {
     return true;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsSubmitting(true);
     try {
-      fetch("https://mind-expanse.onrender.com/api/auth/login", {
+      fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -91,8 +91,7 @@ const LoginPage = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href =
-      "https://mind-expanse.onrender.com/oauth2/authorization/google";
+    window.location.href = "http://localhost:8080/oauth2/authorization/google";
   };
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center bg-gradient-to-b from-blue-50 to-purple-50">

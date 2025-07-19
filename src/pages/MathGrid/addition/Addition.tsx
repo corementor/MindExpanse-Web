@@ -24,40 +24,78 @@ const Addition: React.FC = () => {
   const [searchParams] = useSearchParams();
   const type = searchParams.get("type") || "singleDigit";
   const token = localStorage.getItem("token");
+
   const fetchQuestions = () => {
     setLoading(true);
     setError(null);
     setIsSubmitted(false);
-    Promise.all(
-      Array.from({ length: num_questions }, () =>
-        fetch(
-          `https://mind-expanse.onrender.com/api/math/addition/generate?type=${type}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        ).then((response) => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-          return response.json();
-        })
-      )
+
+    // Determine the parameters based on the question type
+    let rows, cols, min, max;
+    if (type === "singleDigit") {
+      rows = 6; // Will generate 6x2 array (12 questions)
+      cols = 2;
+      min = 0;
+      max = 9;
+    } else if (type === "fourDigit") {
+      rows = 6; // Will generate 6x2 array (12 questions)
+      cols = 2;
+      min = 1000;
+      max = 9999;
+    } else {
+      // Default to two-digit numbers
+      rows = 6;
+      cols = 2;
+      min = 10;
+      max = 99;
+    }
+
+    fetch(
+      `http://localhost:8080/api/math/addition/generateArray?rows=${rows}&cols=${cols}&min=${min}&max=${max}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data: number[][]) => {
+        // Convert the 2D array into questions
+        const newQuestions: Question[] = [];
+        for (let i = 0; i < data.length; i++) {
+          for (let j = 0; j < data[i].length; j += 2) {
+            if (j + 1 < data[i].length) {
+              newQuestions.push({
+                number1: data[i][j],
+                number2: data[i][j + 1],
+                userAnswer: "",
+                carryNumbers: Array(5).fill(""),
+                partialProducts: Array(3).fill(""),
+                isCorrect: undefined,
+              });
+            }
+          }
+        }
 
-      .then((data: Question[]) => {
-        setQuestions(
-          data.map((q) => ({
-            ...q,
+        // If we didn't get enough questions, fill the rest with random pairs
+        while (newQuestions.length < num_questions) {
+          newQuestions.push({
+            number1: Math.floor(Math.random() * (max - min + 1)) + min,
+            number2: Math.floor(Math.random() * (max - min + 1)) + min,
             userAnswer: "",
-
-            carryNumbers: Array(5).fill(""), // Increased for larger numbers
-            partialProducts: Array(3).fill(""), // Store intermediate steps
-
+            carryNumbers: Array(5).fill(""),
+            partialProducts: Array(3).fill(""),
             isCorrect: undefined,
-          }))
-        );
+          });
+        }
+
+        // Trim to exactly num_questions
+        setQuestions(newQuestions.slice(0, num_questions));
         setResults([]);
         setScore(null);
       })
@@ -69,7 +107,6 @@ const Addition: React.FC = () => {
         setLoading(false);
       });
   };
-
   useEffect(() => {
     fetchQuestions();
   }, [type]);
@@ -100,7 +137,7 @@ const Addition: React.FC = () => {
       return;
     }
 
-    fetch(`https://mind-expanse.onrender.com/api/math/addition/verify-all`, {
+    fetch(`http://localhost:8080/api/math/addition/verify-all`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

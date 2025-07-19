@@ -39,7 +39,7 @@ const TwoDigit = () => {
         .fill(null)
         .map(() =>
           fetch(
-            `https://mind-expanse.onrender.com/api/math/addition/generate?type=${type}`,
+            `http://localhost:8080/api/math/addition/generate?type=${type}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -108,7 +108,7 @@ const TwoDigit = () => {
 
     try {
       const response = await fetch(
-        "https://mind-expanse.onrender.com/api/math/addition/verify-all",
+        "http://localhost:8080/api/math/addition/verify-all",
         {
           method: "POST",
           headers: {
@@ -254,9 +254,9 @@ const TwoDigit = () => {
     <div className="min-w-[700px] border-[1px] border-gray-200 rounded-md p-6 shadow-md min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-center">
-          {type === "singleDigit"
-            ? "Solve Single-Digit Addition Questions"
-            : "Solve Two-Digit Addition Questions"}
+          {type === "doubleDigit"
+            ? "Solve Double-Digit Addition Questions"
+            : "Solve Multiple-Digit Addition Questions"}
         </h1>
 
         <Button variant="outline" onClick={fetchQuestions} className="gap-2">

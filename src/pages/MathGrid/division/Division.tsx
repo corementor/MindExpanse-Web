@@ -34,14 +34,11 @@ const Division: React.FC = () => {
 
     Promise.all(
       Array.from({ length: num_questions }, () =>
-        fetch(
-          `https://mind-expanse.onrender.com/api/math/division/generate?type=${type}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        ).then((response) => {
+        fetch(`http://localhost:8080/api/math/division/generate?type=${type}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }).then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok");
           }
@@ -122,7 +119,7 @@ const Division: React.FC = () => {
       return;
     }
 
-    fetch(`https://mind-expanse.onrender.com/api/math/division/verify-all`, {
+    fetch(`http://localhost:8080/api/math/division/verify-all`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

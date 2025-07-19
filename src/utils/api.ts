@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://mind-expanse.onrender.com  /api/problems";
+const API_BASE_URL = "http://localhost:8080  /api/problems";
 
 // Create an Axios instance with base URL and default headers
 export const api = axios.create({

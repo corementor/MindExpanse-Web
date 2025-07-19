@@ -29,14 +29,11 @@ const Subtraction: React.FC = () => {
     setIsSubmitted(false);
     Promise.all(
       Array.from({ length: num_questions }, () =>
-        fetch(
-          `https://mind-expanse.onrender.com/api/math/subtract/generate?type=${type}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        ).then((response) => {
+        fetch(`http://localhost:8080/api/math/subtract/generate?type=${type}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }).then((response) => {
           if (!response.ok) {
             throw new Error("Failed to fetch questions");
           }
@@ -76,7 +73,7 @@ const Subtraction: React.FC = () => {
       return;
     }
 
-    fetch(`https://mind-expanse.onrender.com/api/math/subtract/verify-all`, {
+    fetch(`http://localhost:8080/api/math/subtract/verify-all`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
