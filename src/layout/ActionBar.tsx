@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { environment } from "../environment/environment";
 const ActionBar = () => {
   const [user, setUser] = useState(null);
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/auth/user-info", {
+      .get(`${environment.API}/auth/user-info`, {
         withCredentials: true,
       })
       .then((response) => {

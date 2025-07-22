@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { EyeIcon, EyeOff, Loader2, Brain } from "lucide-react";
+import { environment } from "@/environment/environment";
 import {
   Card,
   CardContent,
@@ -58,7 +59,7 @@ const LoginPage = () => {
 
     setIsSubmitting(true);
     try {
-      fetch("http://localhost:8080/api/auth/login", {
+      fetch(`${environment.API}/auth/login`, {
         method: "POST",
         credentials: "include",
         headers: {
