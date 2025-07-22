@@ -10,13 +10,14 @@ import DashboardPage from "@/pages/dashboard/DashboardPage";
 import Subtraction from "@/pages/MathGrid/subtraction/Subtraction";
 import SubtractionGrid from "@/pages/MathGrid/subtraction/SubtractionGrid";
 import Addition from "@/pages/MathGrid/addition/Addition";
-import AdditionGrid from "@/pages/MathGrid/addition/AdditionGrid";
 import MultiplicationGrid from "@/pages/MathGrid/multiplication/MultiplicationGrid";
 import Multiplication from "@/pages/MathGrid/multiplication/Multiplication";
 import Division from "@/pages/MathGrid/division/Division";
 import DivisionGrid from "@/pages/MathGrid/division/DivisionGrid";
-import FourDigitAddition from "@/pages/MathGrid/addition/FourDigit";
+
 import TwoDigit from "@/pages/MathGrid/addition/TwoDigit";
+import AdditionWorksheetApp from "@/pages/MathGrid/addition/AdditionWorksheet";
+import TestWorksheet from "@/pages/MathGrid/addition/test";
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
@@ -29,7 +30,7 @@ export const AppRoutes: React.FC = () => {
       <Route element={<ProtectedRoutes />}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/additiongrid" element={<AdditionGrid />} />
+          <Route path="/additiongrid" element={<AdditionWorksheetApp />} />
           <Route path="/addition" element={<Addition />} />
           <Route path="/subtractiongrid" element={<SubtractionGrid />} />
           <Route path="/subtraction" element={<Subtraction />} />
@@ -38,7 +39,8 @@ export const AppRoutes: React.FC = () => {
           <Route path="/divisiongrid" element={<DivisionGrid />} />
           <Route path="/divide" element={<Division />} />
           <Route path="/doubledigitadd" element={<TwoDigit />} />
-          <Route path="/multidigitadd" element={<FourDigitAddition />} />
+          {/* <Route path="/multidigitadd" element={<AdditionWorksheet />} /> */}
+          <Route path="/multidigitadd" element={<TestWorksheet />} />
         </Route>
       </Route>
 
