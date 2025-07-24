@@ -11,7 +11,7 @@ import { Progress } from "../../../components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import { images } from "@/constants/images";
 import { Button } from "@/components/ui/button";
-import { FileCheck, Plus, RefreshCcw, Settings, ArrowLeft } from "lucide-react";
+import { FileCheck, Minus, RefreshCcw, Settings, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface UserPreferences {
@@ -30,9 +30,9 @@ interface Question {
     ones: string;
   };
   carryNumbers: {
-    thousands: string; // Carry from hundreds to thousands
-    hundreds: string; // Carry from tens to hundreds
-    tens: string; // Carry from ones to tens
+    thousands: string;
+    hundreds: string;
+    tens: string;
   };
   isCorrect?: boolean;
   carriesCorrect?: boolean;
@@ -63,7 +63,6 @@ interface VerifyResponse {
 
 const NUM_QUESTIONS = 4;
 
-// PreferenceSelect Component
 const PreferenceSelect: React.FC<{
   onPreferencesSelected: (preferences: UserPreferences) => void;
 }> = ({ onPreferencesSelected }) => {
@@ -100,13 +99,12 @@ const PreferenceSelect: React.FC<{
             Customize Your Worksheet
           </h1>
           <p className="text-gray-600 text-lg">
-            Set your preferences to create the perfect addition practice
+            Set your preferences to create the perfect subtraction practice
             experience
           </p>
         </div>
 
         <div className="space-y-8">
-          {/* Complexity Selection */}
           <motion.div
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -141,12 +139,12 @@ const PreferenceSelect: React.FC<{
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm mb-3">
-                  Simple addition problems where no carrying is required
+                  Simple subtraction problems where no borrowing is required
                 </p>
                 <div className="bg-gray-50 p-3 rounded-lg font-mono text-center">
-                  <div> 123</div>
-                  <div>+ 456</div>
-                  <div className="border-t border-gray-400 pt-1"> 579</div>
+                  <div> 654</div>
+                  <div>- 321</div>
+                  <div className="border-t border-gray-400 pt-1"> 333</div>
                 </div>
               </div>
 
@@ -175,19 +173,18 @@ const PreferenceSelect: React.FC<{
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm mb-3">
-                  Advanced problems requiring carrying over to the next column
+                  Advanced problems requiring borrowing from the next column
                 </p>
                 <div className="bg-gray-50 p-3 rounded-lg font-mono text-center">
-                  <div className="text-xs text-blue-600"> ¹ ¹</div>
-                  <div> 195</div>
-                  <div>+ 287</div>
-                  <div className="border-t border-gray-400 pt-1"> 482</div>
+                  <div className="text-xs text-blue-600"> 1 ¹</div>
+                  <div> 602</div>
+                  <div>- 389</div>
+                  <div className="border-t border-gray-400 pt-1"> 213</div>
                 </div>
               </div>
             </div>
           </motion.div>
 
-          {/* Number of Digits Selection */}
           <motion.div
             initial={{ x: 50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -230,7 +227,6 @@ const PreferenceSelect: React.FC<{
             </div>
           </motion.div>
 
-          {/* Preview */}
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -258,7 +254,6 @@ const PreferenceSelect: React.FC<{
             </div>
           </motion.div>
 
-          {/* Start Button */}
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
