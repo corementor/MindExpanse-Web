@@ -351,51 +351,6 @@ const AdditionWorksheet = () => {
     setLoading(true);
     setError(null);
 
-    // try {
-    //   const min = Math.pow(10, preferences.numberOfDigits - 1);
-    //   const max = Math.pow(10, preferences.numberOfDigits) - 1;
-    //   const NUM_QUESTIONS = preferences.numberOfQuestions || 4; // Default to 4 if not specified
-    //   console.log("min and max are", { min, max });
-    //   console.log("User preferences:", preferences);
-
-    //   console.log("Fetching questions with preferences:", {
-    //     complexity: preferences.complexity,
-    //     numberOfDigits: preferences.numberOfDigits,
-    //   });
-
-    //   // Try to get questions from API
-    //   let apiQuestions: Question[] = [];
-    //   try {
-    //     const response = await fetch(
-    //       `${API_ENDPOINTS.GENERATE}?rows=${NUM_QUESTIONS}&cols=2&min=${min}&max=${max}`,
-    //       { headers: { Authorization: `Bearer ${token}` } }
-    //     );
-
-    //     if (response.ok) {
-    //       const data: number[][] = await response.json();
-    //       apiQuestions = transformArrayToQuestions(data, preferences, min, max);
-    //     }
-    //   } catch (apiError) {
-    //     console.warn("API request failed, using local generation", apiError);
-    //   }
-
-    //   // Fill remaining questions locally if needed
-    //   const localQuestions = generateLocalQuestions(
-    //     Math.max(0, NUM_QUESTIONS - apiQuestions.length),
-    //     preferences,
-    //     min,
-    //     max
-    //   );
-
-    //   setQuestions([...apiQuestions].slice(0, NUM_QUESTIONS));
-    //   setShowResults(false);
-    // } catch (err) {
-    //   setError("Failed to load questions. Please try again.");
-    //   console.error("Error:", err);
-    // } finally {
-    //   setLoading(false);
-    // }
-
     try {
       const min = Math.pow(10, preferences.numberOfDigits - 1);
       const max = Math.pow(10, preferences.numberOfDigits) - 1;
