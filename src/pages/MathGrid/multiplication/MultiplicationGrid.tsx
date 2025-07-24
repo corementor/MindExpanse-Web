@@ -1,95 +1,1119 @@
-import React from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "../../../components/ui/card";
-import { Progress } from "../../../components/ui/progress";
-import { useNavigate } from "react-router-dom";
-import { images } from "@/constants/images";
-const MultiplicationGrid: React.FC = () => {
-  const navigate = useNavigate();
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { RefreshCcw, Settings, ArrowLeft } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-  const handleCardClick = (type: string) => {
-    navigate(`/multiply?type=${type}`);
+interface UserPreferences {
+  complexity: "with-regrouping" | "without-regrouping";
+  numberOfDigits: number;
+  numberOfQuestions?: number;
+}
+
+interface Question {
+  id: number;
+  number1: number;
+  number2: number;
+  userAnswer: string;
+  partialProducts: {
+    [key: string]: string;
+  };
+  carries: {
+    [key: string]: string;
+  };
+  isCorrect?: boolean;
+  partialProductsCorrect?: boolean;
+  carriesCorrect?: boolean;
+  correctPartialProducts?: {
+    [key: string]: number;
+  };
+  correctCarries?: {
+    [key: string]: number;
+  };
+}
+
+// Math service interfaces
+interface VerifyMultiplicationAnswer {
+  number1: number;
+  number2: number;
+  answer: number;
+  carries: {
+    carryOnesToTens: number;
+    carryTensToHundreds: number;
+  };
+  partialProducts: {
+    partialProduct1: number;
+    partialProduct2: number;
+    partialProduct3: number;
+  };
+}
+
+interface VerifyMultiplicationResponse {
+  results: string[];
+  score: number;
+  percentage: number;
+  maxScore: number;
+  total: number;
+  correctCarries: Array<{
+    carryOnesToTens: number;
+    carryTensToHundreds: number;
+  }>;
+  carryValidation: Array<{
+    carryOnesToTensCorrect: boolean;
+    carryTensToHundredsCorrect: boolean;
+  }>;
+  correctPartialProducts: Array<{
+    partialProduct1: number;
+    partialProduct2: number;
+    partialProduct3: number;
+  }>;
+}
+
+// Import your actual math service
+// Note: You'll need to import this from your actual service file
+import { mathService } from "@/services/mathService";
+
+// For now, using a placeholder that matches your service interface
+// const mathService = {
+//   verifyMultiplicationAnswers: async (answers: VerifyMultiplicationAnswer[]): Promise<VerifyMultiplicationResponse> => {
+//     // This should be replaced with your actual service import
+//     // return await actualMathService.verifyMultiplicationAnswers(answers);
+
+//     // Temporary mock that matches your interface structure
+//     return new Promise((resolve) => {
+//       setTimeout(() => {
+//         resolve({
+//           results: answers.map((answer) => {
+//             const correct = answer.number1 * answer.number2;
+//             return answer.answer === correct ? "Perfect! All correct" : "Some errors found";
+//           }),
+//           score: Math.floor(Math.random() * 40 + 60),
+//           percentage: Math.floor(Math.random() * 40 + 60),
+//           maxScore: 100,
+//           total: answers.length,
+//           correctCarries: answers.map(() => ({
+//             carryOnesToTens: Math.floor(Math.random() * 9),
+//             carryTensToHundreds: Math.floor(Math.random() * 9),
+//           })),
+//           carryValidation: answers.map(() => ({
+//             carryOnesToTensCorrect: Math.random() > 0.5,
+//             carryTensToHundredsCorrect: Math.random() > 0.5,
+//           })),
+//           correctPartialProducts: answers.map(() => ({
+//             partialProduct1: Math.floor(Math.random() * 1000),
+//             partialProduct2: Math.floor(Math.random() * 1000),
+//             partialProduct3: Math.floor(Math.random() * 1000),
+//           })),
+//         });
+//       }, 1000);
+//     });
+//   }
+// };
+
+const PreferenceSelection: React.FC<{
+  onPreferencesSelected: (preferences: UserPreferences) => void;
+}> = ({ onPreferencesSelected }) => {
+  const [complexity, setComplexity] = useState<
+    "with-regrouping" | "without-regrouping"
+  >("with-regrouping");
+  const [numberOfDigits, setNumberOfDigits] = useState<number>(2);
+  const [numberOfQuestions, setNumberOfQuestions] = useState<number>(4);
+
+  const handleStartWorksheet = () => {
+    const preferences = { complexity, numberOfDigits, numberOfQuestions };
+    onPreferencesSelected(preferences);
   };
 
   return (
-    <div className="grid lg:grid-cols-2 gap-4 my-4">
-      <Card className="overflow-hidden shadow-md">
-        <div className="relative h-40">
-          <img
-            src={
-              // "https://images.pexels.com/photos/16613920/pexels-photo-16613920/free-photo-of-first-grade-student.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-              images.doublenum
-            }
-            alt="Single Digit Multiplication"
-            className="object-cover w-full h-full scale-x-125"
-          />
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 min-h-screen">
+      <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl my-8">
+        <div className="text-center mb-6">
+          <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+            <Settings className="w-8 h-8 text-blue-600" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            Customize Your Worksheet
+          </h1>
+          <p className="text-gray-600">
+            Set your preferences to create the perfect multiplication practice
+          </p>
         </div>
-        <CardHeader className="pb-2">
-          <CardDescription>Multiplication by double Digits</CardDescription>
-          <CardTitle className="text-2xl">
-            Learn Basic 2-Digit Multiplication Operations
-          </CardTitle>
-        </CardHeader>
-        <CardContent
-          className="cursor-pointer hover:bg-primary-100 transition-colors"
-          onClick={() => handleCardClick("twoDigit")}
-        >
-          <div className="text-xs text-muted-foreground">
-            Your progress is 45%, keep going!
+
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">
+              🎯 Choose Complexity Level
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg ${
+                  complexity === "without-regrouping"
+                    ? "border-green-500 bg-green-50 shadow-md"
+                    : "border-gray-200 hover:border-green-300"
+                }`}
+                onClick={() => setComplexity("without-regrouping")}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-bold text-gray-800">
+                    Without Regrouping
+                  </h4>
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      complexity === "without-regrouping"
+                        ? "border-green-500 bg-green-500"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    {complexity === "without-regrouping" && (
+                      <div className="w-2 h-2 bg-white rounded-full" />
+                    )}
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm mb-2">
+                  Simple multiplication problems where no carrying is required
+                </p>
+                <div className="bg-gray-50 p-2 rounded-lg font-mono text-center">
+                  <div> 23</div>
+                  <div>× 12</div>
+                  <div className="border-t border-gray-400 pt-1"> 276</div>
+                </div>
+              </div>
+              <div
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg ${
+                  complexity === "with-regrouping"
+                    ? "border-blue-500 bg-blue-50 shadow-md"
+                    : "border-gray-200 hover:border-blue-300"
+                }`}
+                onClick={() => setComplexity("with-regrouping")}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-bold text-gray-800">With Regrouping</h4>
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      complexity === "with-regrouping"
+                        ? "border-blue-500 bg-blue-500"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    {complexity === "with-regrouping" && (
+                      <div className="w-2 h-2 bg-white rounded-full" />
+                    )}
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm mb-2">
+                  Advanced problems requiring carrying over to the next column
+                </p>
+                <div className="bg-gray-50 p-2 rounded-lg font-mono text-center">
+                  <div className="text-xs text-blue-600"> ¹ ²</div>
+                  <div> 47</div>
+                  <div>× 38</div>
+                  <div className="border-t border-gray-400 pt-1"> 1786</div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="mt-2 text-primary font-medium">
-            Click here to start the Quiz
+
+          <div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">
+              🔢 Number of Digits
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {[2, 3, 4].map((digits) => (
+                <div
+                  key={digits}
+                  className={`p-3 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md text-center ${
+                    numberOfDigits === digits
+                      ? "border-purple-500 bg-purple-50 shadow-md"
+                      : "border-gray-200 hover:border-purple-300"
+                  }`}
+                  onClick={() => setNumberOfDigits(digits)}
+                >
+                  <div
+                    className={`text-2xl font-bold mb-1 ${
+                      numberOfDigits === digits
+                        ? "text-purple-600"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {digits}
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    {digits === 2
+                      ? "10-99"
+                      : digits === 3
+                      ? "100-999"
+                      : "1000-9999"}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </CardContent>
-        <CardFooter>
-          <Progress value={45} aria-label="45% increase" />
-        </CardFooter>
-      </Card>
 
-      <Card className="overflow-hidden shadow-md">
-        <div className="relative h-40">
-          <img
-            src={
-              //   "https://media.istockphoto.com/id/1297051350/photo/little-boy-learning-numbers-and-mathematics-basics-homeschooling.jpg?s=1024x1024&w=is&k=20&c=_x5mu62ol7D_jKou-BrANueA1ESCFw1NWWXtttGA0HE="
+          <div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">
+              📄 Number of Questions
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {[4, 6, 8, 10].map((num) => (
+                <div
+                  key={num}
+                  className={`p-3 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md text-center ${
+                    numberOfQuestions === num
+                      ? "border-blue-500 bg-blue-50 shadow-md"
+                      : "border-gray-200 hover:border-blue-300"
+                  }`}
+                  onClick={() => setNumberOfQuestions(num)}
+                >
+                  <div
+                    className={`text-2xl font-bold mb-1 ${
+                      numberOfQuestions === num
+                        ? "text-blue-600"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {num}
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    {num} questions to practice
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-              //   "https://images.pexels.com/photos/5412110/pexels-photo-5412110.jpeg"
-
-              //   images.single
-              images.multiply
-            }
-            alt="Single Digit Multiplication"
-            className="object-cover w-full h-full mb-5"
-          />
+          <div className="text-center">
+            <Button
+              onClick={handleStartWorksheet}
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              🚀 Start My Worksheet
+            </Button>
+          </div>
         </div>
-        <CardHeader className="pb-2">
-          <CardDescription>Multiplication by single Digits</CardDescription>
-          <CardTitle className="text-2xl">
-            Learn Basic 1-Digit Multiplication Operations
-          </CardTitle>
-        </CardHeader>
-        <CardContent
-          className="cursor-pointer hover:bg-primary-100 transition-colors"
-          onClick={() => handleCardClick("singleDigit")}
-        >
-          <div className="text-xs text-muted-foreground">
-            Your progress is 65%, keep going!
-          </div>
-          <div className="mt-2 text-primary font-medium">
-            Click here to start the 2-digit addition course
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Progress value={65} aria-label="65% increase" />
-        </CardFooter>
-      </Card>
+      </div>
     </div>
   );
 };
 
-export default MultiplicationGrid;
+const MultiplicationWorksheet = () => {
+  const [showPreferences, setShowPreferences] = useState(true);
+  const [userPreferences, setUserPreferences] =
+    useState<UserPreferences | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showResults, setShowResults] = useState(false);
+  const [score, setScore] = useState<number | null>(null);
+
+  const generateQuestions = () => {
+    if (!userPreferences) return;
+    setLoading(true);
+    setError(null);
+    setScore(null);
+    setShowResults(false);
+
+    try {
+      const min = Math.pow(10, userPreferences.numberOfDigits - 1);
+      const max = Math.pow(10, userPreferences.numberOfDigits) - 1;
+      const newQuestions: Question[] = [];
+
+      for (let i = 0; i < (userPreferences.numberOfQuestions ?? 4); i++) {
+        const num1 = Math.floor(Math.random() * (max - min + 1)) + min;
+        const num2 = Math.floor(Math.random() * 90) + 10; // 2-digit multiplier
+
+        newQuestions.push({
+          id: i + 1,
+          number1: num1,
+          number2: num2,
+          userAnswer: "",
+          partialProducts: {
+            partialProduct1: "",
+            partialProduct2: "",
+            partialProduct3: "",
+          },
+          carries: {
+            carryOnesToTens: "",
+            carryTensToHundreds: "",
+          },
+        });
+      }
+
+      setQuestions(newQuestions);
+    } catch (err) {
+      setError("Failed to generate questions. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePreferencesSelected = (preferences: UserPreferences) => {
+    setUserPreferences(preferences);
+    setShowPreferences(false);
+  };
+
+  useEffect(() => {
+    if (!showPreferences && userPreferences) {
+      generateQuestions();
+    }
+  }, [showPreferences, userPreferences]);
+
+  const handleAnswerChange = (questionId: number, value: string) => {
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.id === questionId
+          ? { ...q, userAnswer: value.replace(/[^0-9]/g, "") }
+          : q
+      )
+    );
+  };
+
+  const handlePartialProductChange = (
+    questionId: number,
+    productKey: string,
+    value: string
+  ) => {
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.id === questionId
+          ? {
+              ...q,
+              partialProducts: {
+                ...q.partialProducts,
+                [productKey]: value.replace(/[^0-9]/g, ""),
+              },
+            }
+          : q
+      )
+    );
+  };
+
+  const handleCarryChange = (
+    questionId: number,
+    carryKey: string,
+    value: string
+  ) => {
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.id === questionId
+          ? {
+              ...q,
+              carries: {
+                ...q.carries,
+                [carryKey]: value.replace(/[^0-9]/g, ""),
+              },
+            }
+          : q
+      )
+    );
+  };
+
+  const checkAnswers = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const answersToVerify: VerifyMultiplicationAnswer[] = questions.map(
+        (q) => ({
+          number1: q.number1,
+          number2: q.number2,
+          answer: parseInt(q.userAnswer) || 0,
+          carries: {
+            carryOnesToTens: parseInt(q.carries.carryOnesToTens) || 0,
+            carryTensToHundreds: parseInt(q.carries.carryTensToHundreds) || 0,
+          },
+          partialProducts: {
+            partialProduct1: parseInt(q.partialProducts.partialProduct1) || 0,
+            partialProduct2: parseInt(q.partialProducts.partialProduct2) || 0,
+            partialProduct3: parseInt(q.partialProducts.partialProduct3) || 0,
+          },
+        })
+      );
+
+      const data = await mathService.verifyMultiplicationAnswers(
+        answersToVerify
+      );
+
+      setQuestions((prev) =>
+        prev.map((q, idx) => {
+          const correctAnswer = q.number1 * q.number2;
+          const userAnswer = parseInt(q.userAnswer) || 0;
+
+          return {
+            ...q,
+            isCorrect: userAnswer === correctAnswer,
+            partialProductsCorrect:
+              data.results[idx].includes("Perfect") ||
+              data.results[idx].includes("partial products correct"),
+            carriesCorrect:
+              data.carryValidation[idx].carryOnesToTensCorrect &&
+              data.carryValidation[idx].carryTensToHundredsCorrect,
+            correctPartialProducts: data.correctPartialProducts[idx],
+            correctCarries: data.correctCarries[idx],
+          };
+        })
+      );
+
+      setScore(data.score);
+      setShowResults(true);
+    } catch (err) {
+      setError("Failed to verify answers. Please try again.");
+      console.error("Error verifying answers:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatNumberToArray = (num: number, totalDigits: number): string[] => {
+    const numStr = num.toString();
+    const paddedStr = numStr.padStart(totalDigits, " ");
+    return paddedStr.split("");
+  };
+
+  // const renderQuestion = (question: Question) => {
+  //   const numDigits = userPreferences?.numberOfDigits || 2;
+  //   const maxResultDigits = numDigits + 2; // Maximum possible digits in result
+
+  //   const num1Array = formatNumberToArray(question.number1, maxResultDigits);
+  //   const num2Array = formatNumberToArray(question.number2, maxResultDigits);
+
+  //   const correctAnswer = question.number1 * question.number2;
+  //   const userAnswer = parseInt(question.userAnswer) || 0;
+
+  //   return (
+  //     <Card key={question.id} className="p-6">
+  //       <CardHeader>
+  //         <CardTitle className="text-center">Question {question.id}</CardTitle>
+  //       </CardHeader>
+  //       <CardContent>
+  //         <div className="flex justify-center">
+  //           <div className="bg-gray-50 p-6 rounded-lg font-mono text-center">
+  //             {/* Carry numbers for regrouping - right aligned */}
+  //             {userPreferences?.complexity === "with-regrouping" && (
+  //               <div className="flex justify-end mb-2">
+  //                 <div
+  //                   className="grid gap-1"
+  //                   style={{
+  //                     gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
+  //                   }}
+  //                 >
+  //                   {Array.from({ length: maxResultDigits }).map((_, index) => (
+  //                     <input
+  //                       key={`carry-${index}`}
+  //                       type="text"
+  //                       maxLength={1}
+  //                       className={`w-8 h-6 text-center text-xs border rounded ${
+  //                         showResults
+  //                           ? "bg-green-100 border-green-500"
+  //                           : "border-gray-300"
+  //                       }`}
+  //                       value={
+  //                         index === maxResultDigits - 2
+  //                           ? question.carries.carryOnesToTens
+  //                           : index === maxResultDigits - 3
+  //                           ? question.carries.carryTensToHundreds
+  //                           : ""
+  //                       }
+  //                       onChange={(e) => {
+  //                         const carryKey =
+  //                           index === maxResultDigits - 2
+  //                             ? "carryOnesToTens"
+  //                             : index === maxResultDigits - 3
+  //                             ? "carryTensToHundreds"
+  //                             : "";
+  //                         if (carryKey) {
+  //                           handleCarryChange(
+  //                             question.id,
+  //                             carryKey,
+  //                             e.target.value
+  //                           );
+  //                         }
+  //                       }}
+  //                       disabled={showResults}
+  //                       style={{
+  //                         visibility:
+  //                           index === maxResultDigits - 2 ||
+  //                           index === maxResultDigits - 3
+  //                             ? "visible"
+  //                             : "hidden",
+  //                       }}
+  //                     />
+  //                   ))}
+  //                 </div>
+  //               </div>
+  //             )}
+
+  //             {/* First number - right aligned */}
+  //             <div className="flex justify-end mb-2">
+  //               <div
+  //                 className="grid gap-1"
+  //                 style={{
+  //                   gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
+  //                 }}
+  //               >
+  //                 {num1Array.map((digit, index) => (
+  //                   <div
+  //                     key={`num1-${index}`}
+  //                     className="w-8 h-8 flex items-center justify-center text-lg border border-gray-300 bg-white"
+  //                   >
+  //                     {digit.trim()}
+  //                   </div>
+  //                 ))}
+  //               </div>
+  //             </div>
+
+  //             {/* Multiplication symbol and second number - right aligned */}
+  //             <div className="flex justify-end mb-2 relative">
+  //               <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 text-lg">
+  //                 ×
+  //               </div>
+  //               <div
+  //                 className="grid gap-1"
+  //                 style={{
+  //                   gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
+  //                 }}
+  //               >
+  //                 {num2Array.map((digit, index) => (
+  //                   <div
+  //                     key={`num2-${index}`}
+  //                     className="w-8 h-8 flex items-center justify-center text-lg border border-gray-300 bg-white"
+  //                   >
+  //                     {digit.trim()}
+  //                   </div>
+  //                 ))}
+  //               </div>
+  //             </div>
+
+  //             <div className="border-t-2 border-gray-400 my-3"></div>
+
+  //             {/* Partial products - right aligned */}
+  //             <div className="flex justify-end mb-2">
+  //               <div
+  //                 className="grid gap-1"
+  //                 style={{
+  //                   gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
+  //                 }}
+  //               >
+  //                 {Array.from({ length: maxResultDigits }).map((_, index) => (
+  //                   <input
+  //                     key={`partial1-${index}`}
+  //                     type="text"
+  //                     maxLength={1}
+  //                     className={`w-8 h-8 text-center text-sm border rounded ${
+  //                       showResults
+  //                         ? question.correctPartialProducts?.partialProduct1 ===
+  //                           parseInt(
+  //                             question.partialProducts.partialProduct1 || "0"
+  //                           )
+  //                           ? "bg-green-100 border-green-500"
+  //                           : "bg-red-100 border-red-500"
+  //                         : "border-gray-300"
+  //                     }`}
+  //                     value={
+  //                       question.partialProducts.partialProduct1?.charAt(
+  //                         question.partialProducts.partialProduct1.length -
+  //                           1 -
+  //                           index
+  //                       ) || ""
+  //                     }
+  //                     onChange={(e) => {
+  //                       const currentValue =
+  //                         question.partialProducts.partialProduct1 || "";
+  //                       const newValue =
+  //                         currentValue.substring(
+  //                           0,
+  //                           maxResultDigits - 1 - index
+  //                         ) +
+  //                         e.target.value +
+  //                         currentValue.substring(maxResultDigits - index);
+  //                       handlePartialProductChange(
+  //                         question.id,
+  //                         "partialProduct1",
+  //                         newValue
+  //                       );
+  //                     }}
+  //                     disabled={showResults}
+  //                   />
+  //                 ))}
+  //               </div>
+  //             </div>
+
+  //             <div className="flex justify-end mb-2 relative">
+  //               <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 text-lg">
+  //                 +
+  //               </div>
+  //               <div
+  //                 className="grid gap-1"
+  //                 style={{
+  //                   gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
+  //                 }}
+  //               >
+  //                 {Array.from({ length: maxResultDigits }).map((_, index) => (
+  //                   <input
+  //                     key={`partial2-${index}`}
+  //                     type="text"
+  //                     maxLength={1}
+  //                     className={`w-8 h-8 text-center text-sm border rounded ${
+  //                       showResults
+  //                         ? question.correctPartialProducts?.partialProduct2 ===
+  //                           parseInt(
+  //                             question.partialProducts.partialProduct2 || "0"
+  //                           )
+  //                           ? "bg-green-100 border-green-500"
+  //                           : "bg-red-100 border-red-500"
+  //                         : "border-gray-300"
+  //                     }`}
+  //                     value={
+  //                       question.partialProducts.partialProduct2?.charAt(
+  //                         question.partialProducts.partialProduct2.length -
+  //                           1 -
+  //                           index
+  //                       ) || ""
+  //                     }
+  //                     onChange={(e) => {
+  //                       const currentValue =
+  //                         question.partialProducts.partialProduct2 || "";
+  //                       const newValue =
+  //                         currentValue.substring(
+  //                           0,
+  //                           maxResultDigits - 1 - index
+  //                         ) +
+  //                         e.target.value +
+  //                         currentValue.substring(maxResultDigits - index);
+  //                       handlePartialProductChange(
+  //                         question.id,
+  //                         "partialProduct2",
+  //                         newValue
+  //                       );
+  //                     }}
+  //                     disabled={showResults}
+  //                   />
+  //                 ))}
+  //               </div>
+  //             </div>
+
+  //             <div className="border-t-2 border-gray-400 my-3"></div>
+
+  //             {/* Final answer - right aligned */}
+  //             <div className="flex justify-end">
+  //               <div
+  //                 className="grid gap-1"
+  //                 style={{
+  //                   gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
+  //                 }}
+  //               >
+  //                 {Array.from({ length: maxResultDigits }).map((_, index) => (
+  //                   <input
+  //                     key={`answer-${index}`}
+  //                     type="text"
+  //                     maxLength={1}
+  //                     className={`w-8 h-10 text-center text-lg border rounded font-mono ${
+  //                       showResults
+  //                         ? userAnswer === correctAnswer
+  //                           ? "bg-green-100 border-green-500"
+  //                           : "bg-red-100 border-red-500"
+  //                         : "border-gray-300"
+  //                     }`}
+  //                     value={
+  //                       question.userAnswer?.charAt(
+  //                         question.userAnswer.length - 1 - index
+  //                       ) || ""
+  //                     }
+  //                     onChange={(e) => {
+  //                       const currentValue = question.userAnswer || "";
+  //                       const newValue =
+  //                         currentValue.substring(
+  //                           0,
+  //                           maxResultDigits - 1 - index
+  //                         ) +
+  //                         e.target.value +
+  //                         currentValue.substring(maxResultDigits - index);
+  //                       handleAnswerChange(question.id, newValue);
+  //                     }}
+  //                     disabled={showResults}
+  //                   />
+  //                 ))}
+  //               </div>
+  //             </div>
+
+  //             {/* Show correct answer when results are displayed */}
+  //             {showResults && !question.isCorrect && (
+  //               <div className="mt-4 text-center text-green-600 text-sm">
+  //                 <div>Correct answer: {correctAnswer}</div>
+  //               </div>
+  //             )}
+  //           </div>
+  //         </div>
+  //       </CardContent>
+  //     </Card>
+  //   );
+  // };
+  const renderQuestion = (question: Question) => {
+    const numDigits = userPreferences?.numberOfDigits || 2;
+    const maxResultDigits = numDigits + 2; // Maximum possible digits in result
+
+    const num1Array = formatNumberToArray(question.number1, maxResultDigits);
+    const num2Array = formatNumberToArray(question.number2, maxResultDigits);
+    const correctAnswer = question.number1 * question.number2;
+    const userAnswer = parseInt(question.userAnswer) || 0;
+
+    return (
+      <Card key={question.id} className="p-6">
+        <CardHeader>
+          <CardTitle className="text-center">Question {question.id}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-center">
+            <div className="bg-gray-50 p-6 rounded-lg font-mono text-center">
+              {/* Carry numbers for regrouping */}
+              {userPreferences?.complexity === "with-regrouping" && (
+                <div className="flex justify-end mb-2">
+                  <div
+                    className="grid gap-1"
+                    style={{
+                      gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
+                    }}
+                  >
+                    {Array.from({ length: maxResultDigits }).map((_, index) => {
+                      // Position carries above the correct columns
+                      const isTensCarry = index === maxResultDigits - 2;
+                      const isHundredsCarry = index === maxResultDigits - 3;
+
+                      return (
+                        <input
+                          key={`carry-${index}`}
+                          type="text"
+                          maxLength={1}
+                          className={`w-8 h-6 text-center text-xs border rounded ${
+                            showResults
+                              ? isTensCarry &&
+                                question.correctCarries?.carryOnesToTens ===
+                                  parseInt(
+                                    question.carries.carryOnesToTens || "0"
+                                  )
+                                ? "bg-green-100 border-green-500"
+                                : isHundredsCarry &&
+                                  question.correctCarries
+                                    ?.carryTensToHundreds ===
+                                    parseInt(
+                                      question.carries.carryTensToHundreds ||
+                                        "0"
+                                    )
+                                ? "bg-green-100 border-green-500"
+                                : "bg-red-100 border-red-500"
+                              : "border-gray-300"
+                          }`}
+                          value={
+                            isTensCarry
+                              ? question.carries.carryOnesToTens
+                              : isHundredsCarry
+                              ? question.carries.carryTensToHundreds
+                              : ""
+                          }
+                          onChange={(e) => {
+                            if (isTensCarry) {
+                              handleCarryChange(
+                                question.id,
+                                "carryOnesToTens",
+                                e.target.value
+                              );
+                            } else if (isHundredsCarry) {
+                              handleCarryChange(
+                                question.id,
+                                "carryTensToHundreds",
+                                e.target.value
+                              );
+                            }
+                          }}
+                          disabled={showResults}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* First number */}
+              <div className="flex justify-end mb-2">
+                <div
+                  className="grid gap-1"
+                  style={{
+                    gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
+                  }}
+                >
+                  {num1Array.map((digit, index) => (
+                    <div
+                      key={`num1-${index}`}
+                      className="w-8 h-8 flex items-center justify-center text-lg border border-gray-300 bg-white"
+                    >
+                      {digit.trim()}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Multiplication symbol and second number */}
+              <div className="flex justify-end mb-2 relative">
+                <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 text-lg">
+                  ×
+                </div>
+                <div
+                  className="grid gap-1"
+                  style={{
+                    gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
+                  }}
+                >
+                  {num2Array.map((digit, index) => (
+                    <div
+                      key={`num2-${index}`}
+                      className="w-8 h-8 flex items-center justify-center text-lg border border-gray-300 bg-white"
+                    >
+                      {digit.trim()}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t-2 border-gray-400 my-3"></div>
+
+              {/* Partial products - now with independent inputs */}
+              <div className="flex justify-end mb-2">
+                <div
+                  className="grid gap-1"
+                  style={{
+                    gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
+                  }}
+                >
+                  {Array.from({ length: maxResultDigits }).map((_, index) => (
+                    <input
+                      key={`partial1-${index}`}
+                      type="text"
+                      maxLength={1}
+                      className={`w-8 h-8 text-center text-sm border rounded ${
+                        showResults
+                          ? question.correctPartialProducts?.partialProduct1 ===
+                            parseInt(
+                              question.partialProducts.partialProduct1 || "0"
+                            )
+                            ? "bg-green-100 border-green-500"
+                            : "bg-red-100 border-red-500"
+                          : "border-gray-300"
+                      }`}
+                      value={
+                        question.partialProducts.partialProduct1?.charAt(
+                          index
+                        ) || ""
+                      }
+                      onChange={(e) => {
+                        const currentValue =
+                          question.partialProducts.partialProduct1 || "";
+                        const newValue =
+                          currentValue.substring(0, index) +
+                          e.target.value +
+                          currentValue.substring(index + 1);
+                        handlePartialProductChange(
+                          question.id,
+                          "partialProduct1",
+                          newValue
+                        );
+                      }}
+                      disabled={showResults}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end mb-2 relative">
+                <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 text-lg">
+                  +
+                </div>
+                <div
+                  className="grid gap-1"
+                  style={{
+                    gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
+                  }}
+                >
+                  {Array.from({ length: maxResultDigits }).map((_, index) => (
+                    <input
+                      key={`partial2-${index}`}
+                      type="text"
+                      maxLength={1}
+                      className={`w-8 h-8 text-center text-sm border rounded ${
+                        showResults
+                          ? question.correctPartialProducts?.partialProduct2 ===
+                            parseInt(
+                              question.partialProducts.partialProduct2 || "0"
+                            )
+                            ? "bg-green-100 border-green-500"
+                            : "bg-red-100 border-red-500"
+                          : "border-gray-300"
+                      }`}
+                      value={
+                        question.partialProducts.partialProduct2?.charAt(
+                          index
+                        ) || ""
+                      }
+                      onChange={(e) => {
+                        const currentValue =
+                          question.partialProducts.partialProduct2 || "";
+                        const newValue =
+                          currentValue.substring(0, index) +
+                          e.target.value +
+                          currentValue.substring(index + 1);
+                        handlePartialProductChange(
+                          question.id,
+                          "partialProduct2",
+                          newValue
+                        );
+                      }}
+                      disabled={showResults}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t-2 border-gray-400 my-3"></div>
+
+              {/* Final answer - now with independent inputs */}
+              <div className="flex justify-end">
+                <div
+                  className="grid gap-1"
+                  style={{
+                    gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
+                  }}
+                >
+                  {Array.from({ length: maxResultDigits }).map((_, index) => (
+                    <input
+                      key={`answer-${index}`}
+                      type="text"
+                      maxLength={1}
+                      className={`w-8 h-10 text-center text-lg border rounded font-mono ${
+                        showResults
+                          ? userAnswer === correctAnswer
+                            ? "bg-green-100 border-green-500"
+                            : "bg-red-100 border-red-500"
+                          : "border-gray-300"
+                      }`}
+                      value={question.userAnswer?.charAt(index) || ""}
+                      onChange={(e) => {
+                        const currentValue = question.userAnswer || "";
+                        const newValue =
+                          currentValue.substring(0, index) +
+                          e.target.value +
+                          currentValue.substring(index + 1);
+                        handleAnswerChange(question.id, newValue);
+                      }}
+                      disabled={showResults}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Show correct answer when results are displayed */}
+              {showResults && !question.isCorrect && (
+                <div className="mt-4 text-center text-green-600 text-sm">
+                  <div>Correct answer: {correctAnswer}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+  if (showPreferences) {
+    return (
+      <PreferenceSelection onPreferencesSelected={handlePreferencesSelected} />
+    );
+  }
+
+  if (loading && questions.length === 0) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-2xl p-8">
+          <div className="flex justify-between items-center mb-8">
+            <Button
+              variant="outline"
+              onClick={() => setShowPreferences(true)}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Change Preferences
+            </Button>
+            <div className="text-center">
+              <h1 className="text-xl font-bold text-gray-800">
+                Multiplication Worksheet
+              </h1>
+              <p className="text-gray-600">
+                {userPreferences?.complexity === "with-regrouping"
+                  ? "With"
+                  : "Without"}{" "}
+                Regrouping • {userPreferences?.numberOfDigits} digits
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={generateQuestions}
+              className="flex items-center gap-2"
+            >
+              <RefreshCcw className="w-4 h-4" />
+              New Questions
+            </Button>
+          </div>
+
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {error}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {questions.map((question) => renderQuestion(question))}
+          </div>
+
+          <div className="text-center">
+            <Button
+              onClick={checkAnswers}
+              disabled={loading || showResults}
+              className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+            >
+              {loading ? "Checking..." : "Check Answers"}
+            </Button>
+          </div>
+
+          {showResults && score !== null && (
+            <div className="mt-8 bg-gray-50 p-6 rounded-lg text-center">
+              <h3 className="text-xl font-semibold mb-2">Results</h3>
+              <div
+                className={`text-4xl font-bold mb-2 ${
+                  score >= 70
+                    ? "text-green-600"
+                    : score >= 50
+                    ? "text-yellow-600"
+                    : "text-red-600"
+                }`}
+              >
+                {score}%
+              </div>
+              <p className="text-lg">
+                Score: {questions.filter((q) => q.isCorrect).length} /{" "}
+                {questions.length}
+              </p>
+              {score === 100 && (
+                <div className="mt-4 text-2xl">🎉 Perfect Score! 🎉</div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MultiplicationWorksheet;
