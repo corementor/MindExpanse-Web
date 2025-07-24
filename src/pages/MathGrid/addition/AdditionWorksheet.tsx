@@ -4,7 +4,7 @@ import { Plus, RefreshCcw, Settings, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { mathService } from "@/services/mathService";
-
+//Interfaces to define the structure of questions and user answers
 interface Question {
   number1: number;
   number2: number;
@@ -28,13 +28,13 @@ interface Question {
     tens: boolean;
   };
 }
-
+// Interface to define user preferences for the worksheet
 interface UserPreferences {
   complexity: "with-regrouping" | "without-regrouping";
   numberOfDigits: number;
   numberOfQuestions?: number; // Optional, default to 4
 }
-
+// Interface to define the structure of the response from the API
 interface VerifyResponse {
   results: string[];
   score: number;
@@ -52,8 +52,6 @@ interface VerifyResponse {
     thousandsCorrect: boolean;
   }>;
 }
-
-// const NUM_QUESTIONS = 4;
 
 const PreferenceSelection: React.FC<{
   onPreferencesSelected: (preferences: UserPreferences) => void;
@@ -334,9 +332,6 @@ const AdditionWorksheet = () => {
   const [error, setError] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState<number | null>(null);
-
-  const token = localStorage.getItem("token");
-
   const handlePreferencesSelected = (preferences: UserPreferences) => {
     setUserPreferences(preferences);
     setShowPreferences(false);
