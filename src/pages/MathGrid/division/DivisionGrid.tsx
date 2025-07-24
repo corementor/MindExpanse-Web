@@ -11,7 +11,6 @@ import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileCheck, X, RefreshCcw, Settings, ArrowLeft } from "lucide-react";
-import { motion } from "framer-motion";
 
 interface UserPreferences {
   complexity: "with-remainder" | "without-remainder";
@@ -59,21 +58,11 @@ const PreferenceSelect: React.FC<PreferenceSelectProps> = ({ onPreferencesSelect
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-6">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full"
-      >
+      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full">
         <div className="text-center mb-8">
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4"
-          >
+          <div className="bg-green-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
             <Settings className="w-10 h-10 text-green-600" />
-          </motion.div>
+          </div>
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
             Customize Your Division Worksheet
           </h1>
@@ -84,11 +73,7 @@ const PreferenceSelect: React.FC<PreferenceSelectProps> = ({ onPreferencesSelect
         </div>
 
         <div className="space-y-8">
-          <motion.div
-            initial={{ x: -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
+          <div>
             <h3 className="text-2xl font-semibold text-gray-800 mb-4">
               🎯 Choose Complexity Level
             </h3>
@@ -168,13 +153,9 @@ const PreferenceSelect: React.FC<PreferenceSelectProps> = ({ onPreferencesSelect
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ x: 50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
+          <div>
             <h3 className="text-2xl font-semibold text-gray-800 mb-4">
               🔢 Dividend Digits
             </h3>
@@ -208,13 +189,9 @@ const PreferenceSelect: React.FC<PreferenceSelectProps> = ({ onPreferencesSelect
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ x: -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
+          <div>
             <h3 className="text-2xl font-semibold text-gray-800 mb-4">
               📝 Number of Questions
             </h3>
@@ -244,14 +221,9 @@ const PreferenceSelect: React.FC<PreferenceSelectProps> = ({ onPreferencesSelect
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="bg-gray-50 p-6 rounded-xl"
-          >
+          <div className="bg-gray-50 p-6 rounded-xl">
             <h3 className="text-xl font-semibold text-gray-800 mb-3">
               📋 Your Selection Summary
             </h3>
@@ -271,23 +243,18 @@ const PreferenceSelect: React.FC<PreferenceSelectProps> = ({ onPreferencesSelect
                 {numberOfQuestions} practice problems
               </p>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="text-center"
-          >
+          <div className="text-center">
             <Button
               onClick={handleStartWorksheet}
               className="px-12 py-4 text-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               🚀 Start My Division Worksheet
             </Button>
-          </motion.div>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
@@ -329,7 +296,7 @@ const generateQuestion = (preferences: UserPreferences, id: number): Question =>
   };
 };
 
-// Division Practice Component with worksheet-style layout
+// Division Practice Component with worksheet-style layout matching the image
 const DivisionPractice: React.FC<{
   preferences: UserPreferences;
   onBack: () => void;
@@ -354,11 +321,11 @@ const DivisionPractice: React.FC<{
   const handleQuotientChange = (questionId: number, digitIndex: number, value: string) => {
     setQuestions(prev => prev.map(q => {
       if (q.id === questionId) {
-        const quotientArray = q.userQuotient.split('');
+        const quotientArray = q.userQuotient.padStart(3, ' ').split('');
         quotientArray[digitIndex] = value;
         return {
           ...q,
-          userQuotient: quotientArray.join('')
+          userQuotient: quotientArray.join('').trim()
         };
       }
       return q;
@@ -407,153 +374,155 @@ const DivisionPractice: React.FC<{
     setIsChecked(true);
   };
 
-  const getQuotientDigits = (quotient: number) => {
-    return quotient.toString().split('');
-  };
-
   return (
     <div className="min-h-screen bg-white p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-black mb-6">
-            Division {preferences.complexity === "with-remainder" ? "With" : "Without"} Remainder
-          </h1>
-          
-          <div className="flex items-center justify-start mb-8">
-            <span className="text-lg font-semibold mr-4">Name:</span>
-            <div className="border-b-2 border-black w-96">
-              <input
-                type="text"
-                value={studentName}
-                onChange={(e) => setStudentName(e.target.value)}
-                className="w-full py-2 text-lg bg-transparent focus:outline-none"
-                placeholder=""
-              />
+      <div className="max-w-6xl mx-auto">
+        {/* Header exactly like the image */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-8">
+            <Button
+              variant="outline"
+              onClick={onBack}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Change Preferences
+            </Button>
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold text-black">
+                Solve Two-Digit Division Questions
+              </h1>
+              <Button 
+                variant="ghost" 
+                onClick={generateQuestions}
+                className="p-2"
+              >
+                <RefreshCcw className="w-5 h-5" />
+              </Button>
             </div>
           </div>
         </div>
 
-        {/* Control buttons */}
-        <div className="flex justify-between items-center mb-8">
-          <Button
-            variant="outline"
-            onClick={onBack}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Change Preferences
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={generateQuestions}
-            className="flex items-center gap-2"
-          >
-            <RefreshCcw className="w-4 h-4" />
-            New Questions
-          </Button>
-        </div>
-
-        {/* Questions Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mb-8">
+        {/* Questions Grid - exactly matching the image layout */}
+        <div className="grid grid-cols-2 gap-x-12 gap-y-12 mb-8">
           {questions.map((question, index) => {
-            const quotientDigits = getQuotientDigits(question.quotient);
-            const dividendStr = question.dividend.toString();
+            const dividendDigits = question.dividend.toString().split('');
             
             return (
-              <div key={question.id} className="flex flex-col">
-                <div className="text-lg font-semibold mb-4">{index + 1}.</div>
+              <div key={question.id} className="space-y-4">
+                {/* Question label */}
+                <div className="text-lg font-semibold">Q.{index + 1}</div>
                 
-                <div className="font-mono text-xl leading-relaxed">
-                  {/* Quotient input boxes */}
-                  <div className="flex items-center mb-2">
-                    <div className="w-8"></div> {/* Space for problem number alignment */}
-                    <div className="flex space-x-1">
-                      {dividendStr.split('').map((_, digitIndex) => (
-                        <input
-                          key={digitIndex}
-                          type="text"
-                          maxLength={1}
-                          className={`w-8 h-8 border-2 border-black text-center text-lg font-bold ${
-                            isChecked 
-                              ? question.isCorrect 
-                                ? 'bg-green-100' 
-                                : 'bg-red-100'
-                              : 'bg-white'
-                          }`}
-                          onChange={(e) => handleQuotientChange(question.id, digitIndex, e.target.value)}
-                        />
-                      ))}
-                      {preferences.complexity === "with-remainder" && (
-                        <>
-                          <span className="mx-2 text-lg font-bold">R</span>
-                          <input
-                            type="text"
-                            maxLength={2}
-                            className={`w-12 h-8 border-2 border-black text-center text-lg font-bold ${
-                              isChecked 
-                                ? question.isCorrect 
-                                  ? 'bg-green-100' 
-                                  : 'bg-red-100'
-                                : 'bg-white'
-                            }`}
-                            value={question.userRemainder}
-                            onChange={(e) => handleRemainderChange(question.id, e.target.value)}
-                          />
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Division problem layout */}
-                  <div className="flex items-start">
+                {/* Quotient input boxes */}
+                <div className="flex gap-1 mb-2">
+                  {[0, 1, 2, 3].map((digitIndex) => (
+                    <input
+                      key={digitIndex}
+                      type="text"
+                      maxLength={1}
+                      className={`w-8 h-8 border-2 border-gray-400 text-center text-base ${
+                        isChecked 
+                          ? question.isCorrect 
+                            ? 'bg-green-100' 
+                            : 'bg-red-100'
+                          : 'bg-white'
+                      }`}
+                      onChange={(e) => handleQuotientChange(question.id, digitIndex, e.target.value)}
+                    />
+                  ))}
+                </div>
+                
+                {/* Division setup */}
+                <div className="relative">
+                  <div className="flex">
                     <div className="text-lg font-bold mr-2">{question.divisor}</div>
-                    <div className="relative">
-                      <div className="border-l-2 border-t-2 border-black pl-3 pt-1">
-                        <div className="text-lg font-bold">{question.dividend}</div>
+                    <div className="border-l-2 border-t-2 border-black pl-2 pt-1">
+                      <div className="flex">
+                        {dividendDigits.map((digit, i) => (
+                          <span key={i} className="inline-block w-6 text-center text-lg font-bold">
+                            {digit}
+                          </span>
+                        ))}
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Working space with input boxes */}
-                  <div className="ml-8 mt-4 space-y-2">
-                    {[0, 1, 2, 3, 4, 5].map((stepIndex) => (
-                      <div key={stepIndex} className="flex items-center">
-                        <input
-                          type="text"
-                          className="w-16 h-8 border border-black text-center text-lg bg-white"
-                          value={question.workingSteps[stepIndex] || ''}
-                          onChange={(e) => handleWorkingStepChange(question.id, stepIndex, e.target.value)}
-                        />
-                        {stepIndex % 2 === 1 && stepIndex < 5 && (
-                          <div className="ml-2 border-t border-black w-12"></div>
-                        )}
-                      </div>
+                </div>
+                
+                {/* Working space with minus signs and input boxes */}
+                <div className="ml-8 space-y-3">
+                  {/* First subtraction row */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-lg">-</span>
+                    {[0, 1, 2, 3].map((boxIndex) => (
+                      <input
+                        key={boxIndex}
+                        type="text"
+                        maxLength={1}
+                        className="w-8 h-8 border-2 border-gray-400 text-center text-sm bg-white"
+                        value={question.workingSteps[boxIndex] || ''}
+                        onChange={(e) => handleWorkingStepChange(question.id, boxIndex, e.target.value)}
+                      />
                     ))}
-                    
-                    {/* Final remainder box for with-remainder problems */}
-                    {preferences.complexity === "with-remainder" && (
-                      <div className="flex items-center mt-4">
-                        <input
-                          type="text"
-                          className="w-12 h-8 border border-black text-center text-lg bg-white"
-                          value={question.workingSteps[6] || ''}
-                          onChange={(e) => handleWorkingStepChange(question.id, 6, e.target.value)}
-                        />
-                      </div>
+                  </div>
+                  
+                  {/* Second subtraction row */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-lg">-</span>
+                    {[4, 5, 6, 7].map((boxIndex) => (
+                      <input
+                        key={boxIndex}
+                        type="text"
+                        maxLength={1}
+                        className="w-8 h-8 border-2 border-gray-400 text-center text-sm bg-white"
+                        value={question.workingSteps[boxIndex] || ''}
+                        onChange={(e) => handleWorkingStepChange(question.id, boxIndex, e.target.value)}
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* Third subtraction row */}
+                  <div className="flex items-center gap-1">
+                    <span className="text-lg">-</span>
+                    {[8, 9, 10, 11].map((boxIndex) => (
+                      <input
+                        key={boxIndex}
+                        type="text"
+                        maxLength={1}
+                        className="w-8 h-8 border-2 border-gray-400 text-center text-sm bg-white"
+                        value={question.workingSteps[boxIndex] || ''}
+                        onChange={(e) => handleWorkingStepChange(question.id, boxIndex, e.target.value)}
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* Remainder field */}
+                  <div className="flex items-center gap-2 mt-4">
+                    <span className="text-lg font-semibold">R:</span>
+                    <input
+                      type="text"
+                      maxLength={2}
+                      className={`w-12 h-8 border-2 border-gray-400 text-center text-base ${
+                        isChecked 
+                          ? question.isCorrect 
+                            ? 'bg-green-100' 
+                            : 'bg-red-100'
+                          : 'bg-white'
+                      }`}
+                      value={question.userRemainder}
+                      onChange={(e) => handleRemainderChange(question.id, e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                {/* Show correct answers when checked */}
+                {isChecked && !question.isCorrect && (
+                  <div className="mt-4 text-red-600 text-sm">
+                    <div>Correct answer: {question.quotient}</div>
+                    {preferences.complexity === "with-remainder" && question.remainder > 0 && (
+                      <div>Remainder: {question.remainder}</div>
                     )}
                   </div>
-                  
-                  {/* Show correct answers when checked */}
-                  {isChecked && !question.isCorrect && (
-                    <div className="mt-4 text-green-600 text-sm font-normal">
-                      <div>Correct: {question.quotient}</div>
-                      {preferences.complexity === "with-remainder" && question.remainder > 0 && (
-                        <div>Remainder: {question.remainder}</div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
             );
           })}
@@ -586,7 +555,7 @@ const DivisionPractice: React.FC<{
 };
 
 // Main Component
-const Division: React.FC = () => {
+const Index: React.FC = () => {
   const [showPreferences, setShowPreferences] = useState(true);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
 
@@ -611,4 +580,4 @@ const Division: React.FC = () => {
   );
 };
 
-export default Division;
+export default Index;
