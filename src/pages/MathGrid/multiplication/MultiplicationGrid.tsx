@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, Settings, ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { mathService } from "@/services/mathService";
 interface UserPreferences {
   complexity: "with-regrouping" | "without-regrouping";
   numberOfDigits: number;
@@ -15,76 +15,39 @@ interface Question {
   number2: number;
   userAnswer: string;
   partialProducts: {
-    [key: string]: string;
+    partialProduct1: string;
+    partialProduct2: string;
+    partialProduct3: string;
   };
   carries: {
-    [key: string]: string;
+    carryOnesToTens: string;
+    carryTensToHundreds: string;
   };
   isCorrect?: boolean;
   partialProductsCorrect?: boolean;
   carriesCorrect?: boolean;
   correctPartialProducts?: {
-    [key: string]: number;
+    partialProduct1: number;
+    partialProduct2: number;
+    partialProduct3: number;
   };
   correctCarries?: {
-    [key: string]: number;
-  };
-}
-
-// Math service interfaces
-interface VerifyMultiplicationAnswer {
-  number1: number;
-  number2: number;
-  answer: number;
-  carries: {
     carryOnesToTens: number;
     carryTensToHundreds: number;
   };
-  partialProducts: {
-    partialProduct1: number;
-    partialProduct2: number;
-    partialProduct3: number;
-  };
 }
 
-interface VerifyMultiplicationResponse {
-  results: string[];
-  score: number;
-  percentage: number;
-  maxScore: number;
-  total: number;
-  correctCarries: Array<{
-    carryOnesToTens: number;
-    carryTensToHundreds: number;
-  }>;
-  carryValidation: Array<{
-    carryOnesToTensCorrect: boolean;
-    carryTensToHundredsCorrect: boolean;
-  }>;
-  correctPartialProducts: Array<{
-    partialProduct1: number;
-    partialProduct2: number;
-    partialProduct3: number;
-  }>;
-}
-
-// Import your actual math service
-// Note: You'll need to import this from your actual service file
-import { mathService } from "@/services/mathService";
-
-// For now, using a placeholder that matches your service interface
+// Mock math service for demonstration
 // const mathService = {
-//   verifyMultiplicationAnswers: async (answers: VerifyMultiplicationAnswer[]): Promise<VerifyMultiplicationResponse> => {
-//     // This should be replaced with your actual service import
-//     // return await actualMathService.verifyMultiplicationAnswers(answers);
-
-//     // Temporary mock that matches your interface structure
+//   verifyMultiplicationAnswers: async (answers: any[]): Promise<any> => {
 //     return new Promise((resolve) => {
 //       setTimeout(() => {
 //         resolve({
 //           results: answers.map((answer) => {
 //             const correct = answer.number1 * answer.number2;
-//             return answer.answer === correct ? "Perfect! All correct" : "Some errors found";
+//             return answer.answer === correct
+//               ? "Perfect! All correct"
+//               : "Some errors found";
 //           }),
 //           score: Math.floor(Math.random() * 40 + 60),
 //           percentage: Math.floor(Math.random() * 40 + 60),
@@ -106,7 +69,7 @@ import { mathService } from "@/services/mathService";
 //         });
 //       }, 1000);
 //     });
-//   }
+//   },
 // };
 
 const PreferenceSelection: React.FC<{
@@ -356,21 +319,23 @@ const MultiplicationWorksheet = () => {
     }
   }, [showPreferences, userPreferences]);
 
+  // Fixed: Simple string-based input handling
   const handleAnswerChange = (questionId: number, value: string) => {
+    const cleanValue = value.replace(/[^0-9]/g, "");
     setQuestions((prev) =>
       prev.map((q) =>
-        q.id === questionId
-          ? { ...q, userAnswer: value.replace(/[^0-9]/g, "") }
-          : q
+        q.id === questionId ? { ...q, userAnswer: cleanValue } : q
       )
     );
   };
 
+  // Fixed: Simple string-based partial product handling
   const handlePartialProductChange = (
     questionId: number,
     productKey: string,
     value: string
   ) => {
+    const cleanValue = value.replace(/[^0-9]/g, "");
     setQuestions((prev) =>
       prev.map((q) =>
         q.id === questionId
@@ -378,7 +343,7 @@ const MultiplicationWorksheet = () => {
               ...q,
               partialProducts: {
                 ...q.partialProducts,
-                [productKey]: value.replace(/[^0-9]/g, ""),
+                [productKey]: cleanValue,
               },
             }
           : q
@@ -386,11 +351,13 @@ const MultiplicationWorksheet = () => {
     );
   };
 
+  // Simple string-based carry handling
   const handleCarryChange = (
     questionId: number,
     carryKey: string,
     value: string
   ) => {
+    const cleanValue = value.replace(/[^0-9]/g, "").slice(0, 1); // Only single digit
     setQuestions((prev) =>
       prev.map((q) =>
         q.id === questionId
@@ -398,7 +365,7 @@ const MultiplicationWorksheet = () => {
               ...q,
               carries: {
                 ...q.carries,
-                [carryKey]: value.replace(/[^0-9]/g, ""),
+                [carryKey]: cleanValue,
               },
             }
           : q
@@ -411,22 +378,20 @@ const MultiplicationWorksheet = () => {
     setError(null);
 
     try {
-      const answersToVerify: VerifyMultiplicationAnswer[] = questions.map(
-        (q) => ({
-          number1: q.number1,
-          number2: q.number2,
-          answer: parseInt(q.userAnswer) || 0,
-          carries: {
-            carryOnesToTens: parseInt(q.carries.carryOnesToTens) || 0,
-            carryTensToHundreds: parseInt(q.carries.carryTensToHundreds) || 0,
-          },
-          partialProducts: {
-            partialProduct1: parseInt(q.partialProducts.partialProduct1) || 0,
-            partialProduct2: parseInt(q.partialProducts.partialProduct2) || 0,
-            partialProduct3: parseInt(q.partialProducts.partialProduct3) || 0,
-          },
-        })
-      );
+      const answersToVerify = questions.map((q) => ({
+        number1: q.number1,
+        number2: q.number2,
+        answer: parseInt(q.userAnswer) || 0,
+        carries: {
+          carryOnesToTens: parseInt(q.carries.carryOnesToTens) || 0,
+          carryTensToHundreds: parseInt(q.carries.carryTensToHundreds) || 0,
+        },
+        partialProducts: {
+          partialProduct1: parseInt(q.partialProducts.partialProduct1) || 0,
+          partialProduct2: parseInt(q.partialProducts.partialProduct2) || 0,
+          partialProduct3: parseInt(q.partialProducts.partialProduct3) || 0,
+        },
+      }));
 
       const data = await mathService.verifyMultiplicationAnswers(
         answersToVerify
@@ -462,298 +427,46 @@ const MultiplicationWorksheet = () => {
     }
   };
 
+  // Fixed: Better number formatting with proper alignment
   const formatNumberToArray = (num: number, totalDigits: number): string[] => {
     const numStr = num.toString();
     const paddedStr = numStr.padStart(totalDigits, " ");
     return paddedStr.split("");
   };
 
-  // const renderQuestion = (question: Question) => {
-  //   const numDigits = userPreferences?.numberOfDigits || 2;
-  //   const maxResultDigits = numDigits + 2; // Maximum possible digits in result
-
-  //   const num1Array = formatNumberToArray(question.number1, maxResultDigits);
-  //   const num2Array = formatNumberToArray(question.number2, maxResultDigits);
-
-  //   const correctAnswer = question.number1 * question.number2;
-  //   const userAnswer = parseInt(question.userAnswer) || 0;
-
-  //   return (
-  //     <Card key={question.id} className="p-6">
-  //       <CardHeader>
-  //         <CardTitle className="text-center">Question {question.id}</CardTitle>
-  //       </CardHeader>
-  //       <CardContent>
-  //         <div className="flex justify-center">
-  //           <div className="bg-gray-50 p-6 rounded-lg font-mono text-center">
-  //             {/* Carry numbers for regrouping - right aligned */}
-  //             {userPreferences?.complexity === "with-regrouping" && (
-  //               <div className="flex justify-end mb-2">
-  //                 <div
-  //                   className="grid gap-1"
-  //                   style={{
-  //                     gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
-  //                   }}
-  //                 >
-  //                   {Array.from({ length: maxResultDigits }).map((_, index) => (
-  //                     <input
-  //                       key={`carry-${index}`}
-  //                       type="text"
-  //                       maxLength={1}
-  //                       className={`w-8 h-6 text-center text-xs border rounded ${
-  //                         showResults
-  //                           ? "bg-green-100 border-green-500"
-  //                           : "border-gray-300"
-  //                       }`}
-  //                       value={
-  //                         index === maxResultDigits - 2
-  //                           ? question.carries.carryOnesToTens
-  //                           : index === maxResultDigits - 3
-  //                           ? question.carries.carryTensToHundreds
-  //                           : ""
-  //                       }
-  //                       onChange={(e) => {
-  //                         const carryKey =
-  //                           index === maxResultDigits - 2
-  //                             ? "carryOnesToTens"
-  //                             : index === maxResultDigits - 3
-  //                             ? "carryTensToHundreds"
-  //                             : "";
-  //                         if (carryKey) {
-  //                           handleCarryChange(
-  //                             question.id,
-  //                             carryKey,
-  //                             e.target.value
-  //                           );
-  //                         }
-  //                       }}
-  //                       disabled={showResults}
-  //                       style={{
-  //                         visibility:
-  //                           index === maxResultDigits - 2 ||
-  //                           index === maxResultDigits - 3
-  //                             ? "visible"
-  //                             : "hidden",
-  //                       }}
-  //                     />
-  //                   ))}
-  //                 </div>
-  //               </div>
-  //             )}
-
-  //             {/* First number - right aligned */}
-  //             <div className="flex justify-end mb-2">
-  //               <div
-  //                 className="grid gap-1"
-  //                 style={{
-  //                   gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
-  //                 }}
-  //               >
-  //                 {num1Array.map((digit, index) => (
-  //                   <div
-  //                     key={`num1-${index}`}
-  //                     className="w-8 h-8 flex items-center justify-center text-lg border border-gray-300 bg-white"
-  //                   >
-  //                     {digit.trim()}
-  //                   </div>
-  //                 ))}
-  //               </div>
-  //             </div>
-
-  //             {/* Multiplication symbol and second number - right aligned */}
-  //             <div className="flex justify-end mb-2 relative">
-  //               <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 text-lg">
-  //                 ×
-  //               </div>
-  //               <div
-  //                 className="grid gap-1"
-  //                 style={{
-  //                   gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
-  //                 }}
-  //               >
-  //                 {num2Array.map((digit, index) => (
-  //                   <div
-  //                     key={`num2-${index}`}
-  //                     className="w-8 h-8 flex items-center justify-center text-lg border border-gray-300 bg-white"
-  //                   >
-  //                     {digit.trim()}
-  //                   </div>
-  //                 ))}
-  //               </div>
-  //             </div>
-
-  //             <div className="border-t-2 border-gray-400 my-3"></div>
-
-  //             {/* Partial products - right aligned */}
-  //             <div className="flex justify-end mb-2">
-  //               <div
-  //                 className="grid gap-1"
-  //                 style={{
-  //                   gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
-  //                 }}
-  //               >
-  //                 {Array.from({ length: maxResultDigits }).map((_, index) => (
-  //                   <input
-  //                     key={`partial1-${index}`}
-  //                     type="text"
-  //                     maxLength={1}
-  //                     className={`w-8 h-8 text-center text-sm border rounded ${
-  //                       showResults
-  //                         ? question.correctPartialProducts?.partialProduct1 ===
-  //                           parseInt(
-  //                             question.partialProducts.partialProduct1 || "0"
-  //                           )
-  //                           ? "bg-green-100 border-green-500"
-  //                           : "bg-red-100 border-red-500"
-  //                         : "border-gray-300"
-  //                     }`}
-  //                     value={
-  //                       question.partialProducts.partialProduct1?.charAt(
-  //                         question.partialProducts.partialProduct1.length -
-  //                           1 -
-  //                           index
-  //                       ) || ""
-  //                     }
-  //                     onChange={(e) => {
-  //                       const currentValue =
-  //                         question.partialProducts.partialProduct1 || "";
-  //                       const newValue =
-  //                         currentValue.substring(
-  //                           0,
-  //                           maxResultDigits - 1 - index
-  //                         ) +
-  //                         e.target.value +
-  //                         currentValue.substring(maxResultDigits - index);
-  //                       handlePartialProductChange(
-  //                         question.id,
-  //                         "partialProduct1",
-  //                         newValue
-  //                       );
-  //                     }}
-  //                     disabled={showResults}
-  //                   />
-  //                 ))}
-  //               </div>
-  //             </div>
-
-  //             <div className="flex justify-end mb-2 relative">
-  //               <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 text-lg">
-  //                 +
-  //               </div>
-  //               <div
-  //                 className="grid gap-1"
-  //                 style={{
-  //                   gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
-  //                 }}
-  //               >
-  //                 {Array.from({ length: maxResultDigits }).map((_, index) => (
-  //                   <input
-  //                     key={`partial2-${index}`}
-  //                     type="text"
-  //                     maxLength={1}
-  //                     className={`w-8 h-8 text-center text-sm border rounded ${
-  //                       showResults
-  //                         ? question.correctPartialProducts?.partialProduct2 ===
-  //                           parseInt(
-  //                             question.partialProducts.partialProduct2 || "0"
-  //                           )
-  //                           ? "bg-green-100 border-green-500"
-  //                           : "bg-red-100 border-red-500"
-  //                         : "border-gray-300"
-  //                     }`}
-  //                     value={
-  //                       question.partialProducts.partialProduct2?.charAt(
-  //                         question.partialProducts.partialProduct2.length -
-  //                           1 -
-  //                           index
-  //                       ) || ""
-  //                     }
-  //                     onChange={(e) => {
-  //                       const currentValue =
-  //                         question.partialProducts.partialProduct2 || "";
-  //                       const newValue =
-  //                         currentValue.substring(
-  //                           0,
-  //                           maxResultDigits - 1 - index
-  //                         ) +
-  //                         e.target.value +
-  //                         currentValue.substring(maxResultDigits - index);
-  //                       handlePartialProductChange(
-  //                         question.id,
-  //                         "partialProduct2",
-  //                         newValue
-  //                       );
-  //                     }}
-  //                     disabled={showResults}
-  //                   />
-  //                 ))}
-  //               </div>
-  //             </div>
-
-  //             <div className="border-t-2 border-gray-400 my-3"></div>
-
-  //             {/* Final answer - right aligned */}
-  //             <div className="flex justify-end">
-  //               <div
-  //                 className="grid gap-1"
-  //                 style={{
-  //                   gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
-  //                 }}
-  //               >
-  //                 {Array.from({ length: maxResultDigits }).map((_, index) => (
-  //                   <input
-  //                     key={`answer-${index}`}
-  //                     type="text"
-  //                     maxLength={1}
-  //                     className={`w-8 h-10 text-center text-lg border rounded font-mono ${
-  //                       showResults
-  //                         ? userAnswer === correctAnswer
-  //                           ? "bg-green-100 border-green-500"
-  //                           : "bg-red-100 border-red-500"
-  //                         : "border-gray-300"
-  //                     }`}
-  //                     value={
-  //                       question.userAnswer?.charAt(
-  //                         question.userAnswer.length - 1 - index
-  //                       ) || ""
-  //                     }
-  //                     onChange={(e) => {
-  //                       const currentValue = question.userAnswer || "";
-  //                       const newValue =
-  //                         currentValue.substring(
-  //                           0,
-  //                           maxResultDigits - 1 - index
-  //                         ) +
-  //                         e.target.value +
-  //                         currentValue.substring(maxResultDigits - index);
-  //                       handleAnswerChange(question.id, newValue);
-  //                     }}
-  //                     disabled={showResults}
-  //                   />
-  //                 ))}
-  //               </div>
-  //             </div>
-
-  //             {/* Show correct answer when results are displayed */}
-  //             {showResults && !question.isCorrect && (
-  //               <div className="mt-4 text-center text-green-600 text-sm">
-  //                 <div>Correct answer: {correctAnswer}</div>
-  //               </div>
-  //             )}
-  //           </div>
-  //         </div>
-  //       </CardContent>
-  //     </Card>
-  //   );
-  // };
+  // Fixed: Completely rewritten renderQuestion with proper input handling
   const renderQuestion = (question: Question) => {
     const numDigits = userPreferences?.numberOfDigits || 2;
-    const maxResultDigits = numDigits + 2; // Maximum possible digits in result
+    const maxResultDigits = numDigits + 2;
 
     const num1Array = formatNumberToArray(question.number1, maxResultDigits);
     const num2Array = formatNumberToArray(question.number2, maxResultDigits);
     const correctAnswer = question.number1 * question.number2;
     const userAnswer = parseInt(question.userAnswer) || 0;
+
+    // Fixed: Helper function to get individual digit from string
+    const getDigitAtPosition = (
+      str: string,
+      position: number,
+      totalPositions: number
+    ): string => {
+      if (!str) return "";
+      const paddedStr = str.padStart(totalPositions, " ");
+      return paddedStr[position] === " " ? "" : paddedStr[position];
+    };
+
+    // Fixed: Helper function to update digit at position
+    const updateDigitAtPosition = (
+      currentStr: string,
+      position: number,
+      totalPositions: number,
+      newDigit: string
+    ): string => {
+      const paddedStr = currentStr.padStart(totalPositions, " ");
+      const strArray = paddedStr.split("");
+      strArray[position] = newDigit;
+      return strArray.join("").trim();
+    };
 
     return (
       <Card key={question.id} className="p-6">
@@ -773,9 +486,9 @@ const MultiplicationWorksheet = () => {
                     }}
                   >
                     {Array.from({ length: maxResultDigits }).map((_, index) => {
-                      // Position carries above the correct columns
                       const isTensCarry = index === maxResultDigits - 2;
                       const isHundredsCarry = index === maxResultDigits - 3;
+                      const isVisible = isTensCarry || isHundredsCarry;
 
                       return (
                         <input
@@ -783,23 +496,11 @@ const MultiplicationWorksheet = () => {
                           type="text"
                           maxLength={1}
                           className={`w-8 h-6 text-center text-xs border rounded ${
-                            showResults
-                              ? isTensCarry &&
-                                question.correctCarries?.carryOnesToTens ===
-                                  parseInt(
-                                    question.carries.carryOnesToTens || "0"
-                                  )
-                                ? "bg-green-100 border-green-500"
-                                : isHundredsCarry &&
-                                  question.correctCarries
-                                    ?.carryTensToHundreds ===
-                                    parseInt(
-                                      question.carries.carryTensToHundreds ||
-                                        "0"
-                                    )
-                                ? "bg-green-100 border-green-500"
-                                : "bg-red-100 border-red-500"
-                              : "border-gray-300"
+                            isVisible ? "border-gray-300" : "border-transparent"
+                          } ${
+                            showResults && isVisible
+                              ? "bg-green-100 border-green-500"
+                              : ""
                           }`}
                           value={
                             isTensCarry
@@ -824,6 +525,9 @@ const MultiplicationWorksheet = () => {
                             }
                           }}
                           disabled={showResults}
+                          style={{
+                            visibility: isVisible ? "visible" : "hidden",
+                          }}
                         />
                       );
                     })}
@@ -874,7 +578,7 @@ const MultiplicationWorksheet = () => {
 
               <div className="border-t-2 border-gray-400 my-3"></div>
 
-              {/* Partial products - now with independent inputs */}
+              {/* First partial product */}
               <div className="flex justify-end mb-2">
                 <div
                   className="grid gap-1"
@@ -889,26 +593,21 @@ const MultiplicationWorksheet = () => {
                       maxLength={1}
                       className={`w-8 h-8 text-center text-sm border rounded ${
                         showResults
-                          ? question.correctPartialProducts?.partialProduct1 ===
-                            parseInt(
-                              question.partialProducts.partialProduct1 || "0"
-                            )
-                            ? "bg-green-100 border-green-500"
-                            : "bg-red-100 border-red-500"
+                          ? "bg-green-100 border-green-500"
                           : "border-gray-300"
                       }`}
-                      value={
-                        question.partialProducts.partialProduct1?.charAt(
-                          index
-                        ) || ""
-                      }
+                      value={getDigitAtPosition(
+                        question.partialProducts.partialProduct1,
+                        index,
+                        maxResultDigits
+                      )}
                       onChange={(e) => {
-                        const currentValue =
-                          question.partialProducts.partialProduct1 || "";
-                        const newValue =
-                          currentValue.substring(0, index) +
-                          e.target.value +
-                          currentValue.substring(index + 1);
+                        const newValue = updateDigitAtPosition(
+                          question.partialProducts.partialProduct1,
+                          index,
+                          maxResultDigits,
+                          e.target.value.replace(/[^0-9]/g, "")
+                        );
                         handlePartialProductChange(
                           question.id,
                           "partialProduct1",
@@ -921,6 +620,7 @@ const MultiplicationWorksheet = () => {
                 </div>
               </div>
 
+              {/* Second partial product */}
               <div className="flex justify-end mb-2 relative">
                 <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 text-lg">
                   +
@@ -938,26 +638,21 @@ const MultiplicationWorksheet = () => {
                       maxLength={1}
                       className={`w-8 h-8 text-center text-sm border rounded ${
                         showResults
-                          ? question.correctPartialProducts?.partialProduct2 ===
-                            parseInt(
-                              question.partialProducts.partialProduct2 || "0"
-                            )
-                            ? "bg-green-100 border-green-500"
-                            : "bg-red-100 border-red-500"
+                          ? "bg-green-100 border-green-500"
                           : "border-gray-300"
                       }`}
-                      value={
-                        question.partialProducts.partialProduct2?.charAt(
-                          index
-                        ) || ""
-                      }
+                      value={getDigitAtPosition(
+                        question.partialProducts.partialProduct2,
+                        index,
+                        maxResultDigits
+                      )}
                       onChange={(e) => {
-                        const currentValue =
-                          question.partialProducts.partialProduct2 || "";
-                        const newValue =
-                          currentValue.substring(0, index) +
-                          e.target.value +
-                          currentValue.substring(index + 1);
+                        const newValue = updateDigitAtPosition(
+                          question.partialProducts.partialProduct2,
+                          index,
+                          maxResultDigits,
+                          e.target.value.replace(/[^0-9]/g, "")
+                        );
                         handlePartialProductChange(
                           question.id,
                           "partialProduct2",
@@ -972,7 +667,7 @@ const MultiplicationWorksheet = () => {
 
               <div className="border-t-2 border-gray-400 my-3"></div>
 
-              {/* Final answer - now with independent inputs */}
+              {/* Final answer */}
               <div className="flex justify-end">
                 <div
                   className="grid gap-1"
@@ -992,13 +687,18 @@ const MultiplicationWorksheet = () => {
                             : "bg-red-100 border-red-500"
                           : "border-gray-300"
                       }`}
-                      value={question.userAnswer?.charAt(index) || ""}
+                      value={getDigitAtPosition(
+                        question.userAnswer,
+                        index,
+                        maxResultDigits
+                      )}
                       onChange={(e) => {
-                        const currentValue = question.userAnswer || "";
-                        const newValue =
-                          currentValue.substring(0, index) +
-                          e.target.value +
-                          currentValue.substring(index + 1);
+                        const newValue = updateDigitAtPosition(
+                          question.userAnswer,
+                          index,
+                          maxResultDigits,
+                          e.target.value.replace(/[^0-9]/g, "")
+                        );
                         handleAnswerChange(question.id, newValue);
                       }}
                       disabled={showResults}
@@ -1019,6 +719,7 @@ const MultiplicationWorksheet = () => {
       </Card>
     );
   };
+
   if (showPreferences) {
     return (
       <PreferenceSelection onPreferencesSelected={handlePreferencesSelected} />
