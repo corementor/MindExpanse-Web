@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, RefreshCcw, Settings, ArrowLeft } from "lucide-react";
+import { Minus, RefreshCcw, Settings, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-
 import { mathService } from "@/services/mathService";
-//Interfaces to define the structure of questions and user answers
+
+// Interfaces to define the structure of questions and user answers
 interface Question {
   number1: number;
   number2: number;
@@ -15,25 +15,27 @@ interface Question {
     tens: string;
     ones: string;
   };
-  carryNumbers: {
-    thousands: string; // Carry from hundreds to thousands
-    hundreds: string; // Carry from tens to hundreds
-    tens: string; // Carry from ones to tens
+  borrowNumbers: {
+    thousands: string; // Borrow from thousands to hundreds
+    hundreds: string; // Borrow from hundreds to tens
+    tens: string; // Borrow from tens to ones
   };
   isCorrect?: boolean;
-  carriesCorrect?: boolean;
-  carryValidation?: {
+  borrowsCorrect?: boolean;
+  borrowValidation?: {
     thousands: boolean;
     hundreds: boolean;
     tens: boolean;
   };
 }
+
 // Interface to define user preferences for the worksheet
 interface UserPreferences {
   complexity: "with-regrouping" | "without-regrouping";
   numberOfDigits: number;
-  numberOfQuestions?: number; // Optional, default to 4
+  numberOfQuestions?: number;
 }
+
 // Interface to define the structure of the response from the API
 interface VerifyResponse {
   results: string[];
@@ -41,12 +43,12 @@ interface VerifyResponse {
   percentage: number;
   maxScore: number;
   total: number;
-  correctCarries: Array<{
+  correctBorrows: Array<{
     tens: number;
     hundreds: number;
     thousands: number;
   }>;
-  carryValidation: Array<{
+  borrowValidation: Array<{
     tensCorrect: boolean;
     hundredsCorrect: boolean;
     thousandsCorrect: boolean;
@@ -74,47 +76,36 @@ const PreferenceSelection: React.FC<{
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl my-8" // Changed padding and max-width
+        className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl my-8"
       >
         <div className="text-center mb-6">
-          {" "}
-          {/* Reduced margin */}
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3" // Smaller icon container
+            className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3"
           >
-            <Settings className="w-8 h-8 text-blue-600" /> {/* Smaller icon */}
+            <Settings className="w-8 h-8 text-blue-600" />
           </motion.div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            {" "}
-            {/* Smaller heading */}
             Customize Your Worksheet
           </h1>
           <p className="text-gray-600">
-            Set your preferences to create the perfect addition practice
+            Set your preferences to create the perfect subtraction practice
             experience
           </p>
         </div>
 
         <div className="space-y-6">
-          {" "}
-          {/* Reduced spacing */}
-          {/* Complexity Selection - unchanged but with reduced padding */}
           <motion.div
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
             <h3 className="text-xl font-semibold text-gray-800 mb-3">
-              {" "}
-              {/* Smaller heading */}
               🎯 Choose Complexity Level
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {" "}
-              {/* Reduced gap */}
               <div
                 className={`p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg ${
                   complexity === "without-regrouping"
@@ -124,11 +115,7 @@ const PreferenceSelection: React.FC<{
                 onClick={() => setComplexity("without-regrouping")}
               >
                 <div className="flex items-center justify-between mb-2">
-                  {" "}
-                  {/* Reduced margin */}
                   <h4 className="font-bold text-gray-800">
-                    {" "}
-                    {/* Smaller text */}
                     Without Regrouping
                   </h4>
                   <div
@@ -144,16 +131,12 @@ const PreferenceSelection: React.FC<{
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm mb-2">
-                  {" "}
-                  {/* Reduced margin */}
-                  Simple addition problems where no carrying is required
+                  Simple subtraction problems where no borrowing is required
                 </p>
                 <div className="bg-gray-50 p-2 rounded-lg font-mono text-center">
-                  {" "}
-                  {/* Reduced padding */}
-                  <div> 123</div>
-                  <div>+ 456</div>
-                  <div className="border-t border-gray-400 pt-1"> 579</div>
+                  <div> 456</div>
+                  <div>- 123</div>
+                  <div className="border-t border-gray-400 pt-1"> 333</div>
                 </div>
               </div>
               <div
@@ -179,17 +162,20 @@ const PreferenceSelection: React.FC<{
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm mb-2">
-                  Advanced problems requiring carrying over to the next column
+                  Advanced problems requiring borrowing from the next column
                 </p>
                 <div className="bg-gray-50 p-2 rounded-lg font-mono text-center">
-                  <div className="text-xs text-blue-600"> ¹ ¹</div>
-                  <div> 195</div>
-                  <div>+ 287</div>
-                  <div className="border-t border-gray-400 pt-1"> 482</div>
+                  <div className="text-xs text-blue-600"> ⁴ ¹⁵</div>
+                  <div> 5 4 3</div>
+                  <div>- 2 8 7</div>
+                  <div className="border-t border-gray-400 pt-1"> 2 5 6</div>
                 </div>
               </div>
             </div>
           </motion.div>
+
+          {/* Number of Digits and Questions selection remain the same */}
+          {/* ... */}
           {/* Number of Digits Selection */}
           <motion.div
             initial={{ x: 50, opacity: 0 }}
@@ -303,7 +289,6 @@ const PreferenceSelection: React.FC<{
               </p>
             </div>
           </motion.div>
-          {/* Start Button - smaller */}
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -323,7 +308,7 @@ const PreferenceSelection: React.FC<{
   );
 };
 
-const AdditionWorksheet = () => {
+const SubtractionWorksheet = () => {
   const [showPreferences, setShowPreferences] = useState(true);
   const [userPreferences, setUserPreferences] =
     useState<UserPreferences | null>(null);
@@ -332,10 +317,10 @@ const AdditionWorksheet = () => {
   const [error, setError] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState<number | null>(null);
+
   const handlePreferencesSelected = (preferences: UserPreferences) => {
     setUserPreferences(preferences);
     setShowPreferences(false);
-    // Generate questions based on preferences
     fetchQuestionsBasedOnPreferences(preferences);
   };
 
@@ -365,7 +350,6 @@ const AdditionWorksheet = () => {
         console.warn("API request failed, using local generation", apiError);
       }
 
-      // Rest of the function remains the same...
       const localQuestions = generateLocalQuestions(
         Math.max(0, NUM_QUESTIONS - apiQuestions.length),
         preferences,
@@ -373,7 +357,9 @@ const AdditionWorksheet = () => {
         max
       );
 
-      setQuestions([...apiQuestions].slice(0, NUM_QUESTIONS));
+      setQuestions(
+        [...apiQuestions, ...localQuestions].slice(0, NUM_QUESTIONS)
+      );
       setShowResults(false);
     } catch (err) {
       setError("Failed to load questions. Please try again.");
@@ -383,7 +369,6 @@ const AdditionWorksheet = () => {
     }
   };
 
-  // Helper function to transform 2D array to questions
   const transformArrayToQuestions = (
     data: number[][],
     preferences: UserPreferences,
@@ -399,6 +384,11 @@ const AdditionWorksheet = () => {
         let num1 = row[i];
         let num2 = row[i + 1];
 
+        // Ensure num1 is always greater than num2 for subtraction
+        if (num1 < num2) {
+          [num1, num2] = [num2, num1];
+        }
+
         if (preferences.complexity === "without-regrouping") {
           [num1, num2] = adjustForNoRegrouping(num1, num2, min, max);
         }
@@ -410,7 +400,6 @@ const AdditionWorksheet = () => {
     return questions;
   };
 
-  // Helper to generate questions locally
   const generateLocalQuestions = (
     count: number,
     preferences: UserPreferences,
@@ -421,6 +410,11 @@ const AdditionWorksheet = () => {
       let num1 = Math.floor(Math.random() * (max - min + 1)) + min;
       let num2 = Math.floor(Math.random() * (max - min + 1)) + min;
 
+      // Ensure num1 is always greater than num2
+      if (num1 < num2) {
+        [num1, num2] = [num2, num1];
+      }
+
       if (preferences.complexity === "without-regrouping") {
         [num1, num2] = adjustForNoRegrouping(num1, num2, min, max);
       }
@@ -429,21 +423,23 @@ const AdditionWorksheet = () => {
     });
   };
 
-  // Helper to ensure no carrying is needed
   const adjustForNoRegrouping = (
     num1: number,
     num2: number,
     min: number,
     max: number
   ): [number, number] => {
-    while (requiresCarrying(num1, num2)) {
+    while (requiresBorrowing(num1, num2)) {
       num1 = Math.floor(Math.random() * (max - min + 1)) + min;
       num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+      // Ensure num1 is always greater than num2
+      if (num1 < num2) {
+        [num1, num2] = [num2, num1];
+      }
     }
     return [num1, num2];
   };
 
-  // Helper to create question object
   const createQuestion = (num1: number, num2: number): Question => ({
     number1: num1,
     number2: num2,
@@ -454,26 +450,23 @@ const AdditionWorksheet = () => {
       tens: "",
       ones: "",
     },
-    carryNumbers: { thousands: "", hundreds: "", tens: "" },
+    borrowNumbers: { thousands: "", hundreds: "", tens: "" },
     isCorrect: undefined,
-    carryValidation: { thousands: true, hundreds: true, tens: true },
+    borrowValidation: { thousands: true, hundreds: true, tens: true },
   });
-  // Helper function to check if addition requires carrying
-  const requiresCarrying = (num1: number, num2: number): boolean => {
+
+  const requiresBorrowing = (num1: number, num2: number): boolean => {
     const str1 = String(num1);
     const str2 = String(num2);
     const maxLength = Math.max(str1.length, str2.length);
 
-    let carry = 0;
     for (let i = 0; i < maxLength; i++) {
       const digit1 = parseInt(str1[str1.length - 1 - i] || "0");
       const digit2 = parseInt(str2[str2.length - 1 - i] || "0");
-      const sum = digit1 + digit2 + carry;
 
-      if (sum >= 10) {
+      if (digit1 < digit2) {
         return true;
       }
-      carry = Math.floor(sum / 10);
     }
     return false;
   };
@@ -508,9 +501,9 @@ const AdditionWorksheet = () => {
     );
   };
 
-  const handleCarryChange = (
+  const handleBorrowChange = (
     questionIndex: number,
-    position: keyof Question["carryNumbers"],
+    position: keyof Question["borrowNumbers"],
     value: string
   ) => {
     const sanitizedValue = value.replace(/[^0-9]/g, "").slice(0, 1);
@@ -519,15 +512,14 @@ const AdditionWorksheet = () => {
         idx === questionIndex
           ? {
               ...q,
-              carryNumbers: { ...q.carryNumbers, [position]: sanitizedValue },
+              borrowNumbers: { ...q.borrowNumbers, [position]: sanitizedValue },
             }
           : q
       )
     );
   };
 
-  // Calculate correct carries for a given addition
-  const calculateCorrectCarries = (num1: number, num2: number) => {
+  const calculateCorrectBorrows = (num1: number, num2: number) => {
     const digits1 = String(num1)
       .padStart(4, "0")
       .split("")
@@ -539,21 +531,30 @@ const AdditionWorksheet = () => {
       .reverse()
       .map(Number);
 
-    const carries = { tens: 0, hundreds: 0, thousands: 0 };
+    const borrows = { tens: 0, hundreds: 0, thousands: 0 };
 
-    // Ones place -> tens carry
-    const onesSum = digits1[0] + digits2[0];
-    carries.tens = Math.floor(onesSum / 10);
+    // Ones place
+    if (digits1[0] < digits2[0]) {
+      borrows.tens = 1;
+      digits1[1] -= 1;
+      digits1[0] += 10;
+    }
 
-    // Tens place -> hundreds carry
-    const tensSum = digits1[1] + digits2[1] + carries.tens;
-    carries.hundreds = Math.floor(tensSum / 10);
+    // Tens place
+    if (digits1[1] < digits2[1]) {
+      borrows.hundreds = 1;
+      digits1[2] -= 1;
+      digits1[1] += 10;
+    }
 
-    // Hundreds place -> thousands carry
-    const hundredsSum = digits1[2] + digits2[2] + carries.hundreds;
-    carries.thousands = Math.floor(hundredsSum / 10);
+    // Hundreds place
+    if (digits1[2] < digits2[2]) {
+      borrows.thousands = 1;
+      digits1[3] -= 1;
+      digits1[2] += 10;
+    }
 
-    return carries;
+    return borrows;
   };
 
   const checkAnswers = async () => {
@@ -568,16 +569,15 @@ const AdditionWorksheet = () => {
           q.userAnswer.hundreds
         }${q.userAnswer.tens}${q.userAnswer.ones}` || "0"
       ),
-      carries: {
-        tens: parseInt(q.carryNumbers.tens || "0"),
-        hundreds: parseInt(q.carryNumbers.hundreds || "0"),
-        thousands: parseInt(q.carryNumbers.thousands || "0"),
+      borrows: {
+        tens: parseInt(q.borrowNumbers.tens || "0"),
+        hundreds: parseInt(q.borrowNumbers.hundreds || "0"),
+        thousands: parseInt(q.borrowNumbers.thousands || "0"),
       },
     }));
 
     try {
-      // Verify answers using the mathService
-      const data = await mathService.verifyAnswers(answersToVerify);
+      const data = await mathService.verifySubtractionAnswers(answersToVerify);
 
       setQuestions((prev) =>
         prev.map((q, idx) => ({
@@ -585,16 +585,15 @@ const AdditionWorksheet = () => {
           isCorrect:
             data.results[idx].includes("Correct") ||
             data.results[idx].includes("Perfect"),
-          carryValidation: {
-            tens: data.carryValidation[idx].tensCorrect,
-            hundreds: data.carryValidation[idx].hundredsCorrect,
-            thousands: data.carryValidation[idx].thousandsCorrect,
+          borrowValidation: {
+            tens: data.borrowValidation[idx].tensCorrect,
+            hundreds: data.borrowValidation[idx].hundredsCorrect,
+            thousands: data.borrowValidation[idx].thousandsCorrect,
           },
         }))
       );
 
       setScore(data.score);
-      console.log("Verification results:", data);
       setShowResults(true);
     } catch (err) {
       setError("Failed to verify answers. Please try again.");
@@ -604,20 +603,19 @@ const AdditionWorksheet = () => {
     }
   };
 
-  //Add helper function to get dynamic columns based on number of digits
   const getDynamicColumns = (numberOfDigits: number) => {
     switch (numberOfDigits) {
       case 2:
         return {
           positions: ["hundreds", "tens", "ones"],
-          carryPositions: ["tens"], // Only one carry position needed
+          borrowPositions: ["tens"],
           gridCols: "grid-cols-3",
           totalCols: 3,
         };
       case 3:
         return {
           positions: ["thousands", "hundreds", "tens", "ones"],
-          carryPositions: ["hundreds", "tens"],
+          borrowPositions: ["hundreds", "tens"],
           gridCols: "grid-cols-4",
           totalCols: 4,
         };
@@ -625,27 +623,13 @@ const AdditionWorksheet = () => {
       default:
         return {
           positions: ["tenThousands", "thousands", "hundreds", "tens", "ones"],
-          carryPositions: ["thousands", "hundreds", "tens"],
+          borrowPositions: ["thousands", "hundreds", "tens"],
           gridCols: "grid-cols-5",
           totalCols: 5,
         };
     }
   };
 
-  // 2. Update the getDigits function to be dynamic
-  const getDigits = (num: number, numberOfDigits: number) => {
-    const paddedNum = String(num).padStart(numberOfDigits, "0");
-    const columns = getDynamicColumns(numberOfDigits);
-
-    const digits: any = {};
-    columns.positions.forEach((pos, index) => {
-      digits[pos] = paddedNum[index] || "0";
-    });
-
-    return digits;
-  };
-
-  // 3. Replace the renderQuestion function with this updated version:
   const renderQuestion = (question: Question, index: number) => {
     const columns = getDynamicColumns(userPreferences?.numberOfDigits || 4);
 
@@ -664,18 +648,16 @@ const AdditionWorksheet = () => {
           Qn {index + 1}
         </div>
         <div className="inline-block">
-          {/* Dynamic carry numbers row */}
+          {/* Borrow numbers row */}
           <div className={`grid ${columns.gridCols} h-12 mb-1 gap-1`}>
-            {/* Map through carry positions dynamically */}
             {columns.positions.map((pos, idx) => {
-              // Only show carry inputs for positions that need them
-              if (!columns.carryPositions.includes(pos)) {
+              if (!columns.borrowPositions.includes(pos)) {
                 return <div key={pos} className="w-12 h-12"></div>;
               }
 
               const isCorrect =
-                question.carryValidation?.[
-                  pos as keyof typeof question.carryValidation
+                question.borrowValidation?.[
+                  pos as keyof typeof question.borrowValidation
                 ] ?? true;
 
               return (
@@ -691,14 +673,14 @@ const AdditionWorksheet = () => {
                       : "bg-blue-50 border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   }`}
                   value={
-                    question.carryNumbers[
-                      pos as keyof typeof question.carryNumbers
+                    question.borrowNumbers[
+                      pos as keyof typeof question.borrowNumbers
                     ] || ""
                   }
                   onChange={(e) =>
-                    handleCarryChange(
+                    handleBorrowChange(
                       index,
-                      pos as keyof Question["carryNumbers"],
+                      pos as keyof Question["borrowNumbers"],
                       e.target.value
                     )
                   }
@@ -713,7 +695,7 @@ const AdditionWorksheet = () => {
             })}
           </div>
 
-          {/* First number row - dynamic */}
+          {/* First number row */}
           <div className={`grid ${columns.gridCols}`}>
             {columns.positions.map((pos, i) => {
               const digits = getDigits(question.number1);
@@ -728,10 +710,10 @@ const AdditionWorksheet = () => {
             })}
           </div>
 
-          {/* Second number row - dynamic */}
+          {/* Second number row */}
           <div className={`grid ${columns.gridCols} relative`}>
             <div className="absolute -left-7 top-1/2 transform -translate-y-1/2">
-              <Plus className="w-6 h-6 text-gray-600" />
+              <Minus className="w-6 h-6 text-gray-600" />
             </div>
             {columns.positions.map((pos, i) => {
               const digits = getDigits(question.number2);
@@ -746,13 +728,12 @@ const AdditionWorksheet = () => {
             })}
           </div>
 
-          {/* Answer row - dynamic */}
+          {/* Answer row */}
           <div
             className={`grid ${columns.gridCols} mt-2 border-t-2 border-gray-600`}
           >
             {columns.positions.map((pos, idx) => {
-              const correctAnswer = question.number1 + question.number2;
-              const maxDigitsNeeded = String(correctAnswer).length;
+              const correctAnswer = question.number1 - question.number2;
               const correctAnswerStr = String(correctAnswer).padStart(
                 columns.totalCols,
                 "0"
@@ -797,36 +778,35 @@ const AdditionWorksheet = () => {
           </div>
         </div>
 
-        {/* Show correct answer when results are displayed */}
         {showResults && (
           <div className="mt-3 text-sm text-gray-600">
             <div>
               Correct answer:{" "}
               <span className="font-bold text-green-700">
-                {question.number1 + question.number2}
+                {question.number1 - question.number2}
               </span>
             </div>
             {(() => {
-              const correctCarries = calculateCorrectCarries(
+              const correctBorrows = calculateCorrectBorrows(
                 question.number1,
                 question.number2
               );
               return (
                 <div className="flex gap-4 text-xs mt-1">
-                  <span>Correct carries:</span>
-                  {columns.carryPositions.includes("tens") && (
+                  <span>Correct borrows:</span>
+                  {columns.borrowPositions.includes("tens") && (
                     <span className="font-mono">
-                      Tens: {correctCarries.tens}
+                      Tens: {correctBorrows.tens}
                     </span>
                   )}
-                  {columns.carryPositions.includes("hundreds") && (
+                  {columns.borrowPositions.includes("hundreds") && (
                     <span className="font-mono">
-                      Hundreds: {correctCarries.hundreds}
+                      Hundreds: {correctBorrows.hundreds}
                     </span>
                   )}
-                  {columns.carryPositions.includes("thousands") && (
+                  {columns.borrowPositions.includes("thousands") && (
                     <span className="font-mono">
-                      Thousands: {correctCarries.thousands}
+                      Thousands: {correctBorrows.thousands}
                     </span>
                   )}
                 </div>
@@ -837,6 +817,7 @@ const AdditionWorksheet = () => {
       </div>
     );
   };
+
   if (showPreferences) {
     return (
       <PreferenceSelection onPreferencesSelected={handlePreferencesSelected} />
@@ -865,7 +846,7 @@ const AdditionWorksheet = () => {
           </Button>
           <div className="flex flex-col items-center">
             <h1 className="text-xl font-bold text-gray-800">
-              Addition Practice
+              Subtraction Practice
             </h1>
             <p className="text-sm text-gray-600 text-center">
               {userPreferences?.complexity === "with-regrouping"
@@ -936,13 +917,13 @@ const AdditionWorksheet = () => {
                         tens: "",
                         ones: "",
                       },
-                      carryNumbers: {
+                      borrowNumbers: {
                         thousands: "",
                         hundreds: "",
                         tens: "",
                       },
                       isCorrect: undefined,
-                      carryValidation: {
+                      borrowValidation: {
                         thousands: true,
                         hundreds: true,
                         tens: true,
@@ -959,7 +940,7 @@ const AdditionWorksheet = () => {
             )}
           </div>
 
-          {/* {showResults && score !== null && (
+          {showResults && score !== null && (
             <div className="mt-6 p-6 bg-white rounded-lg shadow-lg text-center">
               <h2 className="text-2xl font-bold mb-2">Your Score</h2>
               <div
@@ -981,35 +962,6 @@ const AdditionWorksheet = () => {
                 <div className="mt-4 text-2xl">🎉 Perfect Score! 🎉</div>
               )}
             </div>
-          )} */}
-
-          {showResults && score !== null && (
-            <div className="mt-6 p-6 bg-white rounded-lg shadow-lg text-center">
-              <h2 className="text-2xl font-bold mb-2">Your Score</h2>
-              <div
-                className={`text-4xl font-bold mb-2 ${
-                  score >= 70
-                    ? "text-green-600"
-                    : score >= 50
-                    ? "text-yellow-600"
-                    : "text-red-600"
-                }`}
-              >
-                {score}%{""}
-                {/* Score: {score}/{questions.length * 3} */}
-              </div>
-              <p className="text-gray-600">
-                You got {questions.filter((q) => q.isCorrect).length} out of{" "}
-                {questions.length} questions correct!
-              </p>
-              {score === 100 && (
-                <div className="mt-4 text-2xl">🎉 Perfect Score! 🎉</div>
-              )}
-              {/* <div className="text-sm text-gray-600">
-                Total possible points: {questions.length * 3} (2 for correct
-                answer + 1 for correct carries per question)
-              </div> */}
-            </div>
           )}
         </div>
       )}
@@ -1017,4 +969,4 @@ const AdditionWorksheet = () => {
   );
 };
 
-export default AdditionWorksheet;
+export default SubtractionWorksheet;

@@ -5,15 +5,15 @@ import SideBar from "./SideBar";
 
 export const DashboardLayout = () => {
   return (
-    <div className="flex w-full h-screen min-h-screen">
+    <div className="flex w-full h-screen">
       <SideBar />
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col flex-1">
         <NavBar />
-        <div className="mx-auto">
-          <div className="h-[calc(100vh-70px)] px-8 py-4">
+        <main className="flex-1 overflow-auto">
+          <div className="p-4">
             <Outlet />
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );

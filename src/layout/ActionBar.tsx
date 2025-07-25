@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { environment } from "../environment/environment";
+type User = {
+  picture?: string;
+  names?: string;
+  email?: string;
+};
+
 const ActionBar = () => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   useEffect(() => {
     axios
       .get(`${environment.API}/auth/user-info`, {

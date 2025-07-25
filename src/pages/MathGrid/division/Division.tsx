@@ -34,11 +34,14 @@ const Division: React.FC = () => {
 
     Promise.all(
       Array.from({ length: num_questions }, () =>
-        fetch(`http://localhost:8080/api/math/division/generate?type=${type}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }).then((response) => {
+        fetch(
+          `http://localhost:8080/api/v1/math/division/generate?type=${type}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ).then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok");
           }
