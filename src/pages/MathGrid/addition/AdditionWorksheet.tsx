@@ -373,7 +373,9 @@ const AdditionWorksheet = () => {
         max
       );
 
-      setQuestions([...apiQuestions].slice(0, NUM_QUESTIONS));
+      setQuestions(
+        [...apiQuestions, ...localQuestions].slice(0, NUM_QUESTIONS)
+      );
       setShowResults(false);
     } catch (err) {
       setError("Failed to load questions. Please try again.");

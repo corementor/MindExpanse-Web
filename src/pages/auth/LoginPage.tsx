@@ -92,7 +92,8 @@ const LoginPage = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    // window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    console.log("Redirecting to Google login...");
   };
   return (
     <div className="w-full min-h-screen flex flex-col justify-center items-center bg-gradient-to-b from-blue-50 to-purple-50">
