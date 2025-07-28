@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { environment } from "@/environment/environment";
 import { Progress } from "@/components/ui/progress";
 
 const DashboardPage = () => {
@@ -17,7 +18,10 @@ const DashboardPage = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8080  /api/auth/user-info", {
+      .get(`${environment.API}/auth/user-info`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
         withCredentials: true,
       })
       .then((response) => {
