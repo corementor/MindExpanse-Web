@@ -365,7 +365,6 @@ const AdditionWorksheet = () => {
         console.warn("API request failed, using local generation", apiError);
       }
 
-      // Rest of the function remains the same...
       const localQuestions = generateLocalQuestions(
         Math.max(0, NUM_QUESTIONS - apiQuestions.length),
         preferences,
@@ -960,30 +959,6 @@ const AdditionWorksheet = () => {
               </Button>
             )}
           </div>
-
-          {/* {showResults && score !== null && (
-            <div className="mt-6 p-6 bg-white rounded-lg shadow-lg text-center">
-              <h2 className="text-2xl font-bold mb-2">Your Score</h2>
-              <div
-                className={`text-4xl font-bold mb-2 ${
-                  score >= 70
-                    ? "text-green-600"
-                    : score >= 50
-                    ? "text-yellow-600"
-                    : "text-red-600"
-                }`}
-              >
-                {score}%
-              </div>
-              <p className="text-gray-600">
-                You got {questions.filter((q) => q.isCorrect).length} out of{" "}
-                {questions.length} questions correct!
-              </p>
-              {score === 100 && (
-                <div className="mt-4 text-2xl">🎉 Perfect Score! 🎉</div>
-              )}
-            </div>
-          )} */}
 
           {showResults && score !== null && (
             <div className="mt-6 p-6 bg-white rounded-lg shadow-lg text-center">
