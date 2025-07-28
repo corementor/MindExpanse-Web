@@ -19,14 +19,13 @@ class HttpClient {
     // Add request interceptor to inject token
     this.instance.interceptors.request.use(
       (config) => {
-        if (this.token) {
-          config.headers.Authorization = `Bearer ${this.token}`;
+        const token = localStorage.getItem("token"); // Always get latest token
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
-      (error) => {
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
   }
 

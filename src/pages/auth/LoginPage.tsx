@@ -22,17 +22,13 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const params = new URLSearchParams(window.location.search);
-  //   const token = params.get("token");
-  //   if (token) {
-  //     localStorage.setItem("token", token);
-  //     navigate("/dashboard");
-  //   } else {
-  //     console.error("Token is missing from the URL");
-  //   }
-  // }, [navigate]);
-
+  useEffect(() => {
+    // Check if user is already logged in
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setFormData((prev) => ({

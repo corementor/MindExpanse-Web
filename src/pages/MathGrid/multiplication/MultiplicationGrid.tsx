@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { RefreshCcw, Settings, ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { mathService } from "@/services/mathService";
+import { motion } from "framer-motion";
+
 interface UserPreferences {
   complexity: "with-regrouping" | "without-regrouping";
   numberOfDigits: number;
@@ -36,41 +38,6 @@ interface Question {
     carryTensToHundreds: number;
   };
 }
-
-// Mock math service for demonstration
-// const mathService = {
-//   verifyMultiplicationAnswers: async (answers: any[]): Promise<any> => {
-//     return new Promise((resolve) => {
-//       setTimeout(() => {
-//         resolve({
-//           results: answers.map((answer) => {
-//             const correct = answer.number1 * answer.number2;
-//             return answer.answer === correct
-//               ? "Perfect! All correct"
-//               : "Some errors found";
-//           }),
-//           score: Math.floor(Math.random() * 40 + 60),
-//           percentage: Math.floor(Math.random() * 40 + 60),
-//           maxScore: 100,
-//           total: answers.length,
-//           correctCarries: answers.map(() => ({
-//             carryOnesToTens: Math.floor(Math.random() * 9),
-//             carryTensToHundreds: Math.floor(Math.random() * 9),
-//           })),
-//           carryValidation: answers.map(() => ({
-//             carryOnesToTensCorrect: Math.random() > 0.5,
-//             carryTensToHundredsCorrect: Math.random() > 0.5,
-//           })),
-//           correctPartialProducts: answers.map(() => ({
-//             partialProduct1: Math.floor(Math.random() * 1000),
-//             partialProduct2: Math.floor(Math.random() * 1000),
-//             partialProduct3: Math.floor(Math.random() * 1000),
-//           })),
-//         });
-//       }, 1000);
-//     });
-//   },
-// };
 
 const PreferenceSelection: React.FC<{
   onPreferencesSelected: (preferences: UserPreferences) => void;
@@ -242,6 +209,38 @@ const PreferenceSelection: React.FC<{
               ))}
             </div>
           </div>
+
+          {/* Preview - with reduced padding */}
+          <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="bg-gray-50 p-4 rounded-xl"
+          >
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              {" "}
+              {/* Smaller heading */}
+              📋 Your Selection Summary
+            </h3>
+            <div className="space-y-1 text-sm text-gray-700">
+              {" "}
+              {/* Smaller text */}
+              <p>
+                <span className="font-semibold">Complexity:</span>{" "}
+                {complexity === "with-regrouping"
+                  ? "With Regrouping (Advanced)"
+                  : "Without Regrouping (Basic)"}
+              </p>
+              <p>
+                <span className="font-semibold">Number of Digits:</span>{" "}
+                {numberOfDigits} digits per number
+              </p>
+              <p>
+                <span className="font-semibold">Questions:</span>{" "}
+                {numberOfQuestions} practice problems
+              </p>
+            </div>
+          </motion.div>
 
           <div className="text-center">
             <Button
