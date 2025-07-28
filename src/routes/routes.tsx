@@ -14,7 +14,6 @@ import MultiplicationGrid from "@/pages/MathGrid/multiplication/MultiplicationGr
 import Multiplication from "@/pages/MathGrid/multiplication/Multiplication";
 import Division from "@/pages/MathGrid/division/Division";
 import DivisionGrid from "@/pages/MathGrid/division/DivisionGrid";
-
 import TwoDigit from "@/pages/MathGrid/addition/TwoDigit";
 import AdditionWorksheetApp from "@/pages/MathGrid/addition/AdditionWorksheet";
 import TestWorksheet from "@/pages/MathGrid/addition/test";
@@ -38,7 +37,6 @@ export const AppRoutes: React.FC = () => {
           <Route path="/multiply" element={<Multiplication />} />
           <Route path="/divisiongrid" element={<DivisionGrid />} />
           <Route path="/divide" element={<Division />} />
-          <Route path="/doubledigitadd" element={<TwoDigit />} />
           {/* <Route path="/multidigitadd" element={<AdditionWorksheet />} /> */}
           <Route path="/multidigitadd" element={<TestWorksheet />} />
         </Route>

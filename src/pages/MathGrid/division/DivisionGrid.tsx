@@ -28,6 +28,7 @@ interface Question {
   userRemainder: string;
   workingSteps: string[];
   isCorrect?: boolean;
+  userQuotientDigits: string[];
 }
 
 interface VerifyResponse {
@@ -64,7 +65,7 @@ const PreferenceSelect: React.FC<PreferenceSelectProps> = ({ onPreferencesSelect
             <Settings className="w-10 h-10 text-green-600" />
           </div>
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            Customize Your Division Worksheet
+            Division Worksheet
           </h1>
           <p className="text-gray-600 text-lg">
             Set your preferences to create the perfect division practice
@@ -293,6 +294,7 @@ const generateQuestion = (preferences: UserPreferences, id: number): Question =>
     userQuotient: "",
     userRemainder: "",
     workingSteps: new Array(10).fill(""), // More space for working steps
+    userQuotientDigits: ["", "", "", ""],
   };
 };
 
@@ -321,11 +323,11 @@ const DivisionPractice: React.FC<{
   const handleQuotientChange = (questionId: number, digitIndex: number, value: string) => {
     setQuestions(prev => prev.map(q => {
       if (q.id === questionId) {
-        const quotientArray = q.userQuotient.padStart(3, ' ').split('');
-        quotientArray[digitIndex] = value;
+        const newDigits = [...q.userQuotientDigits];
+        newDigits[digitIndex] = value;
         return {
           ...q,
-          userQuotient: quotientArray.join('').trim()
+          userQuotientDigits: newDigits
         };
       }
       return q;
@@ -356,20 +358,19 @@ const DivisionPractice: React.FC<{
 
   const checkAnswers = () => {
     const updatedQuestions = questions.map(q => {
-      const userQuotientNum = parseInt(q.userQuotient) || 0;
-      const userRemainderNum = parseInt(q.userRemainder) || 0;
-      
+      const userQuotientStr = q.userQuotientDigits.join("").trim();
+      const userQuotientNum = userQuotientStr === "" ? NaN : Number(userQuotientStr);
+      const userRemainderNum = q.userRemainder.trim() === "" ? NaN : Number(q.userRemainder);
+
       const quotientCorrect = userQuotientNum === q.quotient;
-      const remainderCorrect = preferences.complexity === "without-remainder" 
-        ? q.remainder === 0 
-        : userRemainderNum === q.remainder;
-      
+      const remainderCorrect = userRemainderNum === q.remainder;
+
       return {
         ...q,
         isCorrect: quotientCorrect && remainderCorrect
       };
     });
-    
+
     setQuestions(updatedQuestions);
     setIsChecked(true);
   };
@@ -403,43 +404,52 @@ const DivisionPractice: React.FC<{
           </div>
         </div>
 
-        {/* Questions Grid - exactly matching the image layout */}
+        {/* Questions Grid - with properly aligned quotient boxes */}
         <div className="grid grid-cols-2 gap-x-12 gap-y-12 mb-8">
           {questions.map((question, index) => {
             const dividendDigits = question.dividend.toString().split('');
+            const divisorText = question.divisor.toString();
             
             return (
               <div key={question.id} className="space-y-4">
                 {/* Question label */}
                 <div className="text-lg font-semibold">Q.{index + 1}</div>
                 
-                {/* Quotient input boxes */}
-                <div className="flex gap-1 mb-2">
-                  {[0, 1, 2, 3].map((digitIndex) => (
-                    <input
-                      key={digitIndex}
-                      type="text"
-                      maxLength={1}
-                      className={`w-8 h-8 border-2 border-gray-400 text-center text-base ${
-                        isChecked 
-                          ? question.isCorrect 
-                            ? 'bg-green-100' 
-                            : 'bg-red-100'
-                          : 'bg-white'
-                      }`}
-                      onChange={(e) => handleQuotientChange(question.id, digitIndex, e.target.value)}
-                    />
-                  ))}
-                </div>
-                
-                {/* Division setup */}
                 <div className="relative">
-                  <div className="flex">
+                  {/* Quotient input boxes positioned above dividend with precise alignment */}
+                  <div 
+                    className="flex gap-1 mb-1 absolute" 
+                    style={{ 
+                      left: `${divisorText.length * 0.6 + 2.5}rem`,
+                      top: '-2.5rem'
+                    }}
+                  >
+                    {question.userQuotientDigits.map((digit, digitIndex) => (
+                      <input
+                        key={digitIndex}
+                        type="text"
+                        maxLength={1}
+                        className={`w-8 h-8 border-2 border-gray-400 text-center text-base ${
+                          isChecked 
+                            ? question.isCorrect 
+                              ? 'bg-green-100' 
+                              : 'bg-red-100'
+                            : 'bg-white'
+                        }`}
+                        value={digit}
+                        onChange={(e) => handleQuotientChange(question.id, digitIndex, e.target.value)}
+                        disabled={isChecked}
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* Division setup */}
+                  <div className="flex pt-8">
                     <div className="text-lg font-bold mr-2">{question.divisor}</div>
                     <div className="border-l-2 border-t-2 border-black pl-2 pt-1">
                       <div className="flex">
                         {dividendDigits.map((digit, i) => (
-                          <span key={i} className="inline-block w-6 text-center text-lg font-bold">
+                          <span key={i} className="inline-block w-8 text-center text-lg font-bold">
                             {digit}
                           </span>
                         ))}
@@ -448,8 +458,11 @@ const DivisionPractice: React.FC<{
                   </div>
                 </div>
                 
-                {/* Working space with minus signs and input boxes */}
-                <div className="ml-8 space-y-3">
+                {/* Working space with minus signs and input boxes aligned with dividend */}
+                <div 
+                  className="space-y-3" 
+                  style={{ marginLeft: `${divisorText.length * 0.6 + 2.5}rem` }}
+                >
                   {/* First subtraction row */}
                   <div className="flex items-center gap-1">
                     <span className="text-lg">-</span>
