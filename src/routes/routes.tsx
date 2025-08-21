@@ -8,11 +8,11 @@ import ProtectedRoutes from "@/routes/outlets/ProtectedRoutes";
 
 import DashboardPage from "@/pages/dashboard/DashboardPage";
 import Subtraction from "@/pages/MathGrid/subtraction/Subtraction";
-import SubtractionGrid from "@/pages/MathGrid/subtraction/SubtractionGrid";
+
 import Addition from "@/pages/MathGrid/addition/Addition";
-import MultiplicationGrid from "@/pages/MathGrid/multiplication/MultiplicationGrid";
+
 import Multiplication from "@/pages/MathGrid/multiplication/Multiplication";
-import Division from "@/pages/MathGrid/division/Division";
+import DivisionWorkSheet from "@/pages/MathGrid/division/DivisionWorkSheet";
 import DivisionGrid from "@/pages/MathGrid/division/DivisionGrid";
 
 import TwoDigit from "@/pages/MathGrid/addition/TwoDigit";
@@ -41,8 +41,8 @@ export const AppRoutes: React.FC = () => {
             element={<MultiplicationGridWorkSheet />}
           />
           <Route path="/multiply" element={<Multiplication />} />
-          <Route path="/divisiongrid" element={<DivisionGrid />} />
-          <Route path="/divide" element={<Division />} />
+          <Route path="/divisiongrid" element={<DivisionWorkSheet />} />
+          <Route path="/divide" element={<DivisionWorkSheet />} />
           <Route path="/doubledigitadd" element={<TwoDigit />} />
           {/* <Route path="/multidigitadd" element={<AdditionWorksheet />} /> */}
           <Route path="/multidigitadd" element={<TestWorksheet />} />
