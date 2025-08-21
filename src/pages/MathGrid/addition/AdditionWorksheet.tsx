@@ -2,8 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, RefreshCcw, Settings, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/resultsModal";
 
-import { mathService } from "@/services/mathService";
+import { mathService } from "@/services/MathService";
 //Interfaces to define the structure of questions and user answers
 interface Question {
   number1: number;
@@ -332,6 +340,8 @@ const AdditionWorksheet = () => {
   const [error, setError] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState<number | null>(null);
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+
   const handlePreferencesSelected = (preferences: UserPreferences) => {
     setUserPreferences(preferences);
     setShowPreferences(false);
@@ -597,6 +607,7 @@ const AdditionWorksheet = () => {
       setScore(data.score);
       console.log("Verification results:", data);
       setShowResults(true);
+      setIsResultModalOpen(true);
     } catch (err) {
       setError("Failed to verify answers. Please try again.");
       console.error("Error:", err);
@@ -960,33 +971,63 @@ const AdditionWorksheet = () => {
             )}
           </div>
 
-          {showResults && score !== null && (
-            <div className="mt-6 p-6 bg-white rounded-lg shadow-lg text-center">
-              <h2 className="text-2xl font-bold mb-2">Your Score</h2>
-              <div
-                className={`text-4xl font-bold mb-2 ${
-                  score >= 70
-                    ? "text-green-600"
-                    : score >= 50
-                    ? "text-yellow-600"
-                    : "text-red-600"
-                }`}
-              >
-                {score}%{""}
-                {/* Score: {score}/{questions.length * 3} */}
-              </div>
-              <p className="text-gray-600">
-                You got {questions.filter((q) => q.isCorrect).length} out of{" "}
-                {questions.length} questions correct!
-              </p>
-              {score === 100 && (
-                <div className="mt-4 text-2xl">🎉 Perfect Score! 🎉</div>
-              )}
-              {/* <div className="text-sm text-gray-600">
-                Total possible points: {questions.length * 3} (2 for correct
-                answer + 1 for correct carries per question)
-              </div> */}
-            </div>
+          {isResultModalOpen && (
+            <Dialog
+              open={isResultModalOpen}
+              onOpenChange={setIsResultModalOpen}
+            >
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold text-center">
+                    Quiz Results
+                  </DialogTitle>
+                  <DialogDescription className="text-center">
+                    Here's how you performed on the Addition worksheet
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="py-6 text-center">
+                  <div
+                    className={`text-5xl font-bold mb-4 ${
+                      score === questions.length
+                        ? "text-green-600"
+                        : score! >= questions.length * 0.7
+                        ? "text-yellow-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {Math.round((score! / questions.length) * 100)}%
+                  </div>
+
+                  <p className="text-gray-600 text-lg mb-4">
+                    You got {questions.filter((q) => q.isCorrect).length} out of{" "}
+                    {questions.length} questions correct!
+                  </p>
+
+                  {score === questions.length && (
+                    <div className="text-2xl mb-4">🎉 Perfect Score! 🎉</div>
+                  )}
+                </div>
+
+                <DialogFooter className="flex justify-center gap-2">
+                  <Button
+                    onClick={() => {
+                      setIsResultModalOpen(false);
+                      userPreferences && fetchQuestions();
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Try New Questions
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsResultModalOpen(false)}
+                  >
+                    Review Answers
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
       )}

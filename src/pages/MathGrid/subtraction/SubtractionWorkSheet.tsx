@@ -2,7 +2,15 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Minus, RefreshCcw, Settings, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import { mathService } from "@/services/mathService";
+import { mathService } from "@/services/MathService";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/resultsModal";
 
 // Interfaces to define the structure of questions and user answers
 interface Question {
@@ -317,6 +325,7 @@ const SubtractionWorksheet = () => {
   const [error, setError] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState<number | null>(null);
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
 
   const handlePreferencesSelected = (preferences: UserPreferences) => {
     setUserPreferences(preferences);
@@ -595,6 +604,7 @@ const SubtractionWorksheet = () => {
 
       setScore(data.score);
       setShowResults(true);
+      setIsResultModalOpen(true);
     } catch (err) {
       setError("Failed to verify answers. Please try again.");
       console.error("Error:", err);
@@ -778,41 +788,60 @@ const SubtractionWorksheet = () => {
           </div>
         </div>
 
-        {showResults && (
-          <div className="mt-3 text-sm text-gray-600">
-            <div>
-              Correct answer:{" "}
-              <span className="font-bold text-green-700">
-                {question.number1 - question.number2}
-              </span>
-            </div>
-            {(() => {
-              const correctBorrows = calculateCorrectBorrows(
-                question.number1,
-                question.number2
-              );
-              return (
-                <div className="flex gap-4 text-xs mt-1">
-                  <span>Correct borrows:</span>
-                  {columns.borrowPositions.includes("tens") && (
-                    <span className="font-mono">
-                      Tens: {correctBorrows.tens}
-                    </span>
-                  )}
-                  {columns.borrowPositions.includes("hundreds") && (
-                    <span className="font-mono">
-                      Hundreds: {correctBorrows.hundreds}
-                    </span>
-                  )}
-                  {columns.borrowPositions.includes("thousands") && (
-                    <span className="font-mono">
-                      Thousands: {correctBorrows.thousands}
-                    </span>
-                  )}
+        {isResultModalOpen && (
+          <Dialog open={isResultModalOpen} onOpenChange={setIsResultModalOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-center">
+                  Quiz Results
+                </DialogTitle>
+                <DialogDescription className="text-center">
+                  Here's how you performed on the Subtraction worksheet
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="py-6 text-center">
+                <div
+                  className={`text-5xl font-bold mb-4 ${
+                    score === questions.length
+                      ? "text-green-600"
+                      : score! >= questions.length * 0.7
+                      ? "text-yellow-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {Math.round((score! / questions.length) * 100)}%
                 </div>
-              );
-            })()}
-          </div>
+
+                <p className="text-gray-600 text-lg mb-4">
+                  You got {questions.filter((q) => q.isCorrect).length} out of{" "}
+                  {questions.length} questions correct!
+                </p>
+
+                {score === questions.length && (
+                  <div className="text-2xl mb-4">🎉 Perfect Score! 🎉</div>
+                )}
+              </div>
+
+              <DialogFooter className="flex justify-center gap-2">
+                <Button
+                  onClick={() => {
+                    setIsResultModalOpen(false);
+                    userPreferences && fetchQuestions();
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Try New Questions
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsResultModalOpen(false)}
+                >
+                  Review Answers
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         )}
       </div>
     );
@@ -939,30 +968,6 @@ const SubtractionWorksheet = () => {
               </Button>
             )}
           </div>
-
-          {showResults && score !== null && (
-            <div className="mt-6 p-6 bg-white rounded-lg shadow-lg text-center">
-              <h2 className="text-2xl font-bold mb-2">Your Score</h2>
-              <div
-                className={`text-4xl font-bold mb-2 ${
-                  score >= 70
-                    ? "text-green-600"
-                    : score >= 50
-                    ? "text-yellow-600"
-                    : "text-red-600"
-                }`}
-              >
-                {score}%
-              </div>
-              <p className="text-gray-600">
-                You got {questions.filter((q) => q.isCorrect).length} out of{" "}
-                {questions.length} questions correct!
-              </p>
-              {score === 100 && (
-                <div className="mt-4 text-2xl">🎉 Perfect Score! 🎉</div>
-              )}
-            </div>
-          )}
         </div>
       )}
     </div>
