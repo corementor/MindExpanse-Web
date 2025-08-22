@@ -60,6 +60,8 @@ const SignupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [password, setPassword] = useState("");
+  const [showValidations, setShowValidations] = useState(false);
+
   const navigate = useNavigate();
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
@@ -71,6 +73,17 @@ const SignupPage = () => {
       confirmPassword: "",
     },
   });
+
+  const handlePasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: any
+  ) => {
+    field.onChange(e);
+    setPassword(e.target.value);
+    if (!showValidations) {
+      setShowValidations(true);
+    }
+  };
 
   const handleGoogleSignup = async () => {
     // Implement Google OAuth signup here
@@ -112,7 +125,9 @@ const SignupPage = () => {
             <span className="font-semibold text-green-800">
               Account created successfully! 🎉
             </span>
-            <span className="text-sm">Welcome, {response.names}!</span>
+            <span className="text-sm">
+              Welcome, {values.firstName + " " + values.lastName}!
+            </span>
             <span className="text-xs text-gray-600 mt-1">
               Please check your email for your username.
             </span>
@@ -138,7 +153,7 @@ const SignupPage = () => {
         // Add a slight delay before navigation
         setTimeout(() => {
           navigate("/login");
-        }, 2000);
+        }, 5000);
       }
     } catch (error: any) {
       if (error.response?.status === 409) {
@@ -166,228 +181,466 @@ const SignupPage = () => {
     }
   }
 
+  //   return (
+  //     <div className="w-full min-h-screen flex flex-col justify-center items-center bg-gradient-to-b from-blue-50 to-purple-50 py-8">
+  //       <div className="mb-8 flex flex-col items-center">
+  //         <div className="flex items-center gap-3  ">
+  //           <Brain className="h-12 w-12 text-primary animate-pulse" />
+  //           <h1 className="text-4xl font-bold text-primary">Mind Expanse</h1>
+  //         </div>
+  //         <p className="text-xl text-muted-foreground  ">
+  //           Start your math adventure!
+  //         </p>
+  //       </div>
+
+  //       <Card className="w-full max-w-md mx-4 shadow-lg border-2 border-primary/20">
+  //         <CardHeader>
+  //           <CardTitle className="text-2xl text-center">Create Account</CardTitle>
+  //         </CardHeader>
+
+  //         <CardContent className="space-y-6">
+  //           {/* <Button
+  //             variant="outline"
+  //             className="w-full hover:bg-primary/5"
+  //             onClick={handleGoogleSignup}
+  //           >
+  //             <img
+  //               src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4="
+  //               alt="Google"
+  //               className="w-5 h-5 mr-2"
+  //             />
+  //             Sign up with Google
+  //           </Button> */}
+
+  //           <div className="relative">
+  //             <div className="absolute inset-0 flex items-center">
+  //               <div className="w-full border-t" />
+  //             </div>
+  //             <div className="relative flex justify-center text-xs uppercase">
+  //               <span className="bg-card px-2 text-muted-foreground">
+  //                 Sign up with email
+  //               </span>
+  //             </div>
+  //           </div>
+
+  //           <Form {...form}>
+  //             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+  //               <FormField
+  //                 control={form.control}
+  //                 name="firstName"
+  //                 render={({ field }) => (
+  //                   <FormItem>
+  //                     <FormLabel>First Name</FormLabel>
+  //                     <FormControl>
+  //                       <div className="relative">
+  //                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+  //                         <Input
+  //                           placeholder="First Name"
+  //                           className="pl-10"
+  //                           {...field}
+  //                         />
+  //                       </div>
+  //                     </FormControl>
+  //                     <FormMessage />
+  //                   </FormItem>
+  //                 )}
+  //               />
+  //               <FormField
+  //                 control={form.control}
+  //                 name="lastName"
+  //                 render={({ field }) => (
+  //                   <FormItem>
+  //                     <FormLabel>Last Name</FormLabel>
+  //                     <FormControl>
+  //                       <div className="relative">
+  //                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+  //                         <Input
+  //                           placeholder="Last name"
+  //                           className="pl-10"
+  //                           {...field}
+  //                         />
+  //                       </div>
+  //                     </FormControl>
+  //                     <FormMessage />
+  //                   </FormItem>
+  //                 )}
+  //               />
+
+  //               <FormField
+  //                 control={form.control}
+  //                 name="email"
+  //                 render={({ field }) => (
+  //                   <FormItem>
+  //                     <FormLabel>Email</FormLabel>
+  //                     <FormControl>
+  //                       <div className="relative">
+  //                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+  //                         <Input
+  //                           placeholder="names@example.com"
+  //                           className="pl-10"
+  //                           type="email"
+  //                           {...field}
+  //                         />
+  //                       </div>
+  //                     </FormControl>
+  //                     <FormMessage />
+  //                   </FormItem>
+  //                 )}
+  //               />
+
+  //               <FormField
+  //                 control={form.control}
+  //                 name="password"
+  //                 render={({ field }) => (
+  //                   <FormItem>
+  //                     <FormLabel>Password</FormLabel>
+  //                     <FormControl>
+  //                       <div className="relative">
+  //                         <Input
+  //                           type={showPassword ? "text" : "password"}
+  //                           className="pr-10"
+  //                           placeholder="Create a password"
+  //                           {...field}
+  //                           onChange={(e) => {
+  //                             field.onChange(e);
+  //                             setPassword(e.target.value);
+  //                           }}
+  //                         />
+  //                         <button
+  //                           type="button"
+  //                           className="absolute right-3 top-1/2 -translate-y-1/2"
+  //                           onClick={() => setShowPassword(!showPassword)}
+  //                         >
+  //                           {showPassword ? (
+  //                             <EyeOff className="h-4 w-4 text-muted-foreground" />
+  //                           ) : (
+  //                             <EyeIcon className="h-4 w-4 text-muted-foreground" />
+  //                           )}
+  //                         </button>
+  //                       </div>
+  //                     </FormControl>
+
+  //                     <div className="mt-2 space-y-2">
+  //                       {passwordRequirements.map((req, index) => (
+  //                         <div
+  //                           key={index}
+  //                           className="flex items-center text-sm space-x-2"
+  //                         >
+  //                           {req.regex.test(password) ? (
+  //                             <Check className="h-4 w-4 text-green-500" />
+  //                           ) : (
+  //                             <X className="h-4 w-4 text-red-500" />
+  //                           )}
+  //                           <span
+  //                             className={
+  //                               req.regex.test(password)
+  //                                 ? "text-green-500"
+  //                                 : "text-red-500"
+  //                             }
+  //                           >
+  //                             {req.label}
+  //                           </span>
+  //                         </div>
+  //                       ))}
+  //                     </div>
+  //                     <FormMessage />
+  //                   </FormItem>
+  //                 )}
+  //               />
+
+  //               <FormField
+  //                 control={form.control}
+  //                 name="confirmPassword"
+  //                 render={({ field }) => (
+  //                   <FormItem>
+  //                     <FormLabel>Confirm Password</FormLabel>
+  //                     <FormControl>
+  //                       <div className="relative">
+  //                         <Input
+  //                           type={showConfirmPassword ? "text" : "password"}
+  //                           className="pr-10"
+  //                           placeholder="Confirm password"
+  //                           {...field}
+  //                         />
+  //                         <button
+  //                           type="button"
+  //                           className="absolute right-3 top-1/2 -translate-y-1/2"
+  //                           onClick={() =>
+  //                             setShowConfirmPassword(!showConfirmPassword)
+  //                           }
+  //                         >
+  //                           {showConfirmPassword ? (
+  //                             <EyeOff className="h-4 w-4 text-muted-foreground" />
+  //                           ) : (
+  //                             <EyeIcon className="h-4 w-4 text-muted-foreground" />
+  //                           )}
+  //                         </button>
+  //                       </div>
+  //                     </FormControl>
+  //                   </FormItem>
+  //                 )}
+  //               />
+
+  //               <Button type="submit" className="w-full" disabled={isSubmitting}>
+  //                 {isSubmitting ? (
+  //                   <>
+  //                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+  //                     Creating account...
+  //                   </>
+  //                 ) : (
+  //                   "Create Account"
+  //                 )}
+  //               </Button>
+  //             </form>
+  //           </Form>
+  //         </CardContent>
+  //         <CardFooter className="flex justify-center">
+  //           <div className="text-sm">
+  //             Already have an account?{" "}
+  //             <a href="/login" className="text-primary hover:underline">
+  //               Sign in
+  //             </a>
+  //           </div>
+  //         </CardFooter>
+  //       </Card>
+  //     </div>
+  //   );
+  // };
+
+  // export default SignupPage;
+
   return (
-    <div className="w-full min-h-screen flex flex-col justify-center items-center bg-gradient-to-b from-blue-50 to-purple-50 py-8">
-      <div className="mb-8 flex flex-col items-center">
-        <div className="flex items-center gap-3 mb-4">
-          <Brain className="h-12 w-12 text-primary animate-pulse" />
-          <h1 className="text-4xl font-bold text-primary">Mind Expanse</h1>
+    <div
+      className="w-full min-h-screen flex flex-col justify-center items-center relative overflow-hidden"
+      style={{
+        backgroundImage: "url('src/assets/imgs/arithmetic.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      {/* Overlay with backdrop filter */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+
+      {/* Glass morphism container */}
+      <div className="relative z-10 w-full max-w-4xl px-4">
+        <div className="mb-6 text-center">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="p-3 bg-white/10 backdrop-blur-md rounded-full">
+              <Brain className="h-10 w-10 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold text-white">Mind Expanse</h1>
+          </div>
+          <p className="text-xl text-white/80">Start your math adventure!</p>
         </div>
-        <p className="text-xl text-muted-foreground mt-2">
-          Start your child's math adventure!
-        </p>
-      </div>
 
-      <Card className="w-full max-w-md mx-4 shadow-lg border-2 border-primary/20">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">Create Account</CardTitle>
-        </CardHeader>
+        <Card className="w-full backdrop-blur-xl bg-white/90 shadow-2xl border-0">
+          <CardHeader>
+            <CardTitle className="text-2xl text-center font-semibold">
+              Create Account
+            </CardTitle>
+          </CardHeader>
 
-        <CardContent className="space-y-6">
-          <Button
-            variant="outline"
-            className="w-full hover:bg-primary/5"
-            onClick={handleGoogleSignup}
-          >
-            <img
-              src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4="
-              alt="Google"
-              className="w-5 h-5 mr-2"
-            />
-            Sign up with Google
-          </Button>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* First Column */}
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>First Name</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                placeholder="First Name"
+                                className="pl-10 bg-white/50 backdrop-blur-sm border-gray-200 focus:bg-white transition-colors"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                Or sign up with email
-              </span>
-            </div>
-          </div>
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                placeholder="names@example.com"
+                                className="pl-10 bg-white/50 backdrop-blur-sm border-gray-200 focus:bg-white transition-colors"
+                                type="email"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="First Name"
-                          className="pl-10"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="Last name"
-                          className="pl-10"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                className="pr-10 bg-white/50 backdrop-blur-sm border-gray-200 focus:bg-white transition-colors"
+                                placeholder="Create a password"
+                                {...field}
+                                onChange={(e) => handlePasswordChange(e, field)}
+                              />
+                              <button
+                                type="button"
+                                className="absolute right-3 top-1/2 -translate-y-1/2"
+                                onClick={() => setShowPassword(!showPassword)}
+                              >
+                                {showPassword ? (
+                                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                ) : (
+                                  <EyeIcon className="h-4 w-4 text-muted-foreground" />
+                                )}
+                              </button>
+                              {/* ... rest of the password input ... */}
+                            </div>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="names@example.com"
-                          className="pl-10"
-                          type="email"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  {/* Second Column */}
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Last Name</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                placeholder="Last name"
+                                className="pl-10 bg-white/50 backdrop-blur-sm border-gray-200 focus:bg-white transition-colors"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          className="pr-10"
-                          placeholder="Create a password"
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            setPassword(e.target.value);
-                          }}
-                        />
-                        <button
-                          type="button"
-                          className="absolute right-3 top-1/2 -translate-y-1/2"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <EyeIcon className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
+                    <FormField
+                      control={form.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type={showConfirmPassword ? "text" : "password"}
+                                className="pr-10 bg-white/50 backdrop-blur-sm border-gray-200 focus:bg-white transition-colors"
+                                placeholder="Confirm password"
+                                {...field}
+                              />
+                              <button
+                                type="button"
+                                className="absolute right-3 top-1/2 -translate-y-1/2"
+                                onClick={() =>
+                                  setShowConfirmPassword(!showConfirmPassword)
+                                }
+                              >
+                                {showConfirmPassword ? (
+                                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                ) : (
+                                  <EyeIcon className="h-4 w-4 text-muted-foreground" />
+                                )}
+                              </button>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                    <div className="mt-2 space-y-2">
-                      {passwordRequirements.map((req, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center text-sm space-x-2"
-                        >
-                          {req.regex.test(password) ? (
-                            <Check className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <X className="h-4 w-4 text-red-500" />
-                          )}
-                          <span
-                            className={
-                              req.regex.test(password)
-                                ? "text-green-500"
-                                : "text-red-500"
-                            }
-                          >
-                            {req.label}
-                          </span>
-                        </div>
-                      ))}
+                    <div className="space-y-2">
+                      {showValidations && password && (
+                        <>
+                          {passwordRequirements.map((req, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center text-sm space-x-2"
+                            >
+                              {req.regex.test(password) ? (
+                                <Check className="h-3 w-3 text-green-500" />
+                              ) : (
+                                <X className="h-3 w-3 text-red-500" />
+                              )}
+                              <span
+                                className={
+                                  req.regex.test(password)
+                                    ? "text-green-500"
+                                    : "text-red-500"
+                                }
+                              >
+                                {req.label}
+                              </span>
+                            </div>
+                          ))}
+                        </>
+                      )}
                     </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  </div>
+                </div>
 
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showConfirmPassword ? "text" : "password"}
-                          className="pr-10"
-                          placeholder="Confirm password"
-                          {...field}
-                        />
-                        <button
-                          type="button"
-                          className="absolute right-3 top-1/2 -translate-y-1/2"
-                          onClick={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
-                          }
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <EyeIcon className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+                <Button
+                  type="submit"
+                  className="w-full mt-6 bg-primary hover:bg-primary/90 transition-colors"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating account...
+                    </>
+                  ) : (
+                    "Create Account"
+                  )}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
 
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
-                  </>
-                ) : (
-                  "Create Account"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <div className="text-sm">
-            Already have an account?{" "}
-            <a href="/login" className="text-primary hover:underline">
-              Sign in
-            </a>
-          </div>
-        </CardFooter>
-      </Card>
+          <CardFooter className="flex justify-center">
+            <div className="text-sm text-gray-600">
+              Already have an account?{" "}
+              <a
+                href="/login"
+                className="text-primary hover:text-primary/80 transition-colors font-medium"
+              >
+                Sign in
+              </a>
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 };

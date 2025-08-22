@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { environment } from "@/environment/environment";
-import { Progress } from "@/components/ui/progress";
 
 const DashboardPage = () => {
   const [username, setUsername] = useState<string | null>(null);
@@ -17,20 +16,6 @@ const DashboardPage = () => {
   const [user, setUser] = useState<any | null>(null);
 
   useEffect(() => {
-    axios
-      .get(`${environment.API}/auth/user-info`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        withCredentials: true,
-      })
-      .then((response) => {
-        setUser(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching user data:", error);
-      });
-
     const storedUsername = localStorage.getItem("names");
     setUsername(
       storedUsername
@@ -43,65 +28,75 @@ const DashboardPage = () => {
     };
   }, []);
 
-  const progressSections = [
+  const mathSections = [
     {
-      title: "Basic operations exercises",
-      description: "Practice section one",
-      progress: 65,
+      title: "Addition Practice",
+      description: "Start with basic addition problems",
+      levels: ["Without Regrouping", "With Regrouping"],
+      difficulty: "Beginner",
     },
     {
-      title: "Advanced operations",
-      description: "Practice section two",
-      progress: 25,
+      title: "Subtraction Workshop",
+      description: "Learn subtraction step by step",
+      levels: ["Without Regrouping", "With Regrouping"],
+      difficulty: "Beginner",
     },
     {
-      title: "Problem solving",
-      description: "Practice section three",
-      progress: 40,
+      title: "Multiplication Zone",
+      description: "Master times tables and more",
+      levels: ["With Regrouping", "Without Regrouping"],
+      difficulty: "Intermediate",
     },
     {
-      title: "Word problems",
-      description: "Practice section four",
-      progress: 15,
+      title: "Division Challenge",
+      description: "Practice division concepts",
+      levels: ["Long Division"],
+      difficulty: "Advanced",
     },
   ];
 
   return (
     <div className="w-full h-full p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-primary">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-primary">
+          Math Practice Sections
+        </h1>
         <p className="text-gray-500 mt-2">
           {username
             ? `Welcome back, ${username || user.names}!`
-            : "Welcome to Mind Expanse!"}{" "}
-          Here's what you've been working on.
+            : "Welcome to Mind Expanse Math!"}{" "}
+          Here are the available math practice sections to help you improve your
+          skills.
         </p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        {progressSections.map((section, index) => (
+        {mathSections.map((section, index) => (
           <Card key={index}>
             <CardHeader className="pb-2">
-              <CardDescription>{section.description}</CardDescription>
+              {/* <CardDescription>
+                Difficulty: {section.difficulty}
+              </CardDescription> */}
               <CardTitle className="text-2xl">{section.title}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xs text-muted-foreground">
-                Your progress is {section.progress}%, keep going!
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground mb-2">
+                  {section.description}
+                </p>
+                <div className="text-sm font-medium">Available Lessons:</div>
+                <ul className="list-disc pl-5 text-sm text-muted-foreground">
+                  {section.levels.map((level, i) => (
+                    <li key={i}>{level}</li>
+                  ))}
+                </ul>
               </div>
             </CardContent>
-            <CardFooter>
-              <Progress value={section.progress} className="h-2" />
-            </CardFooter>
+            {/* <CardFooter>
+              <Button className="w-full">Start Practice</Button>
+            </CardFooter> */}
           </Card>
         ))}
-        {/* {loading && (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="spinner-border text-primary" role="status">
-              <span className="sr-only">Loading...</span>
-            </div>
-          </div>
-        )} */}
       </div>
     </div>
   );

@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, Settings, ArrowLeft } from "lucide-react";
-
+import { mathService } from "@/services/MathService";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/resultsModal";
 interface Question {
   number1: number; // Dividend
   number2: number; // Divisor
@@ -379,6 +387,8 @@ const DivisionWorkSheet: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const [showResults, setShowResults] = useState(false);
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
 
   const handlePreferencesSelected = (preferences: UserPreferences) => {
     setUserPreferences(preferences);
@@ -402,6 +412,7 @@ const DivisionWorkSheet: React.FC = () => {
       setQuestions(newQuestions);
       setResults([]);
       setScore(null);
+      setShowResults(false);
     } catch (err) {
       setError("Unable to generate questions. Please try again.");
       console.error("Error:", err);
@@ -495,6 +506,8 @@ const DivisionWorkSheet: React.FC = () => {
       setResults(data.results);
       setScore(data.score);
       setIsSubmitted(true);
+      setShowResults(true);
+      setIsResultModalOpen(true); // Add this line
     } catch (err) {
       console.error("Error verifying answers:", err);
       setError("An error occurred while verifying answers. Please try again.");
@@ -502,6 +515,70 @@ const DivisionWorkSheet: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // const handleSubmit = async () => {
+  //   setLoading(true);
+  //   const unanswered = questions.filter((q) =>
+  //     q.userAnswer.every((digit) => digit === "")
+  //   );
+  //   if (unanswered.length > 0) {
+  //     setError("Please provide final answers for all questions.");
+  //     setLoading(false);
+  //     return;
+  //   }
+
+  //   try {
+  //     const answersToVerify: VerifyDivisionAnswer[] = questions.map((q) => ({
+  //       number1: q.number1,
+  //       number2: q.number2,
+  //       answer: parseInt(
+  //         q.userAnswer.filter((a) => a !== "").join("") || "0",
+  //         10
+  //       ),
+  //       remainder: parseInt(q.remainderAnswer || "0", 10),
+  //       steps: {
+  //         step1: parseInt(
+  //           q.workingRows[0]?.digits.filter((d) => d !== "").join("") || "0",
+  //           10
+  //         ),
+  //         step2: parseInt(
+  //           q.workingRows[1]?.digits.filter((d) => d !== "").join("") || "0",
+  //           10
+  //         ),
+  //         step3: parseInt(
+  //           q.workingRows[2]?.digits.filter((d) => d !== "").join("") || "0",
+  //           10
+  //         ),
+  //       },
+  //       intermediateRemainders: {
+  //         remainder1: parseInt(q.intermediateRemainders[0] || "0", 10),
+  //         remainder2: parseInt(q.intermediateRemainders[1] || "0", 10),
+  //         remainder3: parseInt(q.intermediateRemainders[2] || "0", 10),
+  //       },
+  //     }));
+
+  //     // 🔥 Call real backend service
+  //     const data = await mathService.verifyDivisionAnswers(answersToVerify);
+
+  //     const updated = questions.map((q, i) => ({
+  //       ...q,
+  //       isCorrect:
+  //         data.results[i].includes("Perfect") ||
+  //         data.results[i].includes("Correct"),
+  //       stepValidation: data.stepValidation[i],
+  //     }));
+
+  //     setQuestions(updated);
+  //     setResults(data.results);
+  //     setScore(data.score);
+  //     setIsSubmitted(true);
+  //   } catch (err) {
+  //     console.error("Error verifying answers:", err);
+  //     setError("An error occurred while verifying answers. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const getInputClassName = (
     question: Question,
@@ -540,7 +617,10 @@ const DivisionWorkSheet: React.FC = () => {
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
-            onClick={() => setShowPreferences(true)}
+            onClick={() => {
+              setShowPreferences(true);
+              setShowResults(false);
+            }}
             className="gap-2 hover:bg-blue-50"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -619,7 +699,7 @@ const DivisionWorkSheet: React.FC = () => {
                         {dividendDigits.map((digit, i) => (
                           <div
                             key={i}
-                            className="w-6 h-6 border-b-2 border-gray-400 text-center text-lg font-bold"
+                            className="w-6 h-6 ml-2  text-center text-lg font-bold"
                           >
                             {digit}
                           </div>
@@ -687,7 +767,7 @@ const DivisionWorkSheet: React.FC = () => {
             </div>
           )}
 
-          {results.length > 0 && (
+          {/* {results.length > 0 && (
             <div className="mt-6">
               <h3 className="text-xl font-semibold mb-4">Results:</h3>
               <ul className="list-disc pl-6">
@@ -705,6 +785,65 @@ const DivisionWorkSheet: React.FC = () => {
                 ))}
               </ul>
             </div>
+          )} */}
+
+          {isResultModalOpen && (
+            <Dialog
+              open={isResultModalOpen}
+              onOpenChange={setIsResultModalOpen}
+            >
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold text-center">
+                    Quiz Results
+                  </DialogTitle>
+                  <DialogDescription className="text-center">
+                    Here's how you performed on the Division worksheet
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="py-6 text-center">
+                  <div
+                    className={`text-5xl font-bold mb-4 ${
+                      score === questions.length
+                        ? "text-green-600"
+                        : score! >= questions.length * 0.7
+                        ? "text-yellow-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {Math.round((score! / questions.length) * 100)}%
+                  </div>
+
+                  <p className="text-gray-600 text-lg mb-4">
+                    You got {questions.filter((q) => q.isCorrect).length} out of{" "}
+                    {questions.length} questions correct!
+                  </p>
+
+                  {score === questions.length && (
+                    <div className="text-2xl mb-4">🎉 Perfect Score! 🎉</div>
+                  )}
+                </div>
+
+                <DialogFooter className="flex justify-center gap-2">
+                  <Button
+                    onClick={() => {
+                      setIsResultModalOpen(false);
+                      userPreferences && fetchQuestions(userPreferences);
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Try New Questions
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsResultModalOpen(false)}
+                  >
+                    Review Answers
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           )}
         </>
       )}

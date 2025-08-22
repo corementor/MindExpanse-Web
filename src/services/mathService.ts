@@ -1,6 +1,10 @@
-import { httpClient } from "./httpClient";
+import { httpClient } from "@/services/HttpClient";
 import { environment } from "../environment/environment";
-const API_MATH_URL = `${environment.API}/math/addition`;
+const API_MATH_URL = `${environment.API}/math`;
+interface DivisionQuestion {
+  number1: number;
+  number2: number;
+}
 interface GenerateArrayParams {
   rows: number;
   cols: number;
@@ -104,7 +108,48 @@ interface VerifyMultiplicationResponse {
     partialProduct3: number;
   }>;
 }
+interface VerifyDivisionAnswer {
+  number1: number;
+  number2: number;
+  answer: number;
+  remainder: number;
+  steps: {
+    step1?: number;
+    step2?: number;
+    step3?: number;
+  };
+  intermediateRemainders: {
+    remainder1?: number;
+    remainder2?: number;
+    remainder3?: number;
+  };
+}
 
+interface VerifyDivisionResponse {
+  results: string[];
+  score: number;
+  percentage: number;
+  maxScore: number;
+  total: number;
+  correctSteps: Array<{
+    step1?: number;
+    step2?: number;
+    step3?: number;
+  }>;
+  correctRemainders: Array<{
+    remainder1?: number;
+    remainder2?: number;
+    remainder3?: number;
+  }>;
+  stepValidation: Array<{
+    step1Correct?: boolean;
+    step2Correct?: boolean;
+    step3Correct?: boolean;
+    remainder1Correct?: boolean;
+    remainder2Correct?: boolean;
+    remainder3Correct?: boolean;
+  }>;
+}
 class MathService {
   public async generateArray(params: GenerateArrayParams): Promise<number[][]> {
     return httpClient.get<number[][]>(`${API_MATH_URL}/generateArray`, {
@@ -119,7 +164,7 @@ class MathService {
     );
   }
   public async verifySubtractionAnswers(
-    answers: VerifySubtractionAnswer[] // Use the new interface
+    answers: VerifySubtractionAnswer[]
   ): Promise<VerifySubtractionResponse> {
     return httpClient.post<VerifySubtractionResponse>(
       `${API_MATH_URL}/verify-subtractions`,
@@ -131,6 +176,23 @@ class MathService {
   ): Promise<VerifyMultiplicationResponse> {
     return httpClient.post<VerifyMultiplicationResponse>(
       `${API_MATH_URL}/verify-multiplication`,
+      answers
+    );
+  }
+  public async generateDivisionQuestions(
+    count: number,
+    min: number,
+    max: number
+  ): Promise<DivisionQuestion[]> {
+    return httpClient.get<DivisionQuestion[]>(
+      `${API_MATH_URL}/generate-division?count=${count}&min=${min}&max=${max}`
+    );
+  }
+  public async verifyDivisionAnswers(
+    answers: VerifyDivisionAnswer[]
+  ): Promise<VerifyDivisionResponse> {
+    return httpClient.post<VerifyDivisionResponse>(
+      `${API_MATH_URL}/verify-division`,
       answers
     );
   }
