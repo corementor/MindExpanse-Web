@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/resultsModal";
 
 import { mathService } from "@/services/MathService";
+import { useAuth } from "@/contexts/AuthContext";
 //Interfaces to define the structure of questions and user answers
 interface Question {
   number1: number;
