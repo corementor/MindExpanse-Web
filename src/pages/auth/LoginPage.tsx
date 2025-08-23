@@ -152,14 +152,14 @@ const LoginPage = () => {
           </CardContent>
 
           <CardFooter className="flex flex-col space-y-4 text-center">
-            <div className="text-sm text-gray-600">
+            {/* <div className="text-sm text-gray-600">
               <a
                 href="/forgot-password"
                 className="hover:text-primary transition-colors underline underline-offset-4"
               >
                 Forgot your password?
               </a>
-            </div>
+            </div> */}
             <div className="text-sm text-gray-600">
               New to Mind Expanse?{" "}
               <a
