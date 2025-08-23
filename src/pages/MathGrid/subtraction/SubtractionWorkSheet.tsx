@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Minus, RefreshCcw, Settings, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import { mathService } from "@/services/MathService";
+import { mathService } from "../../../services/mathService";
 import {
   Dialog,
   DialogContent,
@@ -45,23 +45,23 @@ interface UserPreferences {
 }
 
 // Interface to define the structure of the response from the API
-interface VerifyResponse {
-  results: string[];
-  score: number;
-  percentage: number;
-  maxScore: number;
-  total: number;
-  correctBorrows: Array<{
-    tens: number;
-    hundreds: number;
-    thousands: number;
-  }>;
-  borrowValidation: Array<{
-    tensCorrect: boolean;
-    hundredsCorrect: boolean;
-    thousandsCorrect: boolean;
-  }>;
-}
+// interface VerifyResponse {
+//   results: string[];
+//   score: number;
+//   percentage: number;
+//   maxScore: number;
+//   total: number;
+//   correctBorrows: Array<{
+//     tens: number;
+//     hundreds: number;
+//     thousands: number;
+//   }>;
+//   borrowValidation: Array<{
+//     tensCorrect: boolean;
+//     hundredsCorrect: boolean;
+//     thousandsCorrect: boolean;
+//   }>;
+// }
 
 const PreferenceSelection: React.FC<{
   onPreferencesSelected: (preferences: UserPreferences) => void;
@@ -528,43 +528,43 @@ const SubtractionWorksheet = () => {
     );
   };
 
-  const calculateCorrectBorrows = (num1: number, num2: number) => {
-    const digits1 = String(num1)
-      .padStart(4, "0")
-      .split("")
-      .reverse()
-      .map(Number);
-    const digits2 = String(num2)
-      .padStart(4, "0")
-      .split("")
-      .reverse()
-      .map(Number);
+  // const calculateCorrectBorrows = (num1: number, num2: number) => {
+  //   const digits1 = String(num1)
+  //     .padStart(4, "0")
+  //     .split("")
+  //     .reverse()
+  //     .map(Number);
+  //   const digits2 = String(num2)
+  //     .padStart(4, "0")
+  //     .split("")
+  //     .reverse()
+  //     .map(Number);
 
-    const borrows = { tens: 0, hundreds: 0, thousands: 0 };
+  //   const borrows = { tens: 0, hundreds: 0, thousands: 0 };
 
-    // Ones place
-    if (digits1[0] < digits2[0]) {
-      borrows.tens = 1;
-      digits1[1] -= 1;
-      digits1[0] += 10;
-    }
+  //   // Ones place
+  //   if (digits1[0] < digits2[0]) {
+  //     borrows.tens = 1;
+  //     digits1[1] -= 1;
+  //     digits1[0] += 10;
+  //   }
 
-    // Tens place
-    if (digits1[1] < digits2[1]) {
-      borrows.hundreds = 1;
-      digits1[2] -= 1;
-      digits1[1] += 10;
-    }
+  //   // Tens place
+  //   if (digits1[1] < digits2[1]) {
+  //     borrows.hundreds = 1;
+  //     digits1[2] -= 1;
+  //     digits1[1] += 10;
+  //   }
 
-    // Hundreds place
-    if (digits1[2] < digits2[2]) {
-      borrows.thousands = 1;
-      digits1[3] -= 1;
-      digits1[2] += 10;
-    }
+  //   // Hundreds place
+  //   if (digits1[2] < digits2[2]) {
+  //     borrows.thousands = 1;
+  //     digits1[3] -= 1;
+  //     digits1[2] += 10;
+  //   }
 
-    return borrows;
-  };
+  //   return borrows;
+  // };
 
   const checkAnswers = async () => {
     setLoading(true);
@@ -660,7 +660,7 @@ const SubtractionWorksheet = () => {
         <div className="inline-block">
           {/* Borrow numbers row */}
           <div className={`grid ${columns.gridCols} h-12 mb-1 gap-1`}>
-            {columns.positions.map((pos, idx) => {
+            {columns.positions.map((pos) => {
               if (!columns.borrowPositions.includes(pos)) {
                 return <div key={pos} className="w-12 h-12"></div>;
               }

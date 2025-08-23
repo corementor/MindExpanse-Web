@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import { environment } from "../environment/environment";
-import { authService } from "./AuthService";
+import { environment } from "@/environment/environment";
+import { authService } from "@/services/AuthService";
 import { isTokenExpired, cleanupTokenStorage } from "@/utils/tokenUtils";
 
 const API_BASE_URL = environment.API;

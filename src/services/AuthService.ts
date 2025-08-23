@@ -1,4 +1,4 @@
-import { httpClient } from "@/services/HttpClient";
+import { httpClient } from "@/services/httpClient";
 import { toast } from "react-toastify";
 import { environment } from "@/environment/environment";
 import { isTokenExpired, cleanupTokenStorage } from "@/utils/tokenUtils";

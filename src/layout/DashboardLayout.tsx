@@ -1,23 +1,3 @@
-// // src/layout/DashboardLayout.tsx
-// import NavBar from "@/layout/Navbar";
-// import { Outlet } from "react-router-dom";
-// import SideBar from "./SideBar";
-
-// export const DashboardLayout = () => {
-//   return (
-//     <div className="flex w-full h-screen min-h-screen">
-//       <SideBar />
-//       <div className="flex flex-col w-full">
-//         <NavBar />
-//         <div className="flex-grow overflow-auto">
-//           <Outlet />
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// src/layout/DashboardLayout.tsx
 import NavBar from "@/layout/Navbar";
 import { Outlet } from "react-router-dom";
 import SideBar from "./SideBar";

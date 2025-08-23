@@ -11,8 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/resultsModal";
 
-import { mathService } from "@/services/MathService";
-import { useAuth } from "@/contexts/AuthContext";
+import { mathService } from "../../../services/mathService";
 //Interfaces to define the structure of questions and user answers
 interface Question {
   number1: number;
@@ -44,23 +43,6 @@ interface UserPreferences {
   numberOfQuestions?: number; // Optional, default to 4
 }
 // Interface to define the structure of the response from the API
-interface VerifyResponse {
-  results: string[];
-  score: number;
-  percentage: number;
-  maxScore: number;
-  total: number;
-  correctCarries: Array<{
-    tens: number;
-    hundreds: number;
-    thousands: number;
-  }>;
-  carryValidation: Array<{
-    tensCorrect: boolean;
-    hundredsCorrect: boolean;
-    thousandsCorrect: boolean;
-  }>;
-}
 
 const PreferenceSelection: React.FC<{
   onPreferencesSelected: (preferences: UserPreferences) => void;
@@ -646,17 +628,6 @@ const AdditionWorksheet = () => {
   };
 
   // 2. Update the getDigits function to be dynamic
-  const getDigits = (num: number, numberOfDigits: number) => {
-    const paddedNum = String(num).padStart(numberOfDigits, "0");
-    const columns = getDynamicColumns(numberOfDigits);
-
-    const digits: any = {};
-    columns.positions.forEach((pos, index) => {
-      digits[pos] = paddedNum[index] || "0";
-    });
-
-    return digits;
-  };
 
   // 3. Replace the renderQuestion function with this updated version:
   const renderQuestion = (question: Question, index: number) => {
@@ -680,7 +651,7 @@ const AdditionWorksheet = () => {
           {/* Dynamic carry numbers row */}
           <div className={`grid ${columns.gridCols} h-12 mb-1 gap-1`}>
             {/* Map through carry positions dynamically */}
-            {columns.positions.map((pos, idx) => {
+            {columns.positions.map((pos) => {
               // Only show carry inputs for positions that need them
               if (!columns.carryPositions.includes(pos)) {
                 return <div key={pos} className="w-12 h-12"></div>;
@@ -765,7 +736,7 @@ const AdditionWorksheet = () => {
           >
             {columns.positions.map((pos, idx) => {
               const correctAnswer = question.number1 + question.number2;
-              const maxDigitsNeeded = String(correctAnswer).length;
+
               const correctAnswerStr = String(correctAnswer).padStart(
                 columns.totalCols,
                 "0"

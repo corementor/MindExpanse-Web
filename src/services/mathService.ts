@@ -1,4 +1,5 @@
-import { httpClient } from "@/services/HttpClient";
+// @ts-ignore
+import { httpClient } from "@/services/httpClient";
 import { environment } from "../environment/environment";
 const API_MATH_URL = `${environment.API}/math`;
 interface DivisionQuestion {

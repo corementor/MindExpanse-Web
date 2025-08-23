@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, Settings, ArrowLeft } from "lucide-react";
-import { mathService } from "@/services/MathService";
 import {
   Dialog,
   DialogContent,
@@ -382,12 +381,12 @@ const DivisionWorkSheet: React.FC = () => {
   const [userPreferences, setUserPreferences] =
     useState<UserPreferences | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [results, setResults] = useState<string[]>([]);
+  // const [results, setResults] = useState<string[]>([]);
   const [score, setScore] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
-  const [showResults, setShowResults] = useState(false);
+  // const [showResults, setShowResults] = useState(false);
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
 
   const handlePreferencesSelected = (preferences: UserPreferences) => {
@@ -410,9 +409,9 @@ const DivisionWorkSheet: React.FC = () => {
       );
 
       setQuestions(newQuestions);
-      setResults([]);
+      // setResults([]);
       setScore(null);
-      setShowResults(false);
+      // setShowResults(false);
     } catch (err) {
       setError("Unable to generate questions. Please try again.");
       console.error("Error:", err);
@@ -503,10 +502,12 @@ const DivisionWorkSheet: React.FC = () => {
       }));
 
       setQuestions(updated);
-      setResults(data.results);
+      // setResults(data.results);
       setScore(data.score);
       setIsSubmitted(true);
-      setShowResults(true);
+      // setShowResults(true);
+      // setResults(data.results);
+      // setShowResults(true);
       setIsResultModalOpen(true); // Add this line
     } catch (err) {
       console.error("Error verifying answers:", err);
@@ -515,70 +516,6 @@ const DivisionWorkSheet: React.FC = () => {
       setLoading(false);
     }
   };
-
-  // const handleSubmit = async () => {
-  //   setLoading(true);
-  //   const unanswered = questions.filter((q) =>
-  //     q.userAnswer.every((digit) => digit === "")
-  //   );
-  //   if (unanswered.length > 0) {
-  //     setError("Please provide final answers for all questions.");
-  //     setLoading(false);
-  //     return;
-  //   }
-
-  //   try {
-  //     const answersToVerify: VerifyDivisionAnswer[] = questions.map((q) => ({
-  //       number1: q.number1,
-  //       number2: q.number2,
-  //       answer: parseInt(
-  //         q.userAnswer.filter((a) => a !== "").join("") || "0",
-  //         10
-  //       ),
-  //       remainder: parseInt(q.remainderAnswer || "0", 10),
-  //       steps: {
-  //         step1: parseInt(
-  //           q.workingRows[0]?.digits.filter((d) => d !== "").join("") || "0",
-  //           10
-  //         ),
-  //         step2: parseInt(
-  //           q.workingRows[1]?.digits.filter((d) => d !== "").join("") || "0",
-  //           10
-  //         ),
-  //         step3: parseInt(
-  //           q.workingRows[2]?.digits.filter((d) => d !== "").join("") || "0",
-  //           10
-  //         ),
-  //       },
-  //       intermediateRemainders: {
-  //         remainder1: parseInt(q.intermediateRemainders[0] || "0", 10),
-  //         remainder2: parseInt(q.intermediateRemainders[1] || "0", 10),
-  //         remainder3: parseInt(q.intermediateRemainders[2] || "0", 10),
-  //       },
-  //     }));
-
-  //     // 🔥 Call real backend service
-  //     const data = await mathService.verifyDivisionAnswers(answersToVerify);
-
-  //     const updated = questions.map((q, i) => ({
-  //       ...q,
-  //       isCorrect:
-  //         data.results[i].includes("Perfect") ||
-  //         data.results[i].includes("Correct"),
-  //       stepValidation: data.stepValidation[i],
-  //     }));
-
-  //     setQuestions(updated);
-  //     setResults(data.results);
-  //     setScore(data.score);
-  //     setIsSubmitted(true);
-  //   } catch (err) {
-  //     console.error("Error verifying answers:", err);
-  //     setError("An error occurred while verifying answers. Please try again.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const getInputClassName = (
     question: Question,
@@ -619,7 +556,7 @@ const DivisionWorkSheet: React.FC = () => {
             variant="outline"
             onClick={() => {
               setShowPreferences(true);
-              setShowResults(false);
+              // setShowResults(false);
             }}
             className="gap-2 hover:bg-blue-50"
           >

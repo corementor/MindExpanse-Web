@@ -1,14 +1,6 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { environment } from "@/environment/environment";
+import { useEffect, useState } from "react";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const DashboardPage = () => {
   const [username, setUsername] = useState<string | null>(null);

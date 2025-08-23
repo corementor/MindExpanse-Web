@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const SideBar = () => {
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const getLinkClassName = ({ isActive }: { isActive: boolean }) =>
