@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
+import backgroundImage from "@/assets/imgs/arithmetic.jpg";
 import {
   EyeIcon,
   EyeOff,
@@ -84,8 +85,6 @@ const SignupPage = () => {
       setShowValidations(true);
     }
   };
-
-
 
   const passwordRequirements = [
     { label: "At least 8 characters", regex: /.{8,}/ },
@@ -179,12 +178,11 @@ const SignupPage = () => {
     }
   }
 
- 
   return (
     <div
       className="w-full min-h-screen flex flex-col justify-center items-center relative overflow-hidden"
       style={{
-        backgroundImage: "url('src/assets/imgs/arithmetic.jpg')",
+        backgroundImage: `url(${backgroundImage})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}

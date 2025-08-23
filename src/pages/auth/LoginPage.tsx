@@ -1,7 +1,7 @@
-// src/pages/LoginPage.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { EyeIcon, EyeOff, Loader2, Brain } from "lucide-react";
+import backgroundImage from "@/assets/imgs/arithmetic.jpg";
 import {
   Card,
   CardContent,
@@ -62,7 +62,7 @@ const LoginPage = () => {
     <div
       className="w-full min-h-screen flex flex-col justify-center items-center relative overflow-hidden"
       style={{
-        backgroundImage: "url('src/assets/imgs/arithmetic.jpg')",
+        backgroundImage: `url(${backgroundImage})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
