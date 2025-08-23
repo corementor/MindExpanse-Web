@@ -1,4 +1,5 @@
 import { httpClient } from "./httpClient";
+
 // import { environment } from "../environment/environment";
 // const API_MATH_URL = `${environment.API}/math`;
 interface DivisionQuestion {
@@ -152,19 +153,22 @@ interface VerifyDivisionResponse {
 }
 class MathService {
   public async generateArray(params: GenerateArrayParams): Promise<number[][]> {
-    return httpClient.get<number[][]>("/generateArray", {
+    return httpClient.get<number[][]>("/math/generateArray", {
       params,
     });
   }
 
   public async verifyAnswers(answers: VerifyAnswer[]): Promise<VerifyResponse> {
-    return httpClient.post<VerifyResponse>("/verify-all-with-carries", answers);
+    return httpClient.post<VerifyResponse>(
+      "/math/verify-all-with-carries",
+      answers
+    );
   }
   public async verifySubtractionAnswers(
     answers: VerifySubtractionAnswer[]
   ): Promise<VerifySubtractionResponse> {
     return httpClient.post<VerifySubtractionResponse>(
-      "/verify-subtractions",
+      "/math/verify-subtractions",
       answers
     );
   }
@@ -172,7 +176,7 @@ class MathService {
     answers: VerifyMultiplicationAnswer[]
   ): Promise<VerifyMultiplicationResponse> {
     return httpClient.post<VerifyMultiplicationResponse>(
-      "/verify-multiplication",
+      "/math/verify-multiplication",
       answers
     );
   }
@@ -182,13 +186,16 @@ class MathService {
     max: number
   ): Promise<DivisionQuestion[]> {
     return httpClient.get<DivisionQuestion[]>(
-      `/generate-division?count=${count}&min=${min}&max=${max}`
+      `/math/generate-division?count=${count}&min=${min}&max=${max}`
     );
   }
   public async verifyDivisionAnswers(
     answers: VerifyDivisionAnswer[]
   ): Promise<VerifyDivisionResponse> {
-    return httpClient.post<VerifyDivisionResponse>("/verify-division", answers);
+    return httpClient.post<VerifyDivisionResponse>(
+      "/math/verify-division",
+      answers
+    );
   }
 }
 
