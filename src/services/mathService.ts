@@ -1,5 +1,5 @@
 import { httpClient } from "./httpClient";
-import { environment } from "../environment/environment";
+// import { environment } from "../environment/environment";
 // const API_MATH_URL = `${environment.API}/math`;
 interface DivisionQuestion {
   number1: number;
