@@ -197,7 +197,7 @@ const SignupPage = () => {
             <div className="p-3 bg-white/10 backdrop-blur-md rounded-full">
               <Brain className="h-10 w-10 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-white">Mind Expanse</h1>
+            <h1 className="text-4xl font-bold text-white">Infinity Mind</h1>
           </div>
           <p className="text-xl text-white/80">Start your math adventure!</p>
         </div>

@@ -77,10 +77,10 @@ const LoginPage = () => {
             <div className="p-3 bg-white/10 backdrop-blur-md rounded-full">
               <Brain className="h-10 w-10 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-white">Mind Expanse</h1>
+            <h1 className="text-4xl font-bold text-white">Infinity Mind</h1>
           </div>
           <p className="text-xl text-white/80">
-            Welcome back to your learning journey!
+            Welcome to your learning journey!
           </p>
         </div>
 
@@ -161,7 +161,7 @@ const LoginPage = () => {
               </a>
             </div> */}
             <div className="text-sm text-gray-600">
-              New to Mind Expanse?{" "}
+              New to Infinity Mind ?{" "}
               <a
                 href="/signup"
                 className="text-primary hover:text-primary/80 transition-colors font-medium"

@@ -56,7 +56,7 @@ const DashboardPage = () => {
         <p className="text-gray-500 mt-2">
           {username
             ? `Welcome back, ${username || user.names}!`
-            : "Welcome to Mind Expanse Math!"}{" "}
+            : "Welcome to Infinity Mind !"}{" "}
           Here are the available math practice sections to help you improve your
           skills.
         </p>

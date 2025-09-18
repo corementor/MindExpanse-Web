@@ -159,10 +159,7 @@ class MathService {
   }
 
   public async verifyAnswers(answers: VerifyAnswer[]): Promise<VerifyResponse> {
-    return httpClient.post<VerifyResponse>(
-      "/math/verify-all-with-carries",
-      answers
-    );
+    return httpClient.post<VerifyResponse>("/math/verify-additions", answers);
   }
   public async verifySubtractionAnswers(
     answers: VerifySubtractionAnswer[]
@@ -176,7 +173,7 @@ class MathService {
     answers: VerifyMultiplicationAnswer[]
   ): Promise<VerifyMultiplicationResponse> {
     return httpClient.post<VerifyMultiplicationResponse>(
-      "/math/verify-multiplication",
+      "/math/verify-multiplications",
       answers
     );
   }

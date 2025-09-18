@@ -323,6 +323,7 @@ const AdditionWorksheet = () => {
   const [error, setError] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState<number | null>(null);
+  const [percentage, setPercentage] = useState<number | null>(null);
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
 
   const handlePreferencesSelected = (preferences: UserPreferences) => {
@@ -588,6 +589,8 @@ const AdditionWorksheet = () => {
       );
 
       setScore(data.score);
+      setPercentage(data.percentage);
+      console.log("Score:", data.score);
       console.log("Verification results:", data);
       setShowResults(true);
       setIsResultModalOpen(true);
@@ -910,6 +913,7 @@ const AdditionWorksheet = () => {
                 onClick={() => {
                   setShowResults(false);
                   setScore(null);
+                  setPercentage(null);
                   setQuestions((prev) =>
                     prev.map((q) => ({
                       ...q,
@@ -968,7 +972,7 @@ const AdditionWorksheet = () => {
                         : "text-red-600"
                     }`}
                   >
-                    {Math.round((score! / questions.length) * 100)}%
+                    {percentage}%
                   </div>
 
                   <p className="text-gray-600 text-lg mb-4">

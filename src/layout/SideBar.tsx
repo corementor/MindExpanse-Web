@@ -35,12 +35,12 @@ const SideBar = () => {
     <div className="flex flex-col h-full">
       {/* Desktop Logo */}
       <div className="flex h-20 items-center px-4 border-b font-bold hidden md:flex">
-        <span>Mind-Expanse</span>
+        <span>Infinity-Mind</span>
       </div>
 
       {/* Mobile Logo (inside sheet) */}
       <div className="flex h-20 items-center px-4 border-b font-bold md:hidden">
-        <span>Mind-Expanse</span>
+        <span>Infinity-Mind</span>
         <Button
           variant="ghost"
           size="icon"
