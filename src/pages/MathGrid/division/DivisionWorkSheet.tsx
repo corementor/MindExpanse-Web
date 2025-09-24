@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, Settings, ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
 import {
   Dialog,
   DialogContent,
@@ -176,12 +177,27 @@ const PreferenceSelection: React.FC<{
   const [numberOfDigits, setNumberOfDigits] = useState<
     "1-digit" | "2-digit" | "mixed"
   >("1-digit");
-  const [numberOfQuestions, setNumberOfQuestions] = useState<number>(4);
+  const [numberOfQuestions, setNumberOfQuestions] = useState("");
 
   const handleStartWorksheet = () => {
-    onPreferencesSelected({ complexity, numberOfDigits, numberOfQuestions });
+    onPreferencesSelected({
+      complexity,
+      numberOfDigits,
+      numberOfQuestions: Number(numberOfQuestions),
+    });
   };
+  const handleNumberOfQuestionsChange = (value: string) => {
+    if (value === "") {
+      setNumberOfQuestions("");
+      return;
+    }
+    const num = parseInt(value, 10);
 
+    // validate range
+    if (!isNaN(num) && num >= 0 && num <= 50) {
+      setNumberOfQuestions(num.toString());
+    }
+  };
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 min-h-screen">
       <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl my-8">
@@ -306,35 +322,51 @@ const PreferenceSelection: React.FC<{
             </div>
           </div>
 
-          <div>
+          <motion.div
+            initial={{ x: -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
             <h3 className="text-xl font-semibold text-gray-800 mb-3">
               📄 Number of Questions
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {[4, 6, 8, 10].map((num) => (
-                <div
-                  key={num}
-                  className={`p-3 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md text-center ${
-                    numberOfQuestions === num
-                      ? "border-blue-500 bg-blue-50 shadow-md"
-                      : "border-gray-200 hover:border-blue-300"
-                  }`}
-                  onClick={() => setNumberOfQuestions(num)}
-                >
-                  <div
-                    className={`text-2xl font-bold mb-1 ${
-                      numberOfQuestions === num
-                        ? "text-blue-600"
-                        : "text-gray-700"
+            <div className="max-w-md mx-auto">
+              <div className="relative">
+                <input
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={numberOfQuestions}
+                  onChange={(e) =>
+                    handleNumberOfQuestionsChange(e.target.value)
+                  }
+                  onWheel={(e) => e.currentTarget.blur()}
+                  className="w-full p-4 text-xl font-bold text-center border-2 border-blue-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-300"
+                  placeholder="Enter number"
+                />
+
+                <div className="text-center mt-2 text-sm text-gray-600">
+                  Choose between 1-50 questions
+                </div>
+              </div>
+              {/* Quick selection buttons */}
+              <div className="grid grid-cols-4 gap-2 mt-3">
+                {[4, 6, 8, 10].map((num) => (
+                  <button
+                    key={num}
+                    onClick={() => setNumberOfQuestions(num.toString())}
+                    className={`p-2 rounded-lg border-2 text-sm font-semibold transition-all duration-200 hover:shadow-md ${
+                      Number(numberOfQuestions) === num
+                        ? "border-blue-500 bg-blue-50 text-blue-600"
+                        : "border-gray-200 hover:border-blue-300 text-gray-700"
                     }`}
                   >
                     {num}
-                  </div>
-                  <div className="text-xs text-gray-600">{num} problems</div>
-                </div>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          </motion.div>
 
           <div className="bg-gray-50 p-4 rounded-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
@@ -365,7 +397,10 @@ const PreferenceSelection: React.FC<{
           <div className="text-center">
             <Button
               onClick={handleStartWorksheet}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              disabled={
+                Number(numberOfQuestions) < 1 || Number(numberOfQuestions) > 50
+              }
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               🚀 Start My Worksheet
             </Button>
@@ -386,6 +421,7 @@ const DivisionWorkSheet: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
+  const [percentage, setPercentage] = useState<number | null>(null);
   // const [showResults, setShowResults] = useState(false);
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
 
@@ -505,6 +541,7 @@ const DivisionWorkSheet: React.FC = () => {
       // setResults(data.results);
       setScore(data.score);
       setIsSubmitted(true);
+      setPercentage(data.percentage);
       // setShowResults(true);
       // setResults(data.results);
       // setShowResults(true);
@@ -749,7 +786,7 @@ const DivisionWorkSheet: React.FC = () => {
                         : "text-red-600"
                     }`}
                   >
-                    {Math.round((score! / questions.length) * 100)}%
+                    {percentage}%
                   </div>
 
                   <p className="text-gray-600 text-lg mb-4">

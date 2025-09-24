@@ -51,12 +51,30 @@ const PreferenceSelection: React.FC<{
     "with-regrouping" | "without-regrouping"
   >("with-regrouping");
   const [numberOfDigits, setNumberOfDigits] = useState<number>(4);
-  const [numberOfQuestions, setNumberOfQuestions] = useState<number>(4);
+
+  const [numberOfQuestions, setNumberOfQuestions] = useState("");
 
   const handleStartWorksheet = () => {
-    const preferences = { complexity, numberOfDigits, numberOfQuestions };
+    const preferences = {
+      complexity,
+      numberOfDigits,
+      numberOfQuestions: Number(numberOfQuestions),
+    };
     console.log("Selected preferences:", preferences);
     onPreferencesSelected(preferences);
+  };
+
+  const handleNumberOfQuestionsChange = (value: string) => {
+    if (value === "") {
+      setNumberOfQuestions("");
+      return;
+    }
+    const num = parseInt(value, 10);
+
+    // validate range
+    if (!isNaN(num) && num >= 0 && num <= 50) {
+      setNumberOfQuestions(num.toString());
+    }
   };
 
   return (
@@ -227,7 +245,7 @@ const PreferenceSelection: React.FC<{
               ))}
             </div>
           </motion.div>
-          {/* Number of Questions Selection */}
+          {/* Number of Questions Selection - Updated to use input */}
           <motion.div
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -236,31 +254,41 @@ const PreferenceSelection: React.FC<{
             <h3 className="text-xl font-semibold text-gray-800 mb-3">
               📄 Number of Questions
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {[4, 6, 8, 10].map((num) => (
-                <div
-                  key={num}
-                  className={`p-3 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md text-center ${
-                    numberOfQuestions === num
-                      ? "border-blue-500 bg-blue-50 shadow-md"
-                      : "border-gray-200 hover:border-blue-300"
-                  }`}
-                  onClick={() => setNumberOfQuestions(num)}
-                >
-                  <div
-                    className={`text-2xl font-bold mb-1 ${
-                      numberOfQuestions === num
-                        ? "text-blue-600"
-                        : "text-gray-700"
+            <div className="max-w-md mx-auto">
+              <div className="relative">
+                <input
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={numberOfQuestions}
+                  onWheel={(e) => e.currentTarget.blur()} // Prevent changing number on scroll
+                  onChange={(e) =>
+                    handleNumberOfQuestionsChange(e.target.value)
+                  }
+                  className="w-full p-4 text-xl font-bold text-center border-2 border-blue-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-300"
+                  placeholder="Enter number"
+                />
+
+                <div className="text-center mt-2 text-sm text-gray-600">
+                  Choose between 1-50 questions
+                </div>
+              </div>
+              {/* Quick selection buttons */}
+              <div className="grid grid-cols-4 gap-2 mt-3">
+                {[4, 6, 8, 10].map((num) => (
+                  <button
+                    key={num}
+                    onClick={() => setNumberOfQuestions(num)}
+                    className={`p-2 rounded-lg border-2 text-sm font-semibold transition-all duration-200 hover:shadow-md ${
+                      Number(numberOfQuestions) === num
+                        ? "border-blue-500 bg-blue-50 text-blue-600"
+                        : "border-gray-200 hover:border-blue-300 text-gray-700"
                     }`}
                   >
                     {num}
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    {num} questions to practice
-                  </div>
-                </div>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
           </motion.div>
           {/* Preview - with reduced padding */}
@@ -303,7 +331,10 @@ const PreferenceSelection: React.FC<{
           >
             <Button
               onClick={handleStartWorksheet}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              disabled={
+                Number(numberOfQuestions) < 1 || Number(numberOfQuestions) > 50
+              }
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               🚀 Start My Worksheet
             </Button>
@@ -396,6 +427,14 @@ const AdditionWorksheet = () => {
 
         if (preferences.complexity === "without-regrouping") {
           [num1, num2] = adjustForNoRegrouping(num1, num2, min, max);
+        } else if (preferences.complexity === "with-regrouping") {
+          [num1, num2] = adjustForAllRegrouping(
+            num1,
+            num2,
+            min,
+            max,
+            preferences.numberOfDigits
+          );
         }
 
         questions.push(createQuestion(num1, num2));
@@ -418,6 +457,14 @@ const AdditionWorksheet = () => {
 
       if (preferences.complexity === "without-regrouping") {
         [num1, num2] = adjustForNoRegrouping(num1, num2, min, max);
+      } else if (preferences.complexity === "with-regrouping") {
+        [num1, num2] = adjustForAllRegrouping(
+          num1,
+          num2,
+          min,
+          max,
+          preferences.numberOfDigits
+        );
       }
 
       return createQuestion(num1, num2);
@@ -436,6 +483,17 @@ const AdditionWorksheet = () => {
       num2 = Math.floor(Math.random() * (max - min + 1)) + min;
     }
     return [num1, num2];
+  };
+
+  // Helper to ensure carrying is needed in ALL columns
+  const adjustForAllRegrouping = (
+    num1: number,
+    num2: number,
+    min: number,
+    max: number,
+    numberOfDigits: number
+  ): [number, number] => {
+    return generateNumbersWithAllCarries(min, max, numberOfDigits);
   };
 
   // Helper to create question object
@@ -471,6 +529,106 @@ const AdditionWorksheet = () => {
       carry = Math.floor(sum / 10);
     }
     return false;
+  };
+
+  // Helper function to check if addition requires carrying in ALL columns
+  const requiresCarryingInAllColumns = (
+    num1: number,
+    num2: number,
+    numberOfDigits: number
+  ): boolean => {
+    const str1 = String(num1).padStart(numberOfDigits, "0");
+    const str2 = String(num2).padStart(numberOfDigits, "0");
+
+    let carry = 0;
+    let hasCarryInEveryColumn = true;
+
+    // Check from right to left (ones, tens, hundreds, etc.)
+    for (let i = numberOfDigits - 1; i >= 0; i--) {
+      const digit1 = parseInt(str1[i]);
+      const digit2 = parseInt(str2[i]);
+      const sum = digit1 + digit2 + carry;
+
+      // For the rightmost column (ones), we need the sum to be >= 10
+      // For other columns, we need the sum to be >= 10 to generate a carry
+      if (sum < 10 && i < numberOfDigits - 1) {
+        hasCarryInEveryColumn = false;
+        break;
+      }
+
+      // For the ones column, we need it to generate a carry
+      if (i === numberOfDigits - 1 && sum < 10) {
+        hasCarryInEveryColumn = false;
+        break;
+      }
+
+      carry = Math.floor(sum / 10);
+    }
+
+    return hasCarryInEveryColumn;
+  };
+
+  // Helper function to generate numbers that require carrying in all columns
+  const generateNumbersWithAllCarries = (
+    min: number,
+    max: number,
+    numberOfDigits: number
+  ): [number, number] => {
+    let num1, num2;
+    let attempts = 0;
+    const maxAttempts = 1000; // Prevent infinite loops
+
+    do {
+      num1 = Math.floor(Math.random() * (max - min + 1)) + min;
+      num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+      attempts++;
+
+      if (attempts > maxAttempts) {
+        // Fallback: construct numbers that guarantee carries
+        return constructNumbersWithAllCarries(numberOfDigits, min, max);
+      }
+    } while (!requiresCarryingInAllColumns(num1, num2, numberOfDigits));
+
+    return [num1, num2];
+  };
+
+  // Fallback function to construct numbers that guarantee carries in all columns
+  const constructNumbersWithAllCarries = (
+    numberOfDigits: number,
+    min: number,
+    max: number
+  ): [number, number] => {
+    let num1Str = "";
+    let num2Str = "";
+
+    // For each digit position, ensure the sum is >= 10
+    for (let i = 0; i < numberOfDigits; i++) {
+      let digit1, digit2;
+
+      if (i === numberOfDigits - 1) {
+        // For the ones column, make sure sum >= 10
+        digit1 = Math.floor(Math.random() * 5) + 5; // 5-9
+        digit2 = Math.floor(Math.random() * 5) + (10 - digit1); // Ensure sum >= 10
+        if (digit2 > 9) digit2 = 9;
+      } else {
+        // For other columns, considering the carry from the previous column
+        digit1 = Math.floor(Math.random() * 5) + 4; // 4-8
+        digit2 = Math.floor(Math.random() * 5) + 4; // 4-8
+        // This ensures that digit1 + digit2 + carry(1) >= 10
+      }
+
+      num1Str = digit1 + num1Str;
+      num2Str = digit2 + num2Str;
+    }
+
+    let num1 = parseInt(num1Str);
+    let num2 = parseInt(num2Str);
+
+    // Ensure numbers are within the specified range
+    num1 = Math.max(min, Math.min(max, num1));
+    num2 = Math.max(min, Math.min(max, num2));
+
+    return [num1, num2];
   };
 
   const fetchQuestions = async () => {
@@ -718,7 +876,7 @@ const AdditionWorksheet = () => {
           {/* Second number row - dynamic */}
           <div className={`grid ${columns.gridCols} relative`}>
             <div className="absolute -left-7 top-1/2 transform -translate-y-1/2">
-              <Plus className="w-6 h-6 text-gray-600" />
+              <Plus className="w-6 h-6 ml-2 text-gray-600" />
             </div>
             {columns.positions.map((pos, i) => {
               const digits = getDigits(question.number2);
@@ -851,7 +1009,7 @@ const AdditionWorksheet = () => {
             Change Preferences
           </Button>
           <div className="flex flex-col items-center">
-            <h1 className="text-xl font-bold text-gray-800">
+            <h1 className="text-xl  font-bold text-gray-800">
               Addition Practice
             </h1>
             <p className="text-sm text-gray-600 text-center">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+
 import { RefreshCcw, Settings, ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { mathService } from "../../../services/mathService";
@@ -23,11 +24,11 @@ interface Question {
   id: number;
   number1: number;
   number2: number;
-  userAnswer: string;
+  userAnswer: string[];
   partialProducts: {
-    partialProduct1: string;
-    partialProduct2: string;
-    partialProduct3: string;
+    partialProduct1: string[];
+    partialProduct2: string[];
+    partialProduct3: string[];
   };
   carries: {
     carryOnesToTens: string;
@@ -54,11 +55,27 @@ const PreferenceSelection: React.FC<{
     "with-regrouping" | "without-regrouping"
   >("with-regrouping");
   const [numberOfDigits, setNumberOfDigits] = useState<number>(2);
-  const [numberOfQuestions, setNumberOfQuestions] = useState<number>(4);
+  const [numberOfQuestions, setNumberOfQuestions] = useState("");
 
   const handleStartWorksheet = () => {
-    const preferences = { complexity, numberOfDigits, numberOfQuestions };
+    const preferences = {
+      complexity,
+      numberOfDigits,
+      numberOfQuestions: Number(numberOfQuestions),
+    };
     onPreferencesSelected(preferences);
+  };
+
+  const handleNumberOfQuestionsChange = (value: string) => {
+    if (value === "") {
+      setNumberOfQuestions("");
+      return;
+    }
+    const num = parseInt(value, 10);
+
+    if (!isNaN(num) && num >= 0 && num <= 50) {
+      setNumberOfQuestions(num.toString());
+    }
   };
 
   return (
@@ -186,39 +203,51 @@ const PreferenceSelection: React.FC<{
             </div>
           </div>
 
-          <div>
+          <motion.div
+            initial={{ x: -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
             <h3 className="text-xl font-semibold text-gray-800 mb-3">
               📄 Number of Questions
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {[4, 6, 8, 10].map((num) => (
-                <div
-                  key={num}
-                  className={`p-3 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md text-center ${
-                    numberOfQuestions === num
-                      ? "border-blue-500 bg-blue-50 shadow-md"
-                      : "border-gray-200 hover:border-blue-300"
-                  }`}
-                  onClick={() => setNumberOfQuestions(num)}
-                >
-                  <div
-                    className={`text-2xl font-bold mb-1 ${
-                      numberOfQuestions === num
-                        ? "text-blue-600"
-                        : "text-gray-700"
+            <div className="max-w-md mx-auto">
+              <div className="relative">
+                <input
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={numberOfQuestions}
+                  onChange={(e) =>
+                    handleNumberOfQuestionsChange(e.target.value)
+                  }
+                  onWheel={(e) => e.currentTarget.blur()}
+                  className="w-full p-4 text-xl font-bold text-center border-2 border-blue-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-300"
+                  placeholder="Enter number"
+                />
+
+                <div className="text-center mt-2 text-sm text-gray-600">
+                  Choose between 1-50 questions
+                </div>
+              </div>
+              <div className="grid grid-cols-4 gap-2 mt-3">
+                {[4, 6, 8, 10].map((num) => (
+                  <button
+                    key={num}
+                    onClick={() => setNumberOfQuestions(num.toString())}
+                    className={`p-2 rounded-lg border-2 text-sm font-semibold transition-all duration-200 hover:shadow-md ${
+                      Number(numberOfQuestions) === num
+                        ? "border-blue-500 bg-blue-50 text-blue-600"
+                        : "border-gray-200 hover:border-blue-300 text-gray-700"
                     }`}
                   >
                     {num}
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    {num} questions to practice
-                  </div>
-                </div>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Preview - with reduced padding */}
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -226,13 +255,9 @@ const PreferenceSelection: React.FC<{
             className="bg-gray-50 p-4 rounded-xl"
           >
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              {" "}
-              {/* Smaller heading */}
               📋 Your Selection Summary
             </h3>
             <div className="space-y-1 text-sm text-gray-700">
-              {" "}
-              {/* Smaller text */}
               <p>
                 <span className="font-semibold">Complexity:</span>{" "}
                 {complexity === "with-regrouping"
@@ -253,7 +278,10 @@ const PreferenceSelection: React.FC<{
           <div className="text-center">
             <Button
               onClick={handleStartWorksheet}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              disabled={
+                Number(numberOfQuestions) < 1 || Number(numberOfQuestions) > 50
+              }
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               🚀 Start My Worksheet
             </Button>
@@ -274,76 +302,216 @@ const MultiplicationWorksheet = () => {
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState<number | null>(null);
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+  const [percentage, setPercentage] = useState<number | null>(null);
 
-  const generateQuestions = () => {
-    if (!userPreferences) return;
+  const handlePreferencesSelected = (preferences: UserPreferences) => {
+    setUserPreferences(preferences);
+    setShowPreferences(false);
+    fetchQuestionsBasedOnPreferences(preferences);
+  };
+
+  // NEW: Fetch questions from backend like Addition component
+  const fetchQuestionsBasedOnPreferences = async (
+    preferences: UserPreferences
+  ) => {
+    setScore(null);
     setLoading(true);
     setError(null);
-    setScore(null);
-    setShowResults(false);
 
     try {
-      const min = Math.pow(10, userPreferences.numberOfDigits - 1);
-      const max = Math.pow(10, userPreferences.numberOfDigits) - 1;
-      const newQuestions: Question[] = [];
+      const min = Math.pow(10, preferences.numberOfDigits - 1);
+      const max = Math.pow(10, preferences.numberOfDigits) - 1;
+      const NUM_QUESTIONS = preferences.numberOfQuestions || 4;
 
-      for (let i = 0; i < (userPreferences.numberOfQuestions ?? 4); i++) {
-        const num1 = Math.floor(Math.random() * (max - min + 1)) + min;
-        const num2 = Math.floor(Math.random() * 90) + 10; // 2-digit multiplier
-
-        newQuestions.push({
-          id: i + 1,
-          number1: num1,
-          number2: num2,
-          userAnswer: "",
-          partialProducts: {
-            partialProduct1: "",
-            partialProduct2: "",
-            partialProduct3: "",
-          },
-          carries: {
-            carryOnesToTens: "",
-            carryTensToHundreds: "",
-          },
+      // Try to get questions from API first
+      let apiQuestions: Question[] = [];
+      try {
+        const data = await mathService.generateArray({
+          rows: NUM_QUESTIONS,
+          cols: 2,
+          min,
+          max,
         });
+        apiQuestions = transformArrayToQuestions(data, preferences, min, max);
+      } catch (apiError) {
+        console.warn("API request failed, using local generation", apiError);
       }
 
-      setQuestions(newQuestions);
+      // Fallback to local generation if needed
+      const localQuestions = generateLocalQuestions(
+        Math.max(0, NUM_QUESTIONS - apiQuestions.length),
+        preferences,
+        min,
+        max
+      );
+
+      setQuestions(
+        [...apiQuestions, ...localQuestions].slice(0, NUM_QUESTIONS)
+      );
+      setShowResults(false);
     } catch (err) {
-      setError("Failed to generate questions. Please try again.");
+      setError("Failed to load questions. Please try again.");
+      console.error("Error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePreferencesSelected = (preferences: UserPreferences) => {
-    setUserPreferences(preferences);
-    setShowPreferences(false);
+  // NEW: Transform backend array to questions like Addition component
+  const transformArrayToQuestions = (
+    data: number[][],
+    preferences: UserPreferences,
+    min: number,
+    max: number
+  ): Question[] => {
+    const questions: Question[] = [];
+
+    for (const row of data) {
+      for (let i = 0; i < row.length; i += 2) {
+        if (i + 1 >= row.length) break;
+
+        let num1 = row[i];
+        let num2 = row[i + 1];
+
+        // Ensure num1 is the larger number for multiplication
+        if (num1 < num2) {
+          [num1, num2] = [num2, num1];
+        }
+
+        if (preferences.complexity === "without-regrouping") {
+          [num1, num2] = adjustForNoRegrouping(num1, num2, min, max);
+        }
+
+        questions.push(createQuestion(num1, num2, questions.length));
+      }
+    }
+
+    return questions;
+  };
+
+  // NEW: Local generation fallback
+  const generateLocalQuestions = (
+    count: number,
+    preferences: UserPreferences,
+    min: number,
+    max: number
+  ): Question[] => {
+    return Array.from({ length: count }, (_, index) => {
+      let num1 = Math.floor(Math.random() * (max - min + 1)) + min;
+      let num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+
+      // Ensure num1 is the larger number
+      if (num1 < num2) {
+        [num1, num2] = [num2, num1];
+      }
+
+      if (preferences.complexity === "without-regrouping") {
+        [num1, num2] = adjustForNoRegrouping(num1, num2, min, max);
+      }
+
+      return createQuestion(num1, num2, index);
+    });
+  };
+
+  // NEW: Adjust numbers for no regrouping requirement
+  const adjustForNoRegrouping = (
+    num1: number,
+    num2: number,
+    min: number,
+    max: number
+  ): [number, number] => {
+    while (requiresCarryingInMultiplication(num1, num2)) {
+      num1 = Math.floor(Math.random() * (max - min + 1)) + min;
+      num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+      if (num1 < num2) {
+        [num1, num2] = [num2, num1];
+      }
+    }
+    return [num1, num2];
+  };
+
+  // NEW: Check if multiplication requires carrying
+  const requiresCarryingInMultiplication = (
+    num1: number,
+    num2: number
+  ): boolean => {
+    const str2 = String(num2);
+
+    for (let i = 0; i < str2.length; i++) {
+      const digit = parseInt(str2[str2.length - 1 - i]);
+      const partialProduct = num1 * digit;
+
+      if (partialProduct > 9) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  // NEW: Create question object with arrays for digit inputs
+  const createQuestion = (num1: number, num2: number, id: number): Question => {
+    const numDigits = userPreferences?.numberOfDigits || 2;
+    const maxResultDigits = numDigits + 2;
+
+    return {
+      id: id + 1,
+      number1: num1,
+      number2: num2,
+      userAnswer: Array(maxResultDigits).fill(""),
+      partialProducts: {
+        partialProduct1: Array(maxResultDigits).fill(""),
+        partialProduct2: Array(maxResultDigits).fill(""),
+        partialProduct3: Array(maxResultDigits).fill(""),
+      },
+      carries: {
+        carryOnesToTens: "",
+        carryTensToHundreds: "",
+      },
+      isCorrect: undefined,
+    };
+  };
+
+  const fetchQuestions = async () => {
+    if (userPreferences) {
+      await fetchQuestionsBasedOnPreferences(userPreferences);
+    }
   };
 
   useEffect(() => {
     if (!showPreferences && userPreferences) {
-      generateQuestions();
+      fetchQuestionsBasedOnPreferences(userPreferences);
     }
   }, [showPreferences, userPreferences]);
 
-  // Fixed: Simple string-based input handling
-  const handleAnswerChange = (questionId: number, value: string) => {
-    const cleanValue = value.replace(/[^0-9]/g, "");
+  // Updated handlers to work with arrays
+  const handleAnswerDigitChange = (
+    questionId: number,
+    digitIndex: number,
+    value: string
+  ) => {
+    const cleanValue = value.replace(/[^0-9]/g, "").slice(0, 1);
     setQuestions((prev) =>
       prev.map((q) =>
-        q.id === questionId ? { ...q, userAnswer: cleanValue } : q
+        q.id === questionId
+          ? {
+              ...q,
+              userAnswer: q.userAnswer.map((digit, index) =>
+                index === digitIndex ? cleanValue : digit
+              ),
+            }
+          : q
       )
     );
   };
 
-  // Fixed: Simple string-based partial product handling
-  const handlePartialProductChange = (
+  const handlePartialProductDigitChange = (
     questionId: number,
     productKey: string,
+    digitIndex: number,
     value: string
   ) => {
-    const cleanValue = value.replace(/[^0-9]/g, "");
+    const cleanValue = value.replace(/[^0-9]/g, "").slice(0, 1);
     setQuestions((prev) =>
       prev.map((q) =>
         q.id === questionId
@@ -351,7 +519,11 @@ const MultiplicationWorksheet = () => {
               ...q,
               partialProducts: {
                 ...q.partialProducts,
-                [productKey]: cleanValue,
+                [productKey]: q.partialProducts[
+                  productKey as keyof typeof q.partialProducts
+                ].map((digit, index) =>
+                  index === digitIndex ? cleanValue : digit
+                ),
               },
             }
           : q
@@ -359,13 +531,12 @@ const MultiplicationWorksheet = () => {
     );
   };
 
-  // Simple string-based carry handling
   const handleCarryChange = (
     questionId: number,
     carryKey: string,
     value: string
   ) => {
-    const cleanValue = value.replace(/[^0-9]/g, "").slice(0, 1); // Only single digit
+    const cleanValue = value.replace(/[^0-9]/g, "").slice(0, 1);
     setQuestions((prev) =>
       prev.map((q) =>
         q.id === questionId
@@ -381,6 +552,11 @@ const MultiplicationWorksheet = () => {
     );
   };
 
+  // Helper function to convert array to string for verification
+  const arrayToString = (arr: string[]): string => {
+    return arr.join("").replace(/^0+/, "") || "0";
+  };
+
   const checkAnswers = async () => {
     setLoading(true);
     setError(null);
@@ -389,15 +565,18 @@ const MultiplicationWorksheet = () => {
       const answersToVerify = questions.map((q) => ({
         number1: q.number1,
         number2: q.number2,
-        answer: parseInt(q.userAnswer) || 0,
+        answer: parseInt(arrayToString(q.userAnswer)) || 0,
         carries: {
           carryOnesToTens: parseInt(q.carries.carryOnesToTens) || 0,
           carryTensToHundreds: parseInt(q.carries.carryTensToHundreds) || 0,
         },
         partialProducts: {
-          partialProduct1: parseInt(q.partialProducts.partialProduct1) || 0,
-          partialProduct2: parseInt(q.partialProducts.partialProduct2) || 0,
-          partialProduct3: parseInt(q.partialProducts.partialProduct3) || 0,
+          partialProduct1:
+            parseInt(arrayToString(q.partialProducts.partialProduct1)) || 0,
+          partialProduct2:
+            parseInt(arrayToString(q.partialProducts.partialProduct2)) || 0,
+          partialProduct3:
+            parseInt(arrayToString(q.partialProducts.partialProduct3)) || 0,
         },
       }));
 
@@ -408,7 +587,7 @@ const MultiplicationWorksheet = () => {
       setQuestions((prev) =>
         prev.map((q, idx) => {
           const correctAnswer = q.number1 * q.number2;
-          const userAnswer = parseInt(q.userAnswer) || 0;
+          const userAnswer = parseInt(arrayToString(q.userAnswer)) || 0;
 
           return {
             ...q,
@@ -427,6 +606,7 @@ const MultiplicationWorksheet = () => {
 
       setScore(data.score);
       setShowResults(true);
+      setPercentage(data.percentage);
       setIsResultModalOpen(true);
     } catch (err) {
       setError("Failed to verify answers. Please try again.");
@@ -436,14 +616,12 @@ const MultiplicationWorksheet = () => {
     }
   };
 
-  // Fixed: Better number formatting with proper alignment
   const formatNumberToArray = (num: number, totalDigits: number): string[] => {
     const numStr = num.toString();
     const paddedStr = numStr.padStart(totalDigits, " ");
     return paddedStr.split("");
   };
 
-  // Fixed: Completely rewritten renderQuestion with proper input handling
   const renderQuestion = (question: Question) => {
     const numDigits = userPreferences?.numberOfDigits || 2;
     const maxResultDigits = numDigits + 2;
@@ -451,31 +629,7 @@ const MultiplicationWorksheet = () => {
     const num1Array = formatNumberToArray(question.number1, maxResultDigits);
     const num2Array = formatNumberToArray(question.number2, maxResultDigits);
     const correctAnswer = question.number1 * question.number2;
-    const userAnswer = parseInt(question.userAnswer) || 0;
-
-    // Fixed: Helper function to get individual digit from string
-    const getDigitAtPosition = (
-      str: string,
-      position: number,
-      totalPositions: number
-    ): string => {
-      if (!str) return "";
-      const paddedStr = str.padStart(totalPositions, " ");
-      return paddedStr[position] === " " ? "" : paddedStr[position];
-    };
-
-    // Fixed: Helper function to update digit at position
-    const updateDigitAtPosition = (
-      currentStr: string,
-      position: number,
-      totalPositions: number,
-      newDigit: string
-    ): string => {
-      const paddedStr = currentStr.padStart(totalPositions, " ");
-      const strArray = paddedStr.split("");
-      strArray[position] = newDigit;
-      return strArray.join("").trim();
-    };
+    const userAnswer = parseInt(arrayToString(question.userAnswer)) || 0;
 
     return (
       <Card key={question.id} className="p-6">
@@ -485,7 +639,6 @@ const MultiplicationWorksheet = () => {
         <CardContent>
           <div className="flex justify-center">
             <div className="bg-gray-50 p-6 rounded-lg font-mono text-center">
-              {/* Carry numbers for regrouping */}
               {userPreferences?.complexity === "with-regrouping" && (
                 <div className="flex justify-end mb-2">
                   <div
@@ -544,7 +697,6 @@ const MultiplicationWorksheet = () => {
                 </div>
               )}
 
-              {/* First number */}
               <div className="flex justify-end mb-2">
                 <div
                   className="grid gap-1"
@@ -563,7 +715,6 @@ const MultiplicationWorksheet = () => {
                 </div>
               </div>
 
-              {/* Multiplication symbol and second number */}
               <div className="flex justify-end mb-2 relative">
                 <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 text-lg">
                   ×
@@ -587,7 +738,6 @@ const MultiplicationWorksheet = () => {
 
               <div className="border-t-2 border-gray-400 my-3"></div>
 
-              {/* First partial product */}
               <div className="flex justify-end mb-2">
                 <div
                   className="grid gap-1"
@@ -605,22 +755,15 @@ const MultiplicationWorksheet = () => {
                           ? "bg-green-100 border-green-500"
                           : "border-gray-300"
                       }`}
-                      value={getDigitAtPosition(
-                        question.partialProducts.partialProduct1,
-                        index,
-                        maxResultDigits
-                      )}
+                      value={
+                        question.partialProducts.partialProduct1[index] || ""
+                      }
                       onChange={(e) => {
-                        const newValue = updateDigitAtPosition(
-                          question.partialProducts.partialProduct1,
-                          index,
-                          maxResultDigits,
-                          e.target.value.replace(/[^0-9]/g, "")
-                        );
-                        handlePartialProductChange(
+                        handlePartialProductDigitChange(
                           question.id,
                           "partialProduct1",
-                          newValue
+                          index,
+                          e.target.value
                         );
                       }}
                       disabled={showResults}
@@ -629,7 +772,6 @@ const MultiplicationWorksheet = () => {
                 </div>
               </div>
 
-              {/* Second partial product */}
               <div className="flex justify-end mb-2 relative">
                 <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 text-lg">
                   +
@@ -650,22 +792,15 @@ const MultiplicationWorksheet = () => {
                           ? "bg-green-100 border-green-500"
                           : "border-gray-300"
                       }`}
-                      value={getDigitAtPosition(
-                        question.partialProducts.partialProduct2,
-                        index,
-                        maxResultDigits
-                      )}
+                      value={
+                        question.partialProducts.partialProduct2[index] || ""
+                      }
                       onChange={(e) => {
-                        const newValue = updateDigitAtPosition(
-                          question.partialProducts.partialProduct2,
-                          index,
-                          maxResultDigits,
-                          e.target.value.replace(/[^0-9]/g, "")
-                        );
-                        handlePartialProductChange(
+                        handlePartialProductDigitChange(
                           question.id,
                           "partialProduct2",
-                          newValue
+                          index,
+                          e.target.value
                         );
                       }}
                       disabled={showResults}
@@ -676,7 +811,6 @@ const MultiplicationWorksheet = () => {
 
               <div className="border-t-2 border-gray-400 my-3"></div>
 
-              {/* Final answer */}
               <div className="flex justify-end">
                 <div
                   className="grid gap-1"
@@ -696,19 +830,13 @@ const MultiplicationWorksheet = () => {
                             : "bg-red-100 border-red-500"
                           : "border-gray-300"
                       }`}
-                      value={getDigitAtPosition(
-                        question.userAnswer,
-                        index,
-                        maxResultDigits
-                      )}
+                      value={question.userAnswer[index] || ""}
                       onChange={(e) => {
-                        const newValue = updateDigitAtPosition(
-                          question.userAnswer,
+                        handleAnswerDigitChange(
+                          question.id,
                           index,
-                          maxResultDigits,
-                          e.target.value.replace(/[^0-9]/g, "")
+                          e.target.value
                         );
-                        handleAnswerChange(question.id, newValue);
                       }}
                       disabled={showResults}
                     />
@@ -716,7 +844,6 @@ const MultiplicationWorksheet = () => {
                 </div>
               </div>
 
-              {/* Show correct answer when results are displayed */}
               {showResults && !question.isCorrect && (
                 <div className="mt-4 text-center text-green-600 text-sm">
                   <div>Correct answer: {correctAnswer}</div>
@@ -769,10 +896,13 @@ const MultiplicationWorksheet = () => {
             </div>
             <Button
               variant="outline"
-              onClick={generateQuestions}
+              onClick={fetchQuestions}
               className="flex items-center gap-2"
+              disabled={loading}
             >
-              <RefreshCcw className="w-4 h-4" />
+              <RefreshCcw
+                className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+              />
               New Questions
             </Button>
           </div>
@@ -796,30 +926,6 @@ const MultiplicationWorksheet = () => {
               {loading ? "Checking..." : "Check Answers"}
             </Button>
           </div>
-
-          {/* {showResults && score !== null && (
-            <div className="mt-8 bg-gray-50 p-6 rounded-lg text-center">
-              <h3 className="text-xl font-semibold mb-2">Results</h3>
-              <div
-                className={`text-4xl font-bold mb-2 ${
-                  score >= 70
-                    ? "text-green-600"
-                    : score >= 50
-                    ? "text-yellow-600"
-                    : "text-red-600"
-                }`}
-              >
-                {score}%
-              </div>
-              <p className="text-lg">
-                Score: {questions.filter((q) => q.isCorrect).length} /{" "}
-                {questions.length}
-              </p>
-              {score === 100 && (
-                <div className="mt-4 text-2xl">🎉 Perfect Score! 🎉</div>
-              )}
-            </div>
-          )} */}
 
           {isResultModalOpen && (
             <Dialog
@@ -846,7 +952,7 @@ const MultiplicationWorksheet = () => {
                         : "text-red-600"
                     }`}
                   >
-                    {Math.round((score! / questions.length) * 100)}%
+                    {percentage}%
                   </div>
 
                   <p className="text-gray-600 text-lg mb-4">
@@ -861,9 +967,10 @@ const MultiplicationWorksheet = () => {
 
                 <DialogFooter className="flex justify-center gap-2">
                   <Button
+                    variant="default"
                     onClick={() => {
                       setIsResultModalOpen(false);
-                      userPreferences && generateQuestions();
+                      userPreferences && fetchQuestions();
                     }}
                     className="bg-blue-600 hover:bg-blue-700"
                   >

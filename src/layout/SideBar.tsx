@@ -67,8 +67,8 @@ const SideBar = () => {
           {/* Arithmetic Operations Accordion */}
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="arithmetic" className="border-none">
-              <AccordionTrigger className="px-2 py-2 hover:bg-muted rounded flex cursor-pointer items-center gap-2">
-                <span>Arithmetic Operations</span>
+              <AccordionTrigger className="px-2 py-2 hover:bg-muted rounded flex cursor-pointer  items-center gap-2">
+                Arithmetic Operations
               </AccordionTrigger>
               <AccordionContent className="pl-6 space-y-1 mt-1">
                 <NavLink

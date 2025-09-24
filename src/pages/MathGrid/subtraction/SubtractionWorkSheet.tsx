@@ -44,25 +44,6 @@ interface UserPreferences {
   numberOfQuestions?: number;
 }
 
-// Interface to define the structure of the response from the API
-// interface VerifyResponse {
-//   results: string[];
-//   score: number;
-//   percentage: number;
-//   maxScore: number;
-//   total: number;
-//   correctBorrows: Array<{
-//     tens: number;
-//     hundreds: number;
-//     thousands: number;
-//   }>;
-//   borrowValidation: Array<{
-//     tensCorrect: boolean;
-//     hundredsCorrect: boolean;
-//     thousandsCorrect: boolean;
-//   }>;
-// }
-
 const PreferenceSelection: React.FC<{
   onPreferencesSelected: (preferences: UserPreferences) => void;
 }> = ({ onPreferencesSelected }) => {
@@ -70,12 +51,29 @@ const PreferenceSelection: React.FC<{
     "with-regrouping" | "without-regrouping"
   >("with-regrouping");
   const [numberOfDigits, setNumberOfDigits] = useState<number>(4);
-  const [numberOfQuestions, setNumberOfQuestions] = useState<number>(4);
+  const [numberOfQuestions, setNumberOfQuestions] = useState("");
 
   const handleStartWorksheet = () => {
-    const preferences = { complexity, numberOfDigits, numberOfQuestions };
+    const preferences = {
+      complexity,
+      numberOfDigits,
+      numberOfQuestions: Number(numberOfQuestions) || 4,
+    };
     console.log("Selected preferences:", preferences);
     onPreferencesSelected(preferences);
+  };
+
+  const handleNumberOfQuestionsChange = (value: string) => {
+    if (value === "") {
+      setNumberOfQuestions("");
+      return;
+    }
+    const num = parseInt(value, 10);
+
+    // validate range
+    if (!isNaN(num) && num >= 0 && num <= 50) {
+      setNumberOfQuestions(num.toString());
+    }
   };
 
   return (
@@ -182,8 +180,6 @@ const PreferenceSelection: React.FC<{
             </div>
           </motion.div>
 
-          {/* Number of Digits and Questions selection remain the same */}
-          {/* ... */}
           {/* Number of Digits Selection */}
           <motion.div
             initial={{ x: 50, opacity: 0 }}
@@ -194,8 +190,6 @@ const PreferenceSelection: React.FC<{
               🔢 Number of Digits
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {" "}
-              {/* Reduced gap */}
               {[2, 3, 4].map((digits) => (
                 <div
                   key={digits}
@@ -216,8 +210,6 @@ const PreferenceSelection: React.FC<{
                     {digits}
                   </div>
                   <div className="text-xs text-gray-600">
-                    {" "}
-                    {/* Smaller text */}
                     {digits === 2
                       ? "10-99"
                       : digits === 3
@@ -230,7 +222,8 @@ const PreferenceSelection: React.FC<{
               ))}
             </div>
           </motion.div>
-          {/* Number of Questions Selection */}
+
+          {/* Number of Questions Selection - Updated to use input */}
           <motion.div
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -239,34 +232,45 @@ const PreferenceSelection: React.FC<{
             <h3 className="text-xl font-semibold text-gray-800 mb-3">
               📄 Number of Questions
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {[4, 6, 8, 10].map((num) => (
-                <div
-                  key={num}
-                  className={`p-3 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md text-center ${
-                    numberOfQuestions === num
-                      ? "border-blue-500 bg-blue-50 shadow-md"
-                      : "border-gray-200 hover:border-blue-300"
-                  }`}
-                  onClick={() => setNumberOfQuestions(num)}
-                >
-                  <div
-                    className={`text-2xl font-bold mb-1 ${
-                      numberOfQuestions === num
-                        ? "text-blue-600"
-                        : "text-gray-700"
+            <div className="max-w-md mx-auto">
+              <div className="relative">
+                <input
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={numberOfQuestions}
+                  onChange={(e) =>
+                    handleNumberOfQuestionsChange(e.target.value)
+                  }
+                  onWheel={(e) => e.currentTarget.blur()}
+                  className="w-full p-4 text-xl font-bold text-center border-2 border-blue-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all duration-300"
+                  placeholder="Enter number"
+                />
+
+                <div className="text-center mt-2 text-sm text-gray-600">
+                  Choose between 1-50 questions
+                </div>
+              </div>
+              {/* Quick selection buttons */}
+              <div className="grid grid-cols-4 gap-2 mt-3">
+                {[4, 6, 8, 10].map((num) => (
+                  <button
+                    key={num}
+                    onClick={() => setNumberOfQuestions(num.toString())}
+                    className={`p-2 rounded-lg border-2 text-sm font-semibold transition-all duration-200 hover:shadow-md ${
+                      Number(numberOfQuestions) === num
+                        ? "border-blue-500 bg-blue-50 text-blue-600"
+                        : "border-gray-200 hover:border-blue-300 text-gray-700"
                     }`}
                   >
                     {num}
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    {num} questions to practice
-                  </div>
-                </div>
-              ))}
+                  </button>
+                ))}
+              </div>
             </div>
           </motion.div>
-          {/* Preview - with reduced padding */}
+
+          {/* Preview */}
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -274,13 +278,9 @@ const PreferenceSelection: React.FC<{
             className="bg-gray-50 p-4 rounded-xl"
           >
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              {" "}
-              {/* Smaller heading */}
               📋 Your Selection Summary
             </h3>
             <div className="space-y-1 text-sm text-gray-700">
-              {" "}
-              {/* Smaller text */}
               <p>
                 <span className="font-semibold">Complexity:</span>{" "}
                 {complexity === "with-regrouping"
@@ -305,7 +305,10 @@ const PreferenceSelection: React.FC<{
           >
             <Button
               onClick={handleStartWorksheet}
-              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              disabled={
+                Number(numberOfQuestions) < 1 || Number(numberOfQuestions) > 50
+              }
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               🚀 Start My Worksheet
             </Button>
@@ -321,6 +324,8 @@ const SubtractionWorksheet = () => {
   const [userPreferences, setUserPreferences] =
     useState<UserPreferences | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [percentage, setPercentage] = useState<number | null>(null);
+
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
@@ -378,6 +383,129 @@ const SubtractionWorksheet = () => {
     }
   };
 
+  // Helper function to check if subtraction requires borrowing
+  const requiresBorrowing = (num1: number, num2: number): boolean => {
+    const str1 = String(num1);
+    const str2 = String(num2);
+    const maxLength = Math.max(str1.length, str2.length);
+
+    for (let i = 0; i < maxLength; i++) {
+      const digit1 = parseInt(str1[str1.length - 1 - i] || "0");
+      const digit2 = parseInt(str2[str2.length - 1 - i] || "0");
+
+      if (digit1 < digit2) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // Helper function to check if subtraction requires borrowing in ALL columns
+  const requiresBorrowingInAllColumns = (
+    num1: number,
+    num2: number,
+    numberOfDigits: number
+  ): boolean => {
+    const str1 = String(num1).padStart(numberOfDigits, "0");
+    const str2 = String(num2).padStart(numberOfDigits, "0");
+
+    // Convert to arrays for easier manipulation
+    let digits1 = str1.split("").map(Number);
+    let digits2 = str2.split("").map(Number);
+
+    // Check from right to left (ones, tens, hundreds, etc.)
+    for (let i = numberOfDigits - 1; i >= 0; i--) {
+      // If current digit in num1 is less than current digit in num2, borrowing is needed
+      if (digits1[i] < digits2[i]) {
+        // Perform the borrowing operation for simulation
+        if (i > 0) {
+          digits1[i - 1] -= 1; // Borrow from the left column
+          digits1[i] += 10; // Add 10 to current column
+        }
+      } else if (i < numberOfDigits - 1) {
+        // If no borrowing is needed in this column (except for the leftmost),
+        // then it doesn't require borrowing in all columns
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  // Helper function to generate numbers that require borrowing in all columns
+  const generateNumbersWithAllBorrows = (
+    min: number,
+    max: number,
+    numberOfDigits: number
+  ): [number, number] => {
+    let num1, num2;
+    let attempts = 0;
+    const maxAttempts = 1000;
+
+    do {
+      num1 = Math.floor(Math.random() * (max - min + 1)) + min;
+      num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+
+      // Ensure num1 > num2 for subtraction
+      if (num1 < num2) {
+        [num1, num2] = [num2, num1];
+      }
+
+      attempts++;
+
+      if (attempts > maxAttempts) {
+        // Fallback: construct numbers that guarantee borrowing
+        return constructNumbersWithAllBorrows(numberOfDigits, min, max);
+      }
+    } while (!requiresBorrowingInAllColumns(num1, num2, numberOfDigits));
+
+    return [num1, num2];
+  };
+
+  // Fallback function to construct numbers that guarantee borrowing in all columns
+  const constructNumbersWithAllBorrows = (
+    numberOfDigits: number,
+    min: number,
+    max: number
+  ): [number, number] => {
+    let num1Str = "";
+    let num2Str = "";
+
+    // For each digit position, ensure borrowing is needed
+    for (let i = 0; i < numberOfDigits; i++) {
+      let digit1, digit2;
+
+      if (i === 0) {
+        // For the leftmost column, ensure num1 > num2 overall
+        digit1 = Math.floor(Math.random() * 4) + 5; // 5-8
+        digit2 = Math.floor(Math.random() * 4) + 1; // 1-4
+      } else {
+        // For other columns, make digit1 < digit2 to force borrowing
+        digit1 = Math.floor(Math.random() * 4) + 0; // 0-3
+        digit2 = Math.floor(Math.random() * 4) + 5; // 5-8
+      }
+
+      num1Str += digit1;
+      num2Str += digit2;
+    }
+
+    let num1 = parseInt(num1Str);
+    let num2 = parseInt(num2Str);
+
+    // Ensure numbers are within the specified range and num1 > num2
+    num1 = Math.max(min, Math.min(max, num1));
+    num2 = Math.max(min, Math.min(max, num2));
+
+    if (num1 <= num2) {
+      // If constructed numbers don't satisfy num1 > num2, swap and adjust
+      [num1, num2] = [num2, num1];
+      // Add some value to num1 to ensure it's definitely larger
+      num1 = Math.min(max, num1 + Math.floor(Math.random() * 100) + 100);
+    }
+
+    return [num1, num2];
+  };
+
   const transformArrayToQuestions = (
     data: number[][],
     preferences: UserPreferences,
@@ -400,6 +528,14 @@ const SubtractionWorksheet = () => {
 
         if (preferences.complexity === "without-regrouping") {
           [num1, num2] = adjustForNoRegrouping(num1, num2, min, max);
+        } else if (preferences.complexity === "with-regrouping") {
+          [num1, num2] = adjustForAllRegrouping(
+            num1,
+            num2,
+            min,
+            max,
+            preferences.numberOfDigits
+          );
         }
 
         questions.push(createQuestion(num1, num2));
@@ -426,6 +562,14 @@ const SubtractionWorksheet = () => {
 
       if (preferences.complexity === "without-regrouping") {
         [num1, num2] = adjustForNoRegrouping(num1, num2, min, max);
+      } else if (preferences.complexity === "with-regrouping") {
+        [num1, num2] = adjustForAllRegrouping(
+          num1,
+          num2,
+          min,
+          max,
+          preferences.numberOfDigits
+        );
       }
 
       return createQuestion(num1, num2);
@@ -449,6 +593,17 @@ const SubtractionWorksheet = () => {
     return [num1, num2];
   };
 
+  // Helper to ensure borrowing is needed in ALL columns
+  const adjustForAllRegrouping = (
+    num1: number,
+    num2: number,
+    min: number,
+    max: number,
+    numberOfDigits: number
+  ): [number, number] => {
+    return generateNumbersWithAllBorrows(min, max, numberOfDigits);
+  };
+
   const createQuestion = (num1: number, num2: number): Question => ({
     number1: num1,
     number2: num2,
@@ -463,22 +618,6 @@ const SubtractionWorksheet = () => {
     isCorrect: undefined,
     borrowValidation: { thousands: true, hundreds: true, tens: true },
   });
-
-  const requiresBorrowing = (num1: number, num2: number): boolean => {
-    const str1 = String(num1);
-    const str2 = String(num2);
-    const maxLength = Math.max(str1.length, str2.length);
-
-    for (let i = 0; i < maxLength; i++) {
-      const digit1 = parseInt(str1[str1.length - 1 - i] || "0");
-      const digit2 = parseInt(str2[str2.length - 1 - i] || "0");
-
-      if (digit1 < digit2) {
-        return true;
-      }
-    }
-    return false;
-  };
 
   const fetchQuestions = async () => {
     if (userPreferences) {
@@ -528,44 +667,6 @@ const SubtractionWorksheet = () => {
     );
   };
 
-  // const calculateCorrectBorrows = (num1: number, num2: number) => {
-  //   const digits1 = String(num1)
-  //     .padStart(4, "0")
-  //     .split("")
-  //     .reverse()
-  //     .map(Number);
-  //   const digits2 = String(num2)
-  //     .padStart(4, "0")
-  //     .split("")
-  //     .reverse()
-  //     .map(Number);
-
-  //   const borrows = { tens: 0, hundreds: 0, thousands: 0 };
-
-  //   // Ones place
-  //   if (digits1[0] < digits2[0]) {
-  //     borrows.tens = 1;
-  //     digits1[1] -= 1;
-  //     digits1[0] += 10;
-  //   }
-
-  //   // Tens place
-  //   if (digits1[1] < digits2[1]) {
-  //     borrows.hundreds = 1;
-  //     digits1[2] -= 1;
-  //     digits1[1] += 10;
-  //   }
-
-  //   // Hundreds place
-  //   if (digits1[2] < digits2[2]) {
-  //     borrows.thousands = 1;
-  //     digits1[3] -= 1;
-  //     digits1[2] += 10;
-  //   }
-
-  //   return borrows;
-  // };
-
   const checkAnswers = async () => {
     setLoading(true);
     setError(null);
@@ -604,6 +705,7 @@ const SubtractionWorksheet = () => {
 
       setScore(data.score);
       setShowResults(true);
+      setPercentage(data.percentage);
       setIsResultModalOpen(true);
     } catch (err) {
       setError("Failed to verify answers. Please try again.");
@@ -788,60 +890,16 @@ const SubtractionWorksheet = () => {
           </div>
         </div>
 
-        {isResultModalOpen && (
-          <Dialog open={isResultModalOpen} onOpenChange={setIsResultModalOpen}>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-center">
-                  Quiz Results
-                </DialogTitle>
-                <DialogDescription className="text-center">
-                  Here's how you performed on the Subtraction worksheet
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="py-6 text-center">
-                <div
-                  className={`text-5xl font-bold mb-4 ${
-                    score === questions.length
-                      ? "text-green-600"
-                      : score! >= questions.length * 0.7
-                      ? "text-yellow-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {Math.round((score! / questions.length) * 100)}%
-                </div>
-
-                <p className="text-gray-600 text-lg mb-4">
-                  You got {questions.filter((q) => q.isCorrect).length} out of{" "}
-                  {questions.length} questions correct!
-                </p>
-
-                {score === questions.length && (
-                  <div className="text-2xl mb-4">🎉 Perfect Score! 🎉</div>
-                )}
-              </div>
-
-              <DialogFooter className="flex justify-center gap-2">
-                <Button
-                  onClick={() => {
-                    setIsResultModalOpen(false);
-                    userPreferences && fetchQuestions();
-                  }}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  Try New Questions
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsResultModalOpen(false)}
-                >
-                  Review Answers
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+        {/* Show correct answer when results are displayed */}
+        {showResults && (
+          <div className="mt-3 text-sm text-gray-600">
+            <div>
+              Correct answer:{" "}
+              <span className="font-bold text-green-700">
+                {question.number1 - question.number2}
+              </span>
+            </div>
+          </div>
         )}
       </div>
     );
@@ -936,6 +994,7 @@ const SubtractionWorksheet = () => {
                 onClick={() => {
                   setShowResults(false);
                   setScore(null);
+                  setPercentage(null);
                   setQuestions((prev) =>
                     prev.map((q) => ({
                       ...q,
@@ -968,6 +1027,65 @@ const SubtractionWorksheet = () => {
               </Button>
             )}
           </div>
+          {/* Result Modal */}
+          {isResultModalOpen && (
+            <Dialog
+              open={isResultModalOpen}
+              onOpenChange={setIsResultModalOpen}
+            >
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold text-center">
+                    Quiz Results
+                  </DialogTitle>
+                  <DialogDescription className="text-center">
+                    Here's how you performed on the Subtraction worksheet
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="py-6 text-center">
+                  <div
+                    className={`text-5xl font-bold mb-4 ${
+                      score === questions.length
+                        ? "text-green-600"
+                        : score! >= questions.length * 0.7
+                        ? "text-yellow-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {percentage}%
+                  </div>
+
+                  <p className="text-gray-600 text-lg mb-4">
+                    You got {questions.filter((q) => q.isCorrect).length} out of{" "}
+                    {questions.length} questions correct!
+                  </p>
+
+                  {score === questions.length && (
+                    <div className="text-2xl mb-4">🎉 Perfect Score! 🎉</div>
+                  )}
+                </div>
+
+                <DialogFooter className="flex justify-center gap-2">
+                  <Button
+                    onClick={() => {
+                      setIsResultModalOpen(false);
+                      userPreferences && fetchQuestions();
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Try New Questions
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsResultModalOpen(false)}
+                  >
+                    Review Answers
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       )}
     </div>
