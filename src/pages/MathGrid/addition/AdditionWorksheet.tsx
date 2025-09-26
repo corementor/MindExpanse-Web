@@ -999,7 +999,7 @@ const AdditionWorksheet = () => {
   return (
     <div className="min-w-[700px] border border-gray-200 rounded-md p-6 shadow-md min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
+        <div className="flex  justify-between items-center gap-4">
           <Button
             variant="outline"
             onClick={() => setShowPreferences(true)}
@@ -1008,19 +1008,18 @@ const AdditionWorksheet = () => {
             <ArrowLeft className="w-4 h-4" />
             Change Preferences
           </Button>
-          <div className="flex flex-col items-center">
-            <h1 className="text-xl  font-bold text-gray-800">
-              Addition Practice
+          <div className="text-center">
+            <h1 className="text-xl font-bold text-gray-800">
+              Addition Worksheet
             </h1>
-            <p className="text-sm text-gray-600 text-center">
+            <p className="text-gray-600">
               {userPreferences?.complexity === "with-regrouping"
-                ? "With Regrouping"
-                : "Without Regrouping"}{" "}
-              • {userPreferences?.numberOfDigits} digits
+                ? "With"
+                : "Without"}{" "}
+              Regrouping • {userPreferences?.numberOfDigits} digits
             </p>
           </div>
         </div>
-
         <Button
           variant="outline"
           onClick={fetchQuestions}

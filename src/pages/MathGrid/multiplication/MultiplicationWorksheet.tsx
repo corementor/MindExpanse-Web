@@ -1,18 +1,9 @@
+//v3
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-
 import { RefreshCcw, Settings, ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { mathService } from "../../../services/mathService";
-import { motion } from "framer-motion";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/resultsModal";
+import { mathService } from "@/services/mathService";
 
 interface UserPreferences {
   complexity: "with-regrouping" | "without-regrouping";
@@ -26,25 +17,19 @@ interface Question {
   number2: number;
   userAnswer: string[];
   partialProducts: {
-    partialProduct1: string[];
-    partialProduct2: string[];
-    partialProduct3: string[];
+    [key: string]: string[];
   };
   carries: {
-    carryOnesToTens: string;
-    carryTensToHundreds: string;
+    [key: string]: string;
   };
   isCorrect?: boolean;
   partialProductsCorrect?: boolean;
   carriesCorrect?: boolean;
   correctPartialProducts?: {
-    partialProduct1: number;
-    partialProduct2: number;
-    partialProduct3: number;
+    [key: string]: number;
   };
   correctCarries?: {
-    carryOnesToTens: number;
-    carryTensToHundreds: number;
+    [key: string]: number;
   };
 }
 
@@ -203,11 +188,7 @@ const PreferenceSelection: React.FC<{
             </div>
           </div>
 
-          <motion.div
-            initial={{ x: -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
+          <div>
             <h3 className="text-xl font-semibold text-gray-800 mb-3">
               📄 Number of Questions
             </h3>
@@ -246,14 +227,9 @@ const PreferenceSelection: React.FC<{
                 ))}
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="bg-gray-50 p-4 rounded-xl"
-          >
+          <div className="bg-gray-50 p-4 rounded-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               📋 Your Selection Summary
             </h3>
@@ -273,7 +249,7 @@ const PreferenceSelection: React.FC<{
                 {numberOfQuestions} practice problems
               </p>
             </div>
-          </motion.div>
+          </div>
 
           <div className="text-center">
             <Button
@@ -310,7 +286,6 @@ const MultiplicationWorksheet = () => {
     fetchQuestionsBasedOnPreferences(preferences);
   };
 
-  // NEW: Fetch questions from backend like Addition component
   const fetchQuestionsBasedOnPreferences = async (
     preferences: UserPreferences
   ) => {
@@ -323,7 +298,6 @@ const MultiplicationWorksheet = () => {
       const max = Math.pow(10, preferences.numberOfDigits) - 1;
       const NUM_QUESTIONS = preferences.numberOfQuestions || 4;
 
-      // Try to get questions from API first
       let apiQuestions: Question[] = [];
       try {
         const data = await mathService.generateArray({
@@ -337,7 +311,6 @@ const MultiplicationWorksheet = () => {
         console.warn("API request failed, using local generation", apiError);
       }
 
-      // Fallback to local generation if needed
       const localQuestions = generateLocalQuestions(
         Math.max(0, NUM_QUESTIONS - apiQuestions.length),
         preferences,
@@ -357,7 +330,6 @@ const MultiplicationWorksheet = () => {
     }
   };
 
-  // NEW: Transform backend array to questions like Addition component
   const transformArrayToQuestions = (
     data: number[][],
     preferences: UserPreferences,
@@ -373,7 +345,6 @@ const MultiplicationWorksheet = () => {
         let num1 = row[i];
         let num2 = row[i + 1];
 
-        // Ensure num1 is the larger number for multiplication
         if (num1 < num2) {
           [num1, num2] = [num2, num1];
         }
@@ -382,14 +353,15 @@ const MultiplicationWorksheet = () => {
           [num1, num2] = adjustForNoRegrouping(num1, num2, min, max);
         }
 
-        questions.push(createQuestion(num1, num2, questions.length));
+        questions.push(
+          createQuestion(num1, num2, questions.length, preferences)
+        );
       }
     }
 
     return questions;
   };
 
-  // NEW: Local generation fallback
   const generateLocalQuestions = (
     count: number,
     preferences: UserPreferences,
@@ -400,7 +372,6 @@ const MultiplicationWorksheet = () => {
       let num1 = Math.floor(Math.random() * (max - min + 1)) + min;
       let num2 = Math.floor(Math.random() * (max - min + 1)) + min;
 
-      // Ensure num1 is the larger number
       if (num1 < num2) {
         [num1, num2] = [num2, num1];
       }
@@ -409,11 +380,10 @@ const MultiplicationWorksheet = () => {
         [num1, num2] = adjustForNoRegrouping(num1, num2, min, max);
       }
 
-      return createQuestion(num1, num2, index);
+      return createQuestion(num1, num2, index, preferences);
     });
   };
 
-  // NEW: Adjust numbers for no regrouping requirement
   const adjustForNoRegrouping = (
     num1: number,
     num2: number,
@@ -430,7 +400,6 @@ const MultiplicationWorksheet = () => {
     return [num1, num2];
   };
 
-  // NEW: Check if multiplication requires carrying
   const requiresCarryingInMultiplication = (
     num1: number,
     num2: number
@@ -449,25 +418,42 @@ const MultiplicationWorksheet = () => {
     return false;
   };
 
-  // NEW: Create question object with arrays for digit inputs
-  const createQuestion = (num1: number, num2: number, id: number): Question => {
-    const numDigits = userPreferences?.numberOfDigits || 2;
-    const maxResultDigits = numDigits + 2;
+  // Updated createQuestion to dynamically create partial products based on second number's digits
+  const createQuestion = (
+    num1: number,
+    num2: number,
+    id: number,
+    preferences: UserPreferences
+  ): Question => {
+    const numDigits = preferences.numberOfDigits;
+    const maxResultDigits = numDigits * 2; // More realistic result length
+
+    // Get number of digits in the second number to determine partial products needed
+    const num2Digits = String(num2).length;
+
+    // Create partial products and carries dynamically
+    const partialProducts: { [key: string]: string[] } = {};
+    const carries: { [key: string]: string } = {};
+
+    // Create partial product rows based on second number's digits
+    for (let i = 0; i < num2Digits; i++) {
+      partialProducts[`partialProduct${i + 1}`] =
+        Array(maxResultDigits).fill("");
+    }
+
+    // Create carry fields - more carries for more digits
+    const maxCarries = Math.max(2, numDigits);
+    for (let i = 0; i < maxCarries; i++) {
+      carries[`carry${i + 1}`] = "";
+    }
 
     return {
       id: id + 1,
       number1: num1,
       number2: num2,
       userAnswer: Array(maxResultDigits).fill(""),
-      partialProducts: {
-        partialProduct1: Array(maxResultDigits).fill(""),
-        partialProduct2: Array(maxResultDigits).fill(""),
-        partialProduct3: Array(maxResultDigits).fill(""),
-      },
-      carries: {
-        carryOnesToTens: "",
-        carryTensToHundreds: "",
-      },
+      partialProducts,
+      carries,
       isCorrect: undefined,
     };
   };
@@ -484,7 +470,6 @@ const MultiplicationWorksheet = () => {
     }
   }, [showPreferences, userPreferences]);
 
-  // Updated handlers to work with arrays
   const handleAnswerDigitChange = (
     questionId: number,
     digitIndex: number,
@@ -519,10 +504,8 @@ const MultiplicationWorksheet = () => {
               ...q,
               partialProducts: {
                 ...q.partialProducts,
-                [productKey]: q.partialProducts[
-                  productKey as keyof typeof q.partialProducts
-                ].map((digit, index) =>
-                  index === digitIndex ? cleanValue : digit
+                [productKey]: q.partialProducts[productKey].map(
+                  (digit, index) => (index === digitIndex ? cleanValue : digit)
                 ),
               },
             }
@@ -552,7 +535,6 @@ const MultiplicationWorksheet = () => {
     );
   };
 
-  // Helper function to convert array to string for verification
   const arrayToString = (arr: string[]): string => {
     return arr.join("").replace(/^0+/, "") || "0";
   };
@@ -562,45 +544,70 @@ const MultiplicationWorksheet = () => {
     setError(null);
 
     try {
-      const answersToVerify = questions.map((q) => ({
-        number1: q.number1,
-        number2: q.number2,
-        answer: parseInt(arrayToString(q.userAnswer)) || 0,
-        carries: {
-          carryOnesToTens: parseInt(q.carries.carryOnesToTens) || 0,
-          carryTensToHundreds: parseInt(q.carries.carryTensToHundreds) || 0,
-        },
-        partialProducts: {
-          partialProduct1:
-            parseInt(arrayToString(q.partialProducts.partialProduct1)) || 0,
-          partialProduct2:
-            parseInt(arrayToString(q.partialProducts.partialProduct2)) || 0,
-          partialProduct3:
-            parseInt(arrayToString(q.partialProducts.partialProduct3)) || 0,
-        },
-      }));
+      // Build answers in the shape backend expects: carries -> carryOnesToTens, carryTensToHundreds
+      // partialProducts -> partialProduct1, partialProduct2, partialProduct3 (ordered)
+      const answersToVerify = questions.map((q) => {
+        // map carries from generic carry1, carry2... to backend names in order
+        const carryBackendKeys = [
+          "carryOnesToTens",
+          "carryTensToHundreds",
+          "carryHundredsToThousands",
+        ];
+        const carryValues: { [key: string]: number } = {};
+
+        const carryKeys = Object.keys(q.carries).sort(); // carry1, carry2...
+        carryKeys.forEach((k, idx) => {
+          const backendKey = carryBackendKeys[idx] || `carry${idx + 1}`;
+          carryValues[backendKey] = parseInt(q.carries[k]) || 0;
+        });
+
+        // partial products map in ascending order partialProduct1..partialProductN
+        const partialProductBackendKeys = [
+          "partialProduct1",
+          "partialProduct2",
+          "partialProduct3",
+        ];
+        const partialProductsOrdered: { [key: string]: number } = {};
+        const ppKeys = Object.keys(q.partialProducts).sort(); // partialProduct1, partialProduct2...
+        ppKeys.forEach((k, idx) => {
+          const backendKey =
+            partialProductBackendKeys[idx] || `partialProduct${idx + 1}`;
+          partialProductsOrdered[backendKey] =
+            parseInt(arrayToString(q.partialProducts[k])) || 0;
+        });
+
+        return {
+          number1: q.number1,
+          number2: q.number2,
+          answer: parseInt(arrayToString(q.userAnswer)) || 0,
+          carries: carryValues as any,
+          partialProducts: partialProductsOrdered as any,
+        };
+      });
 
       const data = await mathService.verifyMultiplicationAnswers(
         answersToVerify
       );
 
+      // Apply backend response to question state for per-field marking
       setQuestions((prev) =>
         prev.map((q, idx) => {
-          const correctAnswer = q.number1 * q.number2;
-          const userAnswer = parseInt(arrayToString(q.userAnswer)) || 0;
+          const correctPartial = data.correctPartialProducts?.[idx] || {};
+          const correctCarries = data.correctCarries?.[idx] || {};
 
           return {
             ...q,
-            isCorrect: userAnswer === correctAnswer,
+            isCorrect:
+              q.number1 * q.number2 ===
+              (parseInt(arrayToString(q.userAnswer)) || 0),
             partialProductsCorrect:
-              data.results[idx].includes("Perfect") ||
-              data.results[idx].includes("partial products correct"),
-            carriesCorrect:
-              data.carryValidation[idx].carryOnesToTensCorrect &&
-              data.carryValidation[idx].carryTensToHundredsCorrect,
-            correctPartialProducts: data.correctPartialProducts[idx],
-            correctCarries: data.correctCarries[idx],
-          };
+              data.results[idx]?.includes("Perfect") ||
+              data.results[idx]?.includes("partial products correct") ||
+              false,
+            carriesCorrect: true, // keep this for compatibility
+            correctPartialProducts: correctPartial,
+            correctCarries: correctCarries,
+          } as Question;
         })
       );
 
@@ -624,12 +631,33 @@ const MultiplicationWorksheet = () => {
 
   const renderQuestion = (question: Question) => {
     const numDigits = userPreferences?.numberOfDigits || 2;
-    const maxResultDigits = numDigits + 2;
+    const maxResultDigits = numDigits * 2;
+    const num2Digits = String(question.number2).length;
 
     const num1Array = formatNumberToArray(question.number1, maxResultDigits);
     const num2Array = formatNumberToArray(question.number2, maxResultDigits);
     const correctAnswer = question.number1 * question.number2;
     const userAnswer = parseInt(arrayToString(question.userAnswer)) || 0;
+
+    // Get partial product keys in order
+    const partialProductKeys = Object.keys(question.partialProducts).sort();
+
+    // Helpers to get per-digit correctness
+    const formatNumberToDigitArray = (
+      n: number | undefined,
+      totalDigits: number
+    ) => {
+      const s = (n ?? 0).toString();
+      return s.padStart(totalDigits, " ").split("");
+    };
+
+    // Map backend carry keys to internal carry keys order (carry1 -> carryOnesToTens, carry2 -> carryTensToHundreds)
+    const carryBackendOrder = [
+      "carryOnesToTens",
+      "carryTensToHundreds",
+      "carryHundredsToThousands",
+    ];
+    const carryInternalKeys = Object.keys(question.carries).sort(); // carry1, carry2, ...
 
     return (
       <Card key={question.id} className="p-6">
@@ -639,6 +667,7 @@ const MultiplicationWorksheet = () => {
         <CardContent>
           <div className="flex justify-center">
             <div className="bg-gray-50 p-6 rounded-lg font-mono text-center">
+              {/* Carry row - only show if with regrouping */}
               {userPreferences?.complexity === "with-regrouping" && (
                 <div className="flex justify-end mb-2">
                   <div
@@ -648,47 +677,70 @@ const MultiplicationWorksheet = () => {
                     }}
                   >
                     {Array.from({ length: maxResultDigits }).map((_, index) => {
-                      const isTensCarry = index === maxResultDigits - 2;
-                      const isHundredsCarry = index === maxResultDigits - 3;
-                      const isVisible = isTensCarry || isHundredsCarry;
+                      // assign carry inputs to the rightmost positions
+                      const carrySlotIndex =
+                        index - (maxResultDigits - carryInternalKeys.length);
+                      const carryKey =
+                        carryInternalKeys[carrySlotIndex] || null;
+                      const backendCarryKey =
+                        carryBackendOrder[carrySlotIndex] || null;
+                      const correctCarryValue =
+                        backendCarryKey && question.correctCarries
+                          ? (question.correctCarries as any)[backendCarryKey]
+                          : undefined;
+                      const userCarryValue = carryKey
+                        ? question.carries[carryKey] || ""
+                        : "";
+
+                      // Determine correctness for this carry cell
+                      const isCorrect =
+                        showResults &&
+                        backendCarryKey &&
+                        correctCarryValue !== undefined
+                          ? String(correctCarryValue) === String(userCarryValue)
+                          : undefined;
+
+                      const baseClass = `w-8 h-6 text-center text-xs border rounded`;
+                      const colorClass =
+                        showResults && isCorrect !== undefined
+                          ? isCorrect
+                            ? "bg-green-100 border-green-500"
+                            : "bg-red-100 border-red-500"
+                          : "border-transparent";
 
                       return (
                         <input
                           key={`carry-${index}`}
                           type="text"
                           maxLength={1}
-                          className={`w-8 h-6 text-center text-xs border rounded ${
-                            isVisible ? "border-gray-300" : "border-transparent"
-                          } ${
-                            showResults && isVisible
-                              ? "bg-green-100 border-green-500"
-                              : ""
-                          }`}
+                          className={`${baseClass} ${
+                            index >= maxResultDigits - carryInternalKeys.length
+                              ? "border-gray-300"
+                              : "border-transparent"
+                          } ${colorClass}`}
                           value={
-                            isTensCarry
-                              ? question.carries.carryOnesToTens
-                              : isHundredsCarry
-                              ? question.carries.carryTensToHundreds
+                            index >=
+                              maxResultDigits - carryInternalKeys.length &&
+                            carryKey
+                              ? question.carries[carryKey] || ""
                               : ""
                           }
                           onChange={(e) => {
-                            if (isTensCarry) {
+                            if (carryKey) {
                               handleCarryChange(
                                 question.id,
-                                "carryOnesToTens",
-                                e.target.value
-                              );
-                            } else if (isHundredsCarry) {
-                              handleCarryChange(
-                                question.id,
-                                "carryTensToHundreds",
+                                carryKey,
                                 e.target.value
                               );
                             }
                           }}
                           disabled={showResults}
                           style={{
-                            visibility: isVisible ? "visible" : "hidden",
+                            visibility:
+                              index >=
+                              maxResultDigits - carryInternalKeys.length
+                                ? "visible"
+                                : "hidden",
                           }}
                         />
                       );
@@ -697,6 +749,7 @@ const MultiplicationWorksheet = () => {
                 </div>
               )}
 
+              {/* First and second numbers and partial products rendering unchanged except coloring for result rows */}
               <div className="flex justify-end mb-2">
                 <div
                   className="grid gap-1"
@@ -738,79 +791,83 @@ const MultiplicationWorksheet = () => {
 
               <div className="border-t-2 border-gray-400 my-3"></div>
 
-              <div className="flex justify-end mb-2">
-                <div
-                  className="grid gap-1"
-                  style={{
-                    gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
-                  }}
-                >
-                  {Array.from({ length: maxResultDigits }).map((_, index) => (
-                    <input
-                      key={`partial1-${index}`}
-                      type="text"
-                      maxLength={1}
-                      className={`w-8 h-8 text-center text-sm border rounded ${
-                        showResults
-                          ? "bg-green-100 border-green-500"
-                          : "border-gray-300"
-                      }`}
-                      value={
-                        question.partialProducts.partialProduct1[index] || ""
-                      }
-                      onChange={(e) => {
-                        handlePartialProductDigitChange(
-                          question.id,
-                          "partialProduct1",
-                          index,
-                          e.target.value
-                        );
-                      }}
-                      disabled={showResults}
-                    />
-                  ))}
-                </div>
-              </div>
+              {/* Dynamic partial product rows with per-digit coloring */}
+              {partialProductKeys.map((productKey, productIndex) => {
+                // correct number from backend for this partial product
+                const backendKey = `partialProduct${productIndex + 1}`;
+                const correctNumber =
+                  (question.correctPartialProducts &&
+                    (question.correctPartialProducts as any)[backendKey]) ??
+                  0;
+                const correctDigits = formatNumberToDigitArray(
+                  correctNumber,
+                  maxResultDigits
+                );
 
-              <div className="flex justify-end mb-2 relative">
-                <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 text-lg">
-                  +
-                </div>
-                <div
-                  className="grid gap-1"
-                  style={{
-                    gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
-                  }}
-                >
-                  {Array.from({ length: maxResultDigits }).map((_, index) => (
-                    <input
-                      key={`partial2-${index}`}
-                      type="text"
-                      maxLength={1}
-                      className={`w-8 h-8 text-center text-sm border rounded ${
-                        showResults
-                          ? "bg-green-100 border-green-500"
-                          : "border-gray-300"
-                      }`}
-                      value={
-                        question.partialProducts.partialProduct2[index] || ""
-                      }
-                      onChange={(e) => {
-                        handlePartialProductDigitChange(
-                          question.id,
-                          "partialProduct2",
-                          index,
-                          e.target.value
-                        );
-                      }}
-                      disabled={showResults}
-                    />
-                  ))}
-                </div>
-              </div>
+                return (
+                  <div key={productKey}>
+                    <div className="flex justify-end mb-2 relative">
+                      {productIndex > 0 && (
+                        <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 text-lg">
+                          +
+                        </div>
+                      )}
+                      <div
+                        className="grid gap-1"
+                        style={{
+                          gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
+                        }}
+                      >
+                        {Array.from({ length: maxResultDigits }).map(
+                          (_, index) => {
+                            const userDigit =
+                              question.partialProducts[productKey][index] || "";
+                            const correctDigit =
+                              correctDigits[index] === " "
+                                ? ""
+                                : correctDigits[index];
+
+                            let cellClass =
+                              "w-8 h-8 text-center text-sm border rounded ";
+                            if (showResults) {
+                              if (String(userDigit) === String(correctDigit)) {
+                                cellClass += "bg-green-100 border-green-500";
+                              } else {
+                                cellClass += "bg-red-100 border-red-500";
+                              }
+                            } else {
+                              cellClass += "border-gray-300";
+                            }
+
+                            return (
+                              <input
+                                key={`${productKey}-${index}`}
+                                type="text"
+                                maxLength={1}
+                                className={cellClass}
+                                value={userDigit}
+                                onChange={(e) => {
+                                  handlePartialProductDigitChange(
+                                    question.id,
+                                    productKey,
+                                    index,
+                                    e.target.value
+                                  );
+                                }}
+                                disabled={showResults}
+                              />
+                            );
+                          }
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
 
               <div className="border-t-2 border-gray-400 my-3"></div>
 
+              {/* Final answer with per-digit correctness */}
               <div className="flex justify-end">
                 <div
                   className="grid gap-1"
@@ -818,29 +875,43 @@ const MultiplicationWorksheet = () => {
                     gridTemplateColumns: `repeat(${maxResultDigits}, 2rem)`,
                   }}
                 >
-                  {Array.from({ length: maxResultDigits }).map((_, index) => (
-                    <input
-                      key={`answer-${index}`}
-                      type="text"
-                      maxLength={1}
-                      className={`w-8 h-10 text-center text-lg border rounded font-mono ${
-                        showResults
-                          ? userAnswer === correctAnswer
-                            ? "bg-green-100 border-green-500"
-                            : "bg-red-100 border-red-500"
-                          : "border-gray-300"
-                      }`}
-                      value={question.userAnswer[index] || ""}
-                      onChange={(e) => {
-                        handleAnswerDigitChange(
-                          question.id,
-                          index,
-                          e.target.value
-                        );
-                      }}
-                      disabled={showResults}
-                    />
-                  ))}
+                  {Array.from({ length: maxResultDigits }).map((_, index) => {
+                    const userDigit = question.userAnswer[index] || "";
+                    const correctDigits = formatNumberToDigitArray(
+                      correctAnswer,
+                      maxResultDigits
+                    );
+                    const correctDigit =
+                      correctDigits[index] === " " ? "" : correctDigits[index];
+
+                    let className = `w-8 h-10 text-center text-lg border rounded font-mono `;
+                    if (showResults) {
+                      className +=
+                        userDigit === correctDigit
+                          ? "bg-green-100 border-green-500"
+                          : "bg-red-100 border-red-500";
+                    } else {
+                      className += "border-gray-300";
+                    }
+
+                    return (
+                      <input
+                        key={`answer-${index}`}
+                        type="text"
+                        maxLength={1}
+                        className={className}
+                        value={userDigit}
+                        onChange={(e) => {
+                          handleAnswerDigitChange(
+                            question.id,
+                            index,
+                            e.target.value
+                          );
+                        }}
+                        disabled={showResults}
+                      />
+                    );
+                  })}
                 </div>
               </div>
 
@@ -928,21 +999,14 @@ const MultiplicationWorksheet = () => {
           </div>
 
           {isResultModalOpen && (
-            <Dialog
-              open={isResultModalOpen}
-              onOpenChange={setIsResultModalOpen}
-            >
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-bold text-center">
-                    Quiz Results
-                  </DialogTitle>
-                  <DialogDescription className="text-center">
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold mb-4">Quiz Results</h2>
+                  <p className="text-gray-600 mb-4">
                     Here's how you performed on the Multiplication worksheet
-                  </DialogDescription>
-                </DialogHeader>
+                  </p>
 
-                <div className="py-6 text-center">
                   <div
                     className={`text-5xl font-bold mb-4 ${
                       score === questions.length
@@ -965,9 +1029,8 @@ const MultiplicationWorksheet = () => {
                   )}
                 </div>
 
-                <DialogFooter className="flex justify-center gap-2">
+                <div className="flex justify-center gap-2 mt-6">
                   <Button
-                    variant="default"
                     onClick={() => {
                       setIsResultModalOpen(false);
                       userPreferences && fetchQuestions();
@@ -982,9 +1045,9 @@ const MultiplicationWorksheet = () => {
                   >
                     Review Answers
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
