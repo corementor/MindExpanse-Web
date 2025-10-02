@@ -810,53 +810,61 @@ const AdditionWorksheet = () => {
         </div>
         <div className="inline-block">
           {/* Dynamic carry numbers row */}
-          <div className={`grid ${columns.gridCols} h-12 mb-1 gap-1`}>
-            {/* Map through carry positions dynamically */}
-            {columns.positions.map((pos) => {
-              // Only show carry inputs for positions that need them
-              if (!columns.carryPositions.includes(pos)) {
-                return <div key={pos} className="w-12 h-12"></div>;
-              }
+          {
+            /* Only show carry row if complexity is with-regrouping */ userPreferences?.complexity ===
+              "with-regrouping" && (
+              <div className={`grid ${columns.gridCols} h-12 mb-1 gap-1`}>
+                {/* Map through carry positions dynamically */}
+                {columns.positions.map((pos) => {
+                  // Only show carry inputs for positions that need them
+                  if (!columns.carryPositions.includes(pos)) {
+                    return <div key={pos} className="w-12 h-12"></div>;
+                  }
 
-              const isCorrect =
-                question.carryValidation?.[
-                  pos as keyof typeof question.carryValidation
-                ] ?? true;
+                  const isCorrect =
+                    question.carryValidation?.[
+                      pos as keyof typeof question.carryValidation
+                    ] ?? true;
 
-              return (
-                <motion.input
-                  key={pos}
-                  type="text"
-                  maxLength={1}
-                  className={`w-12 h-12 border text-2xl font-bold text-center rounded ${
-                    showResults
-                      ? isCorrect
-                        ? "bg-green-100 border-green-500 text-green-800"
-                        : "bg-red-100 border-red-500 text-red-800"
-                      : "bg-blue-50 border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  }`}
-                  value={
-                    question.carryNumbers[
-                      pos as keyof typeof question.carryNumbers
-                    ] || ""
-                  }
-                  onChange={(e) =>
-                    handleCarryChange(
-                      index,
-                      pos as keyof Question["carryNumbers"],
-                      e.target.value
-                    )
-                  }
-                  animate={
-                    showResults && !isCorrect
-                      ? { scale: [1, 1.05, 1], transition: { duration: 0.4 } }
-                      : {}
-                  }
-                  disabled={showResults}
-                />
-              );
-            })}
-          </div>
+                  return (
+                    <motion.input
+                      key={pos}
+                      type="text"
+                      maxLength={1}
+                      className={`w-12 h-12 border text-2xl font-bold text-center rounded ${
+                        showResults
+                          ? isCorrect
+                            ? "bg-green-100 border-green-500 text-green-800"
+                            : "bg-red-100 border-red-500 text-red-800"
+                          : "bg-blue-50 border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                      }`}
+                      value={
+                        question.carryNumbers[
+                          pos as keyof typeof question.carryNumbers
+                        ] || ""
+                      }
+                      onChange={(e) =>
+                        handleCarryChange(
+                          index,
+                          pos as keyof Question["carryNumbers"],
+                          e.target.value
+                        )
+                      }
+                      animate={
+                        showResults && !isCorrect
+                          ? {
+                              scale: [1, 1.05, 1],
+                              transition: { duration: 0.4 },
+                            }
+                          : {}
+                      }
+                      disabled={showResults}
+                    />
+                  );
+                })}
+              </div>
+            )
+          }
 
           {/* First number row - dynamic */}
           <div className={`grid ${columns.gridCols}`}>

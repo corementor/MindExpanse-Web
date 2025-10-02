@@ -283,7 +283,8 @@ const MultiplicationWorksheet = () => {
   const handlePreferencesSelected = (preferences: UserPreferences) => {
     setUserPreferences(preferences);
     setShowPreferences(false);
-    fetchQuestionsBasedOnPreferences(preferences);
+    // removed direct fetch here to avoid double fetch/race with useEffect which will call fetchQuestionsBasedOnPreferences
+    // fetchQuestionsBasedOnPreferences(preferences);
   };
 
   const fetchQuestionsBasedOnPreferences = async (
@@ -368,7 +369,11 @@ const MultiplicationWorksheet = () => {
     min: number,
     max: number
   ): Question[] => {
-    return Array.from({ length: count }, (_, index) => {
+    const questions: Question[] = [];
+    let attempts = 0;
+    const maxTotalAttempts = count * 50; // Prevent infinite loops
+
+    while (questions.length < count && attempts < maxTotalAttempts) {
       let num1 = Math.floor(Math.random() * (max - min + 1)) + min;
       let num2 = Math.floor(Math.random() * (max - min + 1)) + min;
 
@@ -380,8 +385,29 @@ const MultiplicationWorksheet = () => {
         [num1, num2] = adjustForNoRegrouping(num1, num2, min, max);
       }
 
-      return createQuestion(num1, num2, index, preferences);
-    });
+      // Only add the question if it meets our criteria
+      if (
+        preferences.complexity !== "without-regrouping" ||
+        !requiresCarryingInMultiplication(num1, num2)
+      ) {
+        questions.push(
+          createQuestion(num1, num2, questions.length, preferences)
+        );
+      }
+
+      attempts++;
+    }
+
+    // If we couldn't generate enough questions, fill the rest with simple ones
+    while (questions.length < count) {
+      const simpleNum1 = 2;
+      const simpleNum2 = 3;
+      questions.push(
+        createQuestion(simpleNum1, simpleNum2, questions.length, preferences)
+      );
+    }
+
+    return questions;
   };
 
   const adjustForNoRegrouping = (
@@ -390,13 +416,78 @@ const MultiplicationWorksheet = () => {
     min: number,
     max: number
   ): [number, number] => {
-    while (requiresCarryingInMultiplication(num1, num2)) {
-      num1 = Math.floor(Math.random() * (max - min + 1)) + min;
-      num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+    const maxAttempts = 100;
+    let attempts = 0;
+
+    while (
+      requiresCarryingInMultiplication(num1, num2) &&
+      attempts < maxAttempts
+    ) {
+      // Instead of generating completely new numbers, try to adjust the second number's digits
+      const num2Str = String(num2);
+      let newNum2 = "";
+
+      // Build a new second number digit by digit to avoid carrying
+      for (let i = 0; i < num2Str.length; i++) {
+        const digit = parseInt(num2Str[i]);
+        // Choose a digit that won't cause carrying when multiplied by any digit of num1
+        const num1Str = String(num1);
+        let safeDigit = digit;
+
+        // Find a digit that doesn't cause carrying with any digit of num1
+        let foundSafe = false;
+        for (let testDigit = 1; testDigit <= 9 && !foundSafe; testDigit++) {
+          let causesCarrying = false;
+          for (let j = 0; j < num1Str.length; j++) {
+            const num1Digit = parseInt(num1Str[j]);
+            if (num1Digit * testDigit > 9) {
+              causesCarrying = true;
+              break;
+            }
+          }
+          if (!causesCarrying) {
+            safeDigit = testDigit;
+            foundSafe = true;
+            break;
+          }
+        }
+
+        newNum2 += safeDigit.toString();
+      }
+
+      num2 = parseInt(newNum2);
+      if (num2 < min) {
+        num2 = min;
+      }
+      if (num2 > max) {
+        num2 = max;
+      }
+
+      // Ensure num1 is still larger than num2
+      if (num1 < num2) {
+        [num1, num2] = [num2, num1];
+      }
+
+      attempts++;
+    }
+
+    // If we still have carrying after max attempts, return the best we can find
+    if (requiresCarryingInMultiplication(num1, num2)) {
+      // Fallback: use smaller numbers that are guaranteed to work
+      const fallbackMin = Math.pow(10, Math.floor(String(min).length / 2));
+      const fallbackMax = Math.pow(10, Math.ceil(String(min).length / 2)) - 1;
+      num1 =
+        Math.floor(Math.random() * (fallbackMax - fallbackMin + 1)) +
+        fallbackMin;
+      num2 =
+        Math.floor(Math.random() * (fallbackMax - fallbackMin + 1)) +
+        fallbackMin;
+
       if (num1 < num2) {
         [num1, num2] = [num2, num1];
       }
     }
+
     return [num1, num2];
   };
 
@@ -544,21 +635,28 @@ const MultiplicationWorksheet = () => {
     setError(null);
 
     try {
-      // Build answers in the shape backend expects: carries -> carryOnesToTens, carryTensToHundreds
-      // partialProducts -> partialProduct1, partialProduct2, partialProduct3 (ordered)
+      // Build answers in the shape backend expects: carries -> carryOnesToTens, carryTensToHundreds ...
       const answersToVerify = questions.map((q) => {
-        // map carries from generic carry1, carry2... to backend names in order
+        // expanded backend carry keys to cover up to 4 carry positions
         const carryBackendKeys = [
           "carryOnesToTens",
           "carryTensToHundreds",
           "carryHundredsToThousands",
+          "carryThousandsToTenThousands",
         ];
         const carryValues: { [key: string]: number } = {};
 
-        const carryKeys = Object.keys(q.carries).sort(); // carry1, carry2...
+        // sort internal carry keys by numeric suffix: carry1, carry2, ...
+        const carryKeys = Object.keys(q.carries).sort((a, b) => {
+          const ai = parseInt(a.replace(/\D/g, "")) || 0;
+          const bi = parseInt(b.replace(/\D/g, "")) || 0;
+          return ai - bi;
+        });
         carryKeys.forEach((k, idx) => {
           const backendKey = carryBackendKeys[idx] || `carry${idx + 1}`;
-          carryValues[backendKey] = parseInt(q.carries[k]) || 0;
+          const raw = q.carries[k];
+          // ensure empty strings are converted to 0
+          carryValues[backendKey] = raw === "" ? 0 : parseInt(raw) || 0;
         });
 
         // partial products map in ascending order partialProduct1..partialProductN
@@ -566,19 +664,27 @@ const MultiplicationWorksheet = () => {
           "partialProduct1",
           "partialProduct2",
           "partialProduct3",
+          "partialProduct4",
         ];
         const partialProductsOrdered: { [key: string]: number } = {};
-        const ppKeys = Object.keys(q.partialProducts).sort(); // partialProduct1, partialProduct2...
+        const ppKeys = Object.keys(q.partialProducts).sort((a, b) => {
+          const ai = parseInt(a.replace(/\D/g, "")) || 0;
+          const bi = parseInt(b.replace(/\D/g, "")) || 0;
+          return ai - bi;
+        });
         ppKeys.forEach((k, idx) => {
           const backendKey =
             partialProductBackendKeys[idx] || `partialProduct${idx + 1}`;
-          partialProductsOrdered[backendKey] =
-            parseInt(arrayToString(q.partialProducts[k])) || 0;
+          // arrayToString already returns "0" for fully empty digits; parseInt(...) || 0 ensures numeric 0
+          const rawValue = parseInt(arrayToString(q.partialProducts[k])) || 0;
+          // multiply by place value so partialProduct2 (tens) becomes value*10, partialProduct3 becomes *100, etc.
+          partialProductsOrdered[backendKey] = rawValue * Math.pow(10, idx);
         });
 
         return {
           number1: q.number1,
           number2: q.number2,
+          // arrayToString returns "0" when the digits are empty -> parseInt -> 0
           answer: parseInt(arrayToString(q.userAnswer)) || 0,
           carries: carryValues as any,
           partialProducts: partialProductsOrdered as any,
@@ -604,7 +710,7 @@ const MultiplicationWorksheet = () => {
               data.results[idx]?.includes("Perfect") ||
               data.results[idx]?.includes("partial products correct") ||
               false,
-            carriesCorrect: true, // keep this for compatibility
+            carriesCorrect: true,
             correctPartialProducts: correctPartial,
             correctCarries: correctCarries,
           } as Question;

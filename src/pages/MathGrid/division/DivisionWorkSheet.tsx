@@ -10,9 +10,11 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/resultsModal";
+import { mathService } from "@/services/mathService";
 interface Question {
   number1: number; // Dividend
   number2: number; // Divisor
+  questionNumber: number;
   userAnswer: string[]; // Array of digits for the answer
   remainderAnswer: string; // Remainder
   workingRows: Array<{
@@ -78,63 +80,15 @@ interface VerifyDivisionResponse {
     remainder2Correct?: boolean;
     remainder3Correct?: boolean;
   }>;
+  success: boolean;
 }
 
-// Mock math service
-const mockMathService = {
-  verifyDivisionAnswers: async (
-    answers: VerifyDivisionAnswer[]
-  ): Promise<VerifyDivisionResponse> => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const results = answers.map((answer) => {
-      const correctAnswer = Math.floor(answer.number1 / answer.number2);
-      const correctRemainder = answer.number1 % answer.number2;
-
-      const answerCorrect = answer.answer === correctAnswer;
-      const remainderCorrect = answer.remainder === correctRemainder;
-
-      if (answerCorrect && remainderCorrect) {
-        return "Perfect! Answer and remainder are correct.";
-      } else if (answerCorrect) {
-        return "Answer correct, but remainder is wrong.";
-      } else {
-        return "Answer is incorrect.";
-      }
-    });
-
-    const correctCount = results.filter((r) => r.includes("Perfect")).length;
-    const percentage = Math.round((correctCount / answers.length) * 100);
-
-    return {
-      results,
-      score: correctCount,
-      percentage,
-      maxScore: answers.length,
-      total: answers.length,
-      correctSteps: answers.map(() => ({ step1: 0, step2: 0, step3: 0 })),
-      correctRemainders: answers.map(() => ({
-        remainder1: 0,
-        remainder2: 0,
-        remainder3: 0,
-      })),
-      stepValidation: answers.map(() => ({
-        step1Correct: true,
-        step2Correct: true,
-        step3Correct: true,
-        remainder1Correct: true,
-        remainder2Correct: true,
-        remainder3Correct: true,
-      })),
-    };
-  },
-};
-
-// Mock question generator
+// Generate questions locally based on preferences (similar to the backend logic)
 const generateQuestion = (preferences: UserPreferences): Question => {
   let divisor: number;
   let dividend: number;
 
+  // Generate divisor based on difficulty
   if (preferences.numberOfDigits === "1-digit") {
     divisor = Math.floor(Math.random() * 8) + 2; // 2-9
   } else if (preferences.numberOfDigits === "2-digit") {
@@ -146,16 +100,21 @@ const generateQuestion = (preferences: UserPreferences): Question => {
         : Math.floor(Math.random() * 90) + 10;
   }
 
+  // Generate dividend based on complexity
   if (preferences.complexity === "without-remainder") {
     const quotient = Math.floor(Math.random() * 900) + 100; // 100-999
     dividend = quotient * divisor;
   } else {
-    dividend = Math.floor(Math.random() * 9000) + 1000; // 1000-9999
+    const minDividend = divisor * 10; // Ensure at least 2-digit quotient
+    const maxDividend = 9999;
+    dividend =
+      Math.floor(Math.random() * (maxDividend - minDividend + 1)) + minDividend;
   }
 
   return {
     number1: dividend,
     number2: divisor,
+    questionNumber: Math.floor(Math.random() * 1000), // Random question number
     userAnswer: Array(4).fill(""),
     remainderAnswer: "",
     workingRows: Array(3)
@@ -186,6 +145,7 @@ const PreferenceSelection: React.FC<{
       numberOfQuestions: Number(numberOfQuestions),
     });
   };
+
   const handleNumberOfQuestionsChange = (value: string) => {
     if (value === "") {
       setNumberOfQuestions("");
@@ -193,11 +153,11 @@ const PreferenceSelection: React.FC<{
     }
     const num = parseInt(value, 10);
 
-    // validate range
     if (!isNaN(num) && num >= 0 && num <= 50) {
       setNumberOfQuestions(num.toString());
     }
   };
+
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 min-h-screen">
       <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl my-8">
@@ -349,7 +309,6 @@ const PreferenceSelection: React.FC<{
                   Choose between 1-50 questions
                 </div>
               </div>
-              {/* Quick selection buttons */}
               <div className="grid grid-cols-4 gap-2 mt-3">
                 {[4, 6, 8, 10].map((num) => (
                   <button
@@ -416,13 +375,12 @@ const DivisionWorkSheet: React.FC = () => {
   const [userPreferences, setUserPreferences] =
     useState<UserPreferences | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
-  // const [results, setResults] = useState<string[]>([]);
+  const [results, setResults] = useState<string[]>([]);
   const [score, setScore] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [percentage, setPercentage] = useState<number | null>(null);
-  // const [showResults, setShowResults] = useState(false);
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
 
   const handlePreferencesSelected = (preferences: UserPreferences) => {
@@ -437,19 +395,55 @@ const DivisionWorkSheet: React.FC = () => {
     setIsSubmitted(false);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Try to use the backend service for question generation
+      try {
+        const response = await mathService.generateDivisionQuestions({
+          numberOfQuestions: preferences.numberOfQuestions,
+          complexity: preferences.complexity,
+          numberOfDigits: preferences.numberOfDigits,
+        });
 
-      const newQuestions = Array.from(
-        { length: preferences.numberOfQuestions },
-        () => generateQuestion(preferences)
-      );
+        if (response.success && response.questions) {
+          const newQuestions = response.questions.map((q: any) => ({
+            number1: q.number1,
+            number2: q.number2,
+            questionNumber:
+              q.questionNumber || Math.floor(Math.random() * 1000),
+            userAnswer: Array(4).fill(""),
+            remainderAnswer: "",
+            workingRows: Array(3)
+              .fill(null)
+              .map(() => ({ digits: Array(4).fill("") })),
+            intermediateRemainders: Array(3).fill(""),
+            isCorrect: undefined,
+            stepsCorrect: undefined,
+            stepValidation: {},
+          }));
+          setQuestions(newQuestions);
+        } else {
+          throw new Error(
+            response.error || "Failed to generate questions from backend"
+          );
+        }
+      } catch (backendError) {
+        console.warn(
+          "Backend unavailable, using local generation:",
+          backendError
+        );
+        // Fallback to local generation
+        const newQuestions = Array.from(
+          { length: preferences.numberOfQuestions },
+          () => generateQuestion(preferences)
+        );
+        setQuestions(newQuestions);
+      }
 
-      setQuestions(newQuestions);
-      // setResults([]);
+      setResults([]);
       setScore(null);
-      // setShowResults(false);
     } catch (err) {
-      setError("Unable to generate questions. Please try again.");
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
+      setError(`Unable to generate questions: ${errorMessage}`);
       console.error("Error:", err);
     } finally {
       setLoading(false);
@@ -483,6 +477,18 @@ const DivisionWorkSheet: React.FC = () => {
     const sanitizedValue = value.replace(/[^0-9]/g, "").slice(0, 1);
     const updatedQuestions = [...questions];
     updatedQuestions[questionIndex].workingRows[rowIndex].digits[digitIndex] =
+      sanitizedValue;
+    setQuestions(updatedQuestions);
+  };
+
+  const handleIntermediateRemainderChange = (
+    questionIndex: number,
+    remainderIndex: number,
+    value: string
+  ) => {
+    const sanitizedValue = value.replace(/[^0-9]/g, "");
+    const updatedQuestions = [...questions];
+    updatedQuestions[questionIndex].intermediateRemainders[remainderIndex] =
       sanitizedValue;
     setQuestions(updatedQuestions);
   };
@@ -528,27 +534,27 @@ const DivisionWorkSheet: React.FC = () => {
         },
       }));
 
-      const data = await mockMathService.verifyDivisionAnswers(answersToVerify);
+      const data = await mathService.verifyDivisionAnswers(answersToVerify);
 
       const updated = questions.map((q, i) => ({
         ...q,
         isCorrect:
           data.results[i].includes("Perfect") ||
-          data.results[i].includes("Correct"),
+          data.results[i].includes("correct"),
+        stepValidation: data.stepValidation[i],
       }));
 
       setQuestions(updated);
-      // setResults(data.results);
+      setResults(data.results);
       setScore(data.score);
       setIsSubmitted(true);
       setPercentage(data.percentage);
-      // setShowResults(true);
-      // setResults(data.results);
-      // setShowResults(true);
-      setIsResultModalOpen(true); // Add this line
+      setIsResultModalOpen(true);
     } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Unknown error occurred";
       console.error("Error verifying answers:", err);
-      setError("An error occurred while verifying answers. Please try again.");
+      setError(`An error occurred while verifying answers: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -556,7 +562,8 @@ const DivisionWorkSheet: React.FC = () => {
 
   const getInputClassName = (
     question: Question,
-    type: "answer" | "working" | "remainder"
+    type: "answer" | "working" | "remainder" | "intermediate",
+    stepKey?: string
   ) => {
     const baseClasses = {
       answer:
@@ -565,10 +572,26 @@ const DivisionWorkSheet: React.FC = () => {
         "w-6 h-6 text-sm text-center border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ",
       remainder:
         "w-8 h-6 text-sm text-center border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ",
+      intermediate:
+        "w-8 h-6 text-sm text-center border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 ",
     };
 
     if (!isSubmitted) {
       return baseClasses[type] + "border-gray-300";
+    }
+
+    // Check specific step validation if available
+    if (stepKey && question.stepValidation) {
+      const isStepCorrect =
+        question.stepValidation[
+          stepKey as keyof typeof question.stepValidation
+        ];
+      return (
+        baseClasses[type] +
+        (isStepCorrect
+          ? "border-green-500 bg-green-50 text-green-700"
+          : "border-red-500 bg-red-50 text-red-700")
+      );
     }
 
     return (
@@ -593,7 +616,6 @@ const DivisionWorkSheet: React.FC = () => {
             variant="outline"
             onClick={() => {
               setShowPreferences(true);
-              // setShowResults(false);
             }}
             className="gap-2 hover:bg-blue-50"
           >
@@ -611,9 +633,14 @@ const DivisionWorkSheet: React.FC = () => {
         <Button
           variant="ghost"
           onClick={() => userPreferences && fetchQuestions(userPreferences)}
-          title="Reshuffle Questions"
+          title="Generate New Questions"
+          disabled={loading}
         >
-          <RefreshCcw className="w-5 h-5 text-gray-600 hover:text-gray-800" />
+          <RefreshCcw
+            className={`w-5 h-5 text-gray-600 hover:text-gray-800 ${
+              loading ? "animate-spin" : ""
+            }`}
+          />
         </Button>
       </div>
 
@@ -624,8 +651,11 @@ const DivisionWorkSheet: React.FC = () => {
       )}
 
       {loading ? (
-        <div className="flex justify-center">
+        <div className="flex justify-center items-center py-8">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent" />
+          <span className="ml-3 text-gray-600">
+            {isSubmitted ? "Checking answers..." : "Loading questions..."}
+          </span>
         </div>
       ) : (
         <>
@@ -643,7 +673,7 @@ const DivisionWorkSheet: React.FC = () => {
                   </span>
 
                   {/* Answer row with individual digit inputs */}
-                  <div className="flex justify-start items-center ml-7 gap-1">
+                  <div className="flex justify-start items-center ml-7 gap-1 mb-2">
                     {[...Array(4)].map((_, digitIndex) => (
                       <input
                         key={digitIndex}
@@ -660,6 +690,15 @@ const DivisionWorkSheet: React.FC = () => {
                         }
                       />
                     ))}
+                    <span className="ml-2 text-sm text-gray-600">R:</span>
+                    <input
+                      type="text"
+                      className={getInputClassName(q, "remainder")}
+                      value={q.remainderAnswer}
+                      onChange={(e) =>
+                        handleRemainderChange(index, e.target.value)
+                      }
+                    />
                   </div>
 
                   <div className="flex items-start">
@@ -673,7 +712,7 @@ const DivisionWorkSheet: React.FC = () => {
                         {dividendDigits.map((digit, i) => (
                           <div
                             key={i}
-                            className="w-6 h-6 ml-2  text-center text-lg font-bold"
+                            className="w-6 h-6 ml-2 text-center text-lg font-bold"
                           >
                             {digit}
                           </div>
@@ -684,45 +723,57 @@ const DivisionWorkSheet: React.FC = () => {
                   </div>
 
                   <div className="ml-6 mt-2 space-y-2">
-                    {q.workingRows.map((_, rowIndex) => (
-                      <div
-                        key={rowIndex}
-                        className="flex items-center space-x-1"
-                      >
-                        <span className="text-lg font-bold">-</span>
-                        {[...Array(4)].map((__, digitIndex) => (
+                    {/* Working steps with intermediate remainders */}
+                    {q.workingRows.map((row, rowIndex) => (
+                      <div key={rowIndex} className="space-y-1">
+                        <div className="flex items-center space-x-1">
+                          <span className="text-lg font-bold">-</span>
+                          {[...Array(4)].map((__, digitIndex) => (
+                            <input
+                              key={digitIndex}
+                              type="text"
+                              maxLength={1}
+                              className={getInputClassName(
+                                q,
+                                "working",
+                                `step${rowIndex + 1}Correct`
+                              )}
+                              value={row.digits[digitIndex]}
+                              onChange={(e) =>
+                                handleWorkingDigitChange(
+                                  index,
+                                  rowIndex,
+                                  digitIndex,
+                                  e.target.value
+                                )
+                              }
+                            />
+                          ))}
+                        </div>
+                        <div className="border-b border-gray-400 ml-6 mr-8" />
+                        <div className="flex items-center space-x-2 ml-6">
+                          <span className="text-xs font-semibold text-gray-600">
+                            R{rowIndex + 1}:
+                          </span>
                           <input
-                            key={digitIndex}
                             type="text"
-                            maxLength={1}
-                            className={getInputClassName(q, "working")}
-                            value={q.workingRows[rowIndex].digits[digitIndex]}
+                            className={getInputClassName(
+                              q,
+                              "intermediate",
+                              `remainder${rowIndex + 1}Correct`
+                            )}
+                            value={q.intermediateRemainders[rowIndex]}
                             onChange={(e) =>
-                              handleWorkingDigitChange(
+                              handleIntermediateRemainderChange(
                                 index,
                                 rowIndex,
-                                digitIndex,
                                 e.target.value
                               )
                             }
                           />
-                        ))}
+                        </div>
                       </div>
                     ))}
-
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs font-semibold text-gray-600">
-                        R:
-                      </span>
-                      <input
-                        type="text"
-                        className={getInputClassName(q, "remainder")}
-                        value={q.remainderAnswer}
-                        onChange={(e) =>
-                          handleRemainderChange(index, e.target.value)
-                        }
-                      />
-                    </div>
                   </div>
                 </div>
               );
@@ -730,73 +781,82 @@ const DivisionWorkSheet: React.FC = () => {
           </div>
 
           <div className="flex justify-center mt-6">
-            <Button onClick={handleSubmit} disabled={loading || isSubmitted}>
-              {loading ? "Submitting..." : "Submit All"}
+            <Button
+              onClick={handleSubmit}
+              disabled={loading || isSubmitted}
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
+            >
+              {loading
+                ? "Submitting..."
+                : isSubmitted
+                ? "Submitted"
+                : "Submit All Answers"}
             </Button>
           </div>
 
           {score !== null && (
             <div className="p-4 mt-4 rounded-md text-center text-white font-medium bg-blue-500">
-              Your Score: {score}/{questions.length}
+              Your Score: {score} out of {questions.length * 6} points (
+              {percentage}%)
             </div>
           )}
-
-          {/* {results.length > 0 && (
-            <div className="mt-6">
-              <h3 className="text-xl font-semibold mb-4">Results:</h3>
-              <ul className="list-disc pl-6">
-                {results.map((res, i) => (
-                  <li
-                    key={i}
-                    className={
-                      res.includes("Perfect") || res.includes("Correct")
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }
-                  >
-                    Q{i + 1}: {res}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )} */}
 
           {isResultModalOpen && (
             <Dialog
               open={isResultModalOpen}
               onOpenChange={setIsResultModalOpen}
             >
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-bold text-center">
-                    Quiz Results
+                    Division Results
                   </DialogTitle>
                   <DialogDescription className="text-center">
                     Here's how you performed on the Division worksheet
                   </DialogDescription>
                 </DialogHeader>
 
-                <div className="py-6 text-center">
-                  <div
-                    className={`text-5xl font-bold mb-4 ${
-                      score === questions.length
-                        ? "text-green-600"
-                        : score! >= questions.length * 0.7
-                        ? "text-yellow-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {percentage}%
+                <div className="py-6">
+                  <div className="text-center mb-6">
+                    <div
+                      className={`text-5xl font-bold mb-4 ${
+                        percentage === 100
+                          ? "text-green-600"
+                          : percentage! >= 70
+                          ? "text-yellow-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {percentage}%
+                    </div>
+
+                    <p className="text-gray-600 text-lg mb-4">
+                      You scored {score} out of {questions.length * 6} points
+                    </p>
+
+                    {percentage === 100 && (
+                      <div className="text-2xl mb-4">🎉 Perfect Score! 🎉</div>
+                    )}
                   </div>
 
-                  <p className="text-gray-600 text-lg mb-4">
-                    You got {questions.filter((q) => q.isCorrect).length} out of{" "}
-                    {questions.length} questions correct!
-                  </p>
-
-                  {score === questions.length && (
-                    <div className="text-2xl mb-4">🎉 Perfect Score! 🎉</div>
-                  )}
+                  {/* Detailed Results */}
+                  <div className="max-h-60 overflow-y-auto space-y-2 mb-4">
+                    {results.map((result, i) => (
+                      <div
+                        key={i}
+                        className={`p-2 rounded text-sm ${
+                          result.includes("Perfect")
+                            ? "bg-green-100 text-green-800"
+                            : result.includes("correct") &&
+                              !result.includes("incorrect")
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        <strong>Q{i + 1}:</strong> {result}
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <DialogFooter className="flex justify-center gap-2">

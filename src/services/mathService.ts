@@ -1,11 +1,11 @@
 import { httpClient } from "./httpClient";
 
-// import { environment } from "../environment/environment";
-// const API_MATH_URL = `${environment.API}/math`;
+// Existing interfaces...
 interface DivisionQuestion {
   number1: number;
   number2: number;
 }
+
 interface GenerateArrayParams {
   rows: number;
   cols: number;
@@ -47,7 +47,6 @@ interface VerifySubtractionAnswer {
   number2: number;
   answer: number;
   borrows: {
-    // Changed from 'carries' to 'borrows'
     tens: number;
     hundreds: number;
     thousands: number;
@@ -61,13 +60,11 @@ interface VerifySubtractionResponse {
   maxScore: number;
   total: number;
   correctBorrows: Array<{
-    // Changed from 'correctCarries'
     tens: number;
     hundreds: number;
     thousands: number;
   }>;
   borrowValidation: Array<{
-    // Changed from 'carryValidation'
     tensCorrect: boolean;
     hundredsCorrect: boolean;
     thousandsCorrect: boolean;
@@ -109,6 +106,7 @@ interface VerifyMultiplicationResponse {
     partialProduct3: number;
   }>;
 }
+
 interface VerifyDivisionAnswer {
   number1: number;
   number2: number;
@@ -151,6 +149,25 @@ interface VerifyDivisionResponse {
     remainder3Correct?: boolean;
   }>;
 }
+
+// New interfaces for division question generation
+interface DivisionQuestionRequest {
+  numberOfQuestions: number;
+  complexity: string; // "with-remainder" or "without-remainder"
+  numberOfDigits: string; // "1-digit", "2-digit", or "mixed"
+}
+
+interface DivisionQuestionResponse {
+  questions: Array<{
+    number1: number;
+    number2: number;
+    questionNumber: number;
+  }>;
+  success: boolean;
+  message?: string;
+  error?: string;
+}
+
 class MathService {
   public async generateArray(params: GenerateArrayParams): Promise<number[][]> {
     return httpClient.get<number[][]>("/math/generateArray", {
@@ -161,6 +178,7 @@ class MathService {
   public async verifyAnswers(answers: VerifyAnswer[]): Promise<VerifyResponse> {
     return httpClient.post<VerifyResponse>("/math/verify-additions", answers);
   }
+
   public async verifySubtractionAnswers(
     answers: VerifySubtractionAnswer[]
   ): Promise<VerifySubtractionResponse> {
@@ -169,6 +187,7 @@ class MathService {
       answers
     );
   }
+
   public async verifyMultiplicationAnswers(
     answers: VerifyMultiplicationAnswer[]
   ): Promise<VerifyMultiplicationResponse> {
@@ -177,7 +196,9 @@ class MathService {
       answers
     );
   }
-  public async generateDivisionQuestions(
+
+  // Existing division method
+  public async generateQuestions(
     count: number,
     min: number,
     max: number
@@ -186,11 +207,23 @@ class MathService {
       `/math/generate-division?count=${count}&min=${min}&max=${max}`
     );
   }
+
+  // NEW: Generate division questions with preferences
+  public async generateDivisionQuestions(
+    request: DivisionQuestionRequest
+  ): Promise<DivisionQuestionResponse> {
+    return httpClient.post<DivisionQuestionResponse>(
+      "/math/division/questions",
+      request
+    );
+  }
+
+  // Updated division verification method
   public async verifyDivisionAnswers(
     answers: VerifyDivisionAnswer[]
   ): Promise<VerifyDivisionResponse> {
     return httpClient.post<VerifyDivisionResponse>(
-      "/math/verify-division",
+      "/math/division/verify",
       answers
     );
   }

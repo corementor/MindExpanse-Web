@@ -95,14 +95,14 @@ const SideBar = () => {
                   <X className="w-4 h-4" />
                   <span>Multiplication</span>
                 </NavLink>
-                <NavLink
+                {/* <NavLink
                   to="/divisiongrid"
                   className={getLinkClassName}
                   onClick={() => setIsOpen(false)}
                 >
                   <Divide className="w-4 h-4" />
                   <span>Division</span>
-                </NavLink>
+                </NavLink> */}
               </AccordionContent>
             </AccordionItem>
           </Accordion>

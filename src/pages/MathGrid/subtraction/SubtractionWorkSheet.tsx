@@ -761,51 +761,53 @@ const SubtractionWorksheet = () => {
         </div>
         <div className="inline-block">
           {/* Borrow numbers row */}
-          <div className={`grid ${columns.gridCols} h-12 mb-1 gap-1`}>
-            {columns.positions.map((pos) => {
-              if (!columns.borrowPositions.includes(pos)) {
-                return <div key={pos} className="w-12 h-12"></div>;
-              }
+          {userPreferences?.complexity === "with-regrouping" && (
+            <div className={`grid ${columns.gridCols} h-12 mb-1 gap-1`}>
+              {columns.positions.map((pos) => {
+                if (!columns.borrowPositions.includes(pos)) {
+                  return <div key={pos} className="w-12 h-12"></div>;
+                }
 
-              const isCorrect =
-                question.borrowValidation?.[
-                  pos as keyof typeof question.borrowValidation
-                ] ?? true;
+                const isCorrect =
+                  question.borrowValidation?.[
+                    pos as keyof typeof question.borrowValidation
+                  ] ?? true;
 
-              return (
-                <motion.input
-                  key={pos}
-                  type="text"
-                  maxLength={1}
-                  className={`w-12 h-12 border text-2xl font-bold text-center rounded ${
-                    showResults
-                      ? isCorrect
-                        ? "bg-green-100 border-green-500 text-green-800"
-                        : "bg-red-100 border-red-500 text-red-800"
-                      : "bg-blue-50 border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  }`}
-                  value={
-                    question.borrowNumbers[
-                      pos as keyof typeof question.borrowNumbers
-                    ] || ""
-                  }
-                  onChange={(e) =>
-                    handleBorrowChange(
-                      index,
-                      pos as keyof Question["borrowNumbers"],
-                      e.target.value
-                    )
-                  }
-                  animate={
-                    showResults && !isCorrect
-                      ? { scale: [1, 1.05, 1], transition: { duration: 0.4 } }
-                      : {}
-                  }
-                  disabled={showResults}
-                />
-              );
-            })}
-          </div>
+                return (
+                  <motion.input
+                    key={pos}
+                    type="text"
+                    maxLength={1}
+                    className={`w-12 h-12 border text-2xl font-bold text-center rounded ${
+                      showResults
+                        ? isCorrect
+                          ? "bg-green-100 border-green-500 text-green-800"
+                          : "bg-red-100 border-red-500 text-red-800"
+                        : "bg-blue-50 border-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    }`}
+                    value={
+                      question.borrowNumbers[
+                        pos as keyof typeof question.borrowNumbers
+                      ] || ""
+                    }
+                    onChange={(e) =>
+                      handleBorrowChange(
+                        index,
+                        pos as keyof Question["borrowNumbers"],
+                        e.target.value
+                      )
+                    }
+                    animate={
+                      showResults && !isCorrect
+                        ? { scale: [1, 1.05, 1], transition: { duration: 0.4 } }
+                        : {}
+                    }
+                    disabled={showResults}
+                  />
+                );
+              })}
+            </div>
+          )}
 
           {/* First number row */}
           <div className={`grid ${columns.gridCols}`}>
