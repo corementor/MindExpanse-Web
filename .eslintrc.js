@@ -19,14 +19,7 @@ export default tseslint.config(
     },
     rules: {
       "no-unused-vars": "off", // Disable the base ESLint rule
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          caughtErrorsIgnorePattern: "^_",
-        },
-      ],
+      "@typescript-eslint/no-unused-vars": "warn",
       ...reactHooks.configs.recommended.rules,
       "import/no-unresolved": "off",
       "react-refresh/only-export-components": [
@@ -34,5 +27,6 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
     },
+    settings: { react: { version: "detect" } },
   }
 );

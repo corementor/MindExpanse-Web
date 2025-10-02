@@ -595,8 +595,8 @@ const SubtractionWorksheet = () => {
 
   // Helper to ensure borrowing is needed in ALL columns
   const adjustForAllRegrouping = (
-    num1: number,
-    num2: number,
+    _num1: number,
+    _num2: number,
     min: number,
     max: number,
     numberOfDigits: number

@@ -56,32 +56,32 @@ interface VerifyDivisionAnswer {
   };
 }
 
-interface VerifyDivisionResponse {
-  results: string[];
-  score: number;
-  percentage: number;
-  maxScore: number;
-  total: number;
-  correctSteps: Array<{
-    step1?: number;
-    step2?: number;
-    step3?: number;
-  }>;
-  correctRemainders: Array<{
-    remainder1?: number;
-    remainder2?: number;
-    remainder3?: number;
-  }>;
-  stepValidation: Array<{
-    step1Correct?: boolean;
-    step2Correct?: boolean;
-    step3Correct?: boolean;
-    remainder1Correct?: boolean;
-    remainder2Correct?: boolean;
-    remainder3Correct?: boolean;
-  }>;
-  success: boolean;
-}
+// interface VerifyDivisionResponse {
+//   results: string[];
+//   score: number;
+//   percentage: number;
+//   maxScore: number;
+//   total: number;
+//   correctSteps: Array<{
+//     step1?: number;
+//     step2?: number;
+//     step3?: number;
+//   }>;
+//   correctRemainders: Array<{
+//     remainder1?: number;
+//     remainder2?: number;
+//     remainder3?: number;
+//   }>;
+//   stepValidation: Array<{
+//     step1Correct?: boolean;
+//     step2Correct?: boolean;
+//     step3Correct?: boolean;
+//     remainder1Correct?: boolean;
+//     remainder2Correct?: boolean;
+//     remainder3Correct?: boolean;
+//   }>;
+//   success: boolean;
+// }
 
 // Generate questions locally based on preferences (similar to the backend logic)
 const generateQuestion = (preferences: UserPreferences): Question => {

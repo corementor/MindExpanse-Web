@@ -5,7 +5,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-  Divide,
   LogOut,
   Minus,
   Plus,

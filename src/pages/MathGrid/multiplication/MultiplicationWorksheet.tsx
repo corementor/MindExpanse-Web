@@ -738,12 +738,12 @@ const MultiplicationWorksheet = () => {
   const renderQuestion = (question: Question) => {
     const numDigits = userPreferences?.numberOfDigits || 2;
     const maxResultDigits = numDigits * 2;
-    const num2Digits = String(question.number2).length;
+    // const num2Digits = String(question.number2).length;
 
     const num1Array = formatNumberToArray(question.number1, maxResultDigits);
     const num2Array = formatNumberToArray(question.number2, maxResultDigits);
     const correctAnswer = question.number1 * question.number2;
-    const userAnswer = parseInt(arrayToString(question.userAnswer)) || 0;
+    // const userAnswer = parseInt(arrayToString(question.userAnswer)) || 0;
 
     // Get partial product keys in order
     const partialProductKeys = Object.keys(question.partialProducts).sort();

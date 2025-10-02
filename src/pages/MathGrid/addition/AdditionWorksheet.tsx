@@ -278,7 +278,7 @@ const PreferenceSelection: React.FC<{
                 {[4, 6, 8, 10].map((num) => (
                   <button
                     key={num}
-                    onClick={() => setNumberOfQuestions(num)}
+                    onClick={() => setNumberOfQuestions(num.toString())}
                     className={`p-2 rounded-lg border-2 text-sm font-semibold transition-all duration-200 hover:shadow-md ${
                       Number(numberOfQuestions) === num
                         ? "border-blue-500 bg-blue-50 text-blue-600"
@@ -487,8 +487,8 @@ const AdditionWorksheet = () => {
 
   // Helper to ensure carrying is needed in ALL columns
   const adjustForAllRegrouping = (
-    num1: number,
-    num2: number,
+    _num1: number,
+    _num2: number,
     min: number,
     max: number,
     numberOfDigits: number
