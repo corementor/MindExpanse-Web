@@ -9,8 +9,8 @@ class HttpClient {
   private instance: AxiosInstance;
   private isRefreshing = false;
   private failedRequests: Array<{
-    resolve: (value: any) => void;
-    reject: (reason?: any) => void;
+    resolve: (value: string) => void;
+    reject: (reason?: unknown) => void;
     config: AxiosRequestConfig;
   }> = [];
 
@@ -70,13 +70,13 @@ class HttpClient {
 
         return config;
       },
-      (error) => Promise.reject(error)
+      (error: unknown) => Promise.reject(error)
     );
 
     // Response interceptor - Handle both 401 AND 403 as token expiration
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => response,
-      async (error) => {
+       async (error) => {
         const originalRequest = error.config;
 
         // Handle network errors
@@ -180,7 +180,7 @@ class HttpClient {
 
   public async post<T>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await this.instance.post<T>(url, data, config);
@@ -189,7 +189,7 @@ class HttpClient {
 
   public async put<T>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
     const response = await this.instance.put<T>(url, data, config);

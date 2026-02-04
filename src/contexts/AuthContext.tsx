@@ -5,13 +5,17 @@ import React, {
   useState,
   ReactNode,
 } from "react";
-import { authService, User } from "@/services/AuthService";
+import {
+  authService,
+  User,
+  LoginCredentials,
+} from "@/services/AuthService";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: any) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => void;
 }
 
@@ -60,7 +64,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  const login = async (credentials: any) => {
+  const login = async (credentials: LoginCredentials) => {
     setIsLoading(true);
     try {
       const response = await authService.login(credentials);
