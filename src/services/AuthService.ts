@@ -52,9 +52,9 @@ class AuthService {
 
       toast.success("Login successful!");
       return response;
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage =
-        error.response?.data?.message ||
+        (axios.isAxiosError(error) && error.response?.data?.message) ||
         "Login failed. Please check your credentials.";
       toast.error(errorMessage);
       throw new Error(errorMessage);
@@ -115,7 +115,7 @@ class AuthService {
         accessToken,
         refreshToken: newRefreshToken,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Token refresh failed:", error);
       this.forceLogout("Your session has expired. Please login again.");
       throw new Error("Session expired. Please login again.");
